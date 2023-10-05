@@ -1,6 +1,7 @@
 package com.vinz.energy.EnergyForge.service;
 
 import java.nio.CharBuffer;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.vinz.energy.EnergyForge.dao.UserDao;
 import com.vinz.energy.EnergyForge.db.User;
 import com.vinz.energy.EnergyForge.dto.CredentialsDto;
+import com.vinz.energy.EnergyForge.dto.SignUpDto;
 import com.vinz.energy.EnergyForge.dto.UserDto;
 import com.vinz.energy.EnergyForge.exception.AppException;
 import com.vinz.energy.EnergyForge.mappers.UserMapper;
@@ -37,6 +39,21 @@ public class UserService {
             return userMapper.toUserDto(user);
         }
         throw new AppException("Invalid password", HttpStatus.BAD_REQUEST);
+    }
+    
+    public UserDto register(SignUpDto userDto) {
+        Optional<User> optionalUser = userDao.findByLogin(userDto.login());
+
+        if (optionalUser.isPresent()) {
+            throw new AppException("Login already exists", HttpStatus.BAD_REQUEST);
+        }
+
+        User user = userMapper.signUpToUser(userDto);
+        user.setPassword(passwordEncoder.encode(CharBuffer.wrap(userDto.password())));
+
+        User savedUser = userDao.save(user);
+
+        return userMapper.toUserDto(savedUser);
     }
 
 }

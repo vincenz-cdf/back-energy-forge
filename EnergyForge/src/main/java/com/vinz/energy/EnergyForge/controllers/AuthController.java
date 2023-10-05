@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.vinz.energy.EnergyForge.config.UserAuthProvider;
 import com.vinz.energy.EnergyForge.dto.CredentialsDto;
 import com.vinz.energy.EnergyForge.dto.SignUpDto;
 import com.vinz.energy.EnergyForge.dto.UserDto;
@@ -22,17 +23,20 @@ public class AuthController {
 	@Autowired
 	private UserService userService;
 	
+	@Autowired
+	private UserAuthProvider userAuthProvider;
+	
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(@RequestBody CredentialsDto credentialsDto) {
         UserDto userDto = userService.login(credentialsDto);
-        //userDto.setToken(userAuthenticationProvider.createToken(userDto));
+        userDto.setToken(userAuthProvider.createToken(userDto));
         return ResponseEntity.ok(userDto);
     }
     
     @PostMapping("/register")
     public ResponseEntity<UserDto> register(@RequestBody SignUpDto user) {
         UserDto createdUser = userService.register(user);
-        //createdUser.setToken(userAuthenticationProvider.createToken(createdUser));
+        createdUser.setToken(userAuthProvider.createToken(createdUser));
         return ResponseEntity.created(URI.create("/users/" + createdUser.getId())).body(createdUser);
     }
 }

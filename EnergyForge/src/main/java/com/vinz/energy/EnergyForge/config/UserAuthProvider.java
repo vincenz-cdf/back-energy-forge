@@ -75,8 +75,14 @@ public class UserAuthProvider {
         DecodedJWT decoded = verifier.verify(token);
 
         UserDto user = userService.findByLogin(decoded.getSubject());
-
+        
+        // Ensure user is not null and has a non-null id
+        if (user == null || user.getId() == null) {
+            throw new RuntimeException("User not found or invalid");
+        }
+        
         return new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
     }
+
     
 }

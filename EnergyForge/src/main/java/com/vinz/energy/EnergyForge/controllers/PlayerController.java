@@ -12,10 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.vinz.energy.EnergyForge.db.Habit;
 import com.vinz.energy.EnergyForge.dto.HabitDto;
 import com.vinz.energy.EnergyForge.service.Global;
 import com.vinz.energy.EnergyForge.service.HabitService;
@@ -42,7 +42,6 @@ public class PlayerController {
 	public ResponseEntity<Map<String, Object>> showHabits() {
 	    try {
 	        Long userId = global.getCurrentUserId();
-	        System.out.println(userId);
 	        
 	        List<HabitDto> habits = habitService.showHabits(userId);
 	        
@@ -76,6 +75,24 @@ public class PlayerController {
             throw new ResponseStatusException(
                 HttpStatus.INTERNAL_SERVER_ERROR, 
                 "Unable to create habit",
+                e
+            );
+        }
+    }
+    
+    @PostMapping("/habits/{id}")
+    public ResponseEntity<Map<String, String>> updateHabit(@PathVariable Long id, @RequestBody HabitDto dto) {
+        try {
+            System.out.println(dto);
+            habitService.updateHabit(id, dto);
+            Map<String, String> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Habit successfully update.");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Unable to update habit",
                 e
             );
         }

@@ -16,7 +16,7 @@ public class DataUtil {
         dto.setId(habit.getId());
         dto.setTitle(habit.getTitle());
         dto.setChecked(habit.getChecked());
-        //... set other fields as necessary
+        dto.setUserId(habit.getUser().getId());
         return dto;
     }
 

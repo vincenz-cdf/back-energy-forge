@@ -44,14 +44,25 @@ public class HabitService {
 	}
 	
 	public void updateHabit(Long habitId, HabitDto dto) {
-		System.out.println(dto.toString());
 		Habit habitDb = habitDao.findById(habitId).orElseThrow(() -> new AppException("Unknown habit", HttpStatus.NOT_FOUND));
+		
+		if(!habitDb.getChecked() && dto.getChecked()) {
+			incrementEnergy(habitDb.getUser().getId());
+		}
 		
 		habitDb.setChecked(dto.getChecked());
 		habitDb.setTitle(dto.getTitle());
-		System.out.println(habitDb.toString());
 		
 		habitDao.save(habitDb);
+		
+	}
+	
+	private void incrementEnergy(Long userId) {
+		User user = userDao.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+		Integer currentEnergy = user.getEnergy();
+		user.setEnergy(currentEnergy+2);
+		
+		userDao.save(user);
 		
 	}
 }

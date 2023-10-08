@@ -83,7 +83,6 @@ public class PlayerController {
     @PostMapping("/habits/{id}")
     public ResponseEntity<Map<String, String>> updateHabit(@PathVariable Long id, @RequestBody HabitDto dto) {
         try {
-            System.out.println(dto);
             habitService.updateHabit(id, dto);
             Map<String, String> response = new HashMap<>();
             response.put("status", "success");

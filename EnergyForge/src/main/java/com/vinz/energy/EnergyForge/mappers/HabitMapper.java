@@ -1,5 +1,8 @@
 package com.vinz.energy.EnergyForge.mappers;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
@@ -27,5 +30,12 @@ public interface HabitMapper {
         user.setId(id);
         return user;
     }
+    
+    default List<HabitDto> toHabitDtos(List<Habit> habits) {
+        return habits.stream()
+                     .map(this::toHabitDto)
+                     .collect(Collectors.toList());
+    }
+
 }
 

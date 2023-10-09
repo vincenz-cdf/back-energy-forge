@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.vinz.energy.EnergyForge.dto.CharacterDto;
 import com.vinz.energy.EnergyForge.dto.HabitDto;
+import com.vinz.energy.EnergyForge.service.CharacterService;
 import com.vinz.energy.EnergyForge.service.Global;
 import com.vinz.energy.EnergyForge.service.HabitService;
 import com.vinz.energy.EnergyForge.service.ProfileService;
@@ -29,6 +31,9 @@ public class PlayerController {
 	
 	@Autowired
 	private HabitService habitService;
+	
+	@Autowired
+	private CharacterService characterService;
 	
 	@Autowired
 	private Global global;
@@ -96,4 +101,25 @@ public class PlayerController {
             );
         }
     }
+    
+	@GetMapping("/characters")
+	public ResponseEntity<Map<String, Object>> showCharacters() {
+	    try {
+	        Long userId = global.getCurrentUserId();
+	        
+	        List<CharacterDto> chars = characterService.showCharacters(userId);
+	        
+	        Map<String, Object> response = new HashMap<>();
+	        response.put("status", "success");
+	        response.put("message", "Habits successfully retrieved.");
+	        response.put("data", chars); 
+	        return new ResponseEntity<>(response, HttpStatus.OK);
+	    } catch (Exception e) {
+	        throw new ResponseStatusException(
+	            HttpStatus.INTERNAL_SERVER_ERROR, 
+	            "Unable to retrieve chars",
+	            e
+	        );
+	    }
+	}
 }

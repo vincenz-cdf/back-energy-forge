@@ -2,14 +2,18 @@ package com.vinz.energy.EnergyForge.service;
 
 import java.nio.CharBuffer;
 import java.util.Optional;
+import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.vinz.energy.EnergyForge.dao.CharacterDao;
 import com.vinz.energy.EnergyForge.dao.UserDao;
+import com.vinz.energy.EnergyForge.db.Character;
 import com.vinz.energy.EnergyForge.db.User;
+import com.vinz.energy.EnergyForge.db.enums.CharacterType;
 import com.vinz.energy.EnergyForge.dto.CredentialsDto;
 import com.vinz.energy.EnergyForge.dto.SignUpDto;
 import com.vinz.energy.EnergyForge.dto.UserDto;
@@ -30,6 +34,11 @@ public class UserService {
 
 	@Autowired
     private UserMapper userMapper;
+	
+	@Autowired
+	private CharacterDao characterDao;
+	
+	Random random = new Random();
 
     public UserDto login(CredentialsDto credentialsDto) {
         User user = userDao.findByLogin(credentialsDto.login())
@@ -52,6 +61,8 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(CharBuffer.wrap(userDto.password())));
 
         User savedUser = userDao.save(user);
+        
+        createFirstCharacterForNewAccount(savedUser.getId());
 
         return userMapper.toUserDto(savedUser);
     }
@@ -60,6 +71,21 @@ public class UserService {
         User user = userDao.findByLogin(login)
                 .orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
         return userMapper.toUserDto(user);
+    }
+    
+    private void createFirstCharacterForNewAccount(Long userId) {
+    	Character character = new Character();
+    	character.setArmor(0);
+    	character.setAtk(0);
+    	character.setHp(50);
+    	character.setLevel(1);
+    	character.setCharacterType(CharacterType.HERO);
+    	character.setName(Global.defaultCharNames[random.nextInt(Global.defaultCharNames.length)]);
+    	character.setSpritePath("assets/sprites/characters/mainchar.png");
+    	character.setUser(userDao.findById(userId)
+                .orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND)));
+    	
+    	characterDao.save(character);
     }
 
 }

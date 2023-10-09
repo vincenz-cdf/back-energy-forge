@@ -15,6 +15,7 @@ public class CharacterDto {
 
 	private Long id;
 	private String name;
+	private Integer level;
 	private Integer hp;
 	private Integer armor;
 	private Integer atk;

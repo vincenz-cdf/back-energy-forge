@@ -10,6 +10,11 @@ import com.vinz.energy.EnergyForge.dto.UserDto;
 
 @Service
 public class Global {
+	
+    public static String[] defaultCharNames = {
+            "Wesley", "Woody", "Mino", "Karl", "Cecco", "Wilbur", "Kostja", "Miles",
+            "Rawls", "Kylan", "Silvester", "Endrik", "Hamlyn", "Jadyn", "Tearlach", "Deshawn"
+        };
 
 	public Long getCurrentUserId() {
 	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

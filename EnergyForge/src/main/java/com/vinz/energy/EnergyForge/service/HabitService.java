@@ -11,6 +11,7 @@ import com.vinz.energy.EnergyForge.db.Habit;
 import com.vinz.energy.EnergyForge.db.User;
 import com.vinz.energy.EnergyForge.dto.HabitDto;
 import com.vinz.energy.EnergyForge.exception.AppException;
+import com.vinz.energy.EnergyForge.mappers.HabitMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,7 +21,7 @@ public class HabitService {
 	
     private final UserDao userDao;
     private final HabitDao habitDao;
-    private final DataUtil dataUtil;
+    private final HabitMapper habitMapper;
 
 	public void createEmptyHabit(Long userId) {
 		Habit habit = new Habit();
@@ -34,7 +35,7 @@ public class HabitService {
 	public List<HabitDto> showHabits(Long userId) {
 	    List<Habit> habits = habitDao.findByUserIdOrderByIdAsc(userId);
 	    
-	    return dataUtil.convertToDtoList(habits);
+	    return habitMapper.toHabitDtos(habits);
 	}
 	
 	public void updateHabit(Long habitId, HabitDto dto) {

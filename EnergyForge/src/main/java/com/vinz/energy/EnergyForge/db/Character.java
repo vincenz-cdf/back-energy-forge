@@ -34,6 +34,9 @@ public class Character {
     private String name;
     
     @Column(nullable = false)
+    private Integer level;
+    
+    @Column(nullable = false)
     private Integer hp;
     
     @Column(nullable = false)

@@ -2,7 +2,6 @@ package com.vinz.energy.EnergyForge.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -19,14 +18,9 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class HabitService {
 	
-	@Autowired
-	private UserDao userDao;
-	
-	@Autowired
-	private HabitDao habitDao;
-	
-    @Autowired
-    private DataUtil dataUtil;
+    private final UserDao userDao;
+    private final HabitDao habitDao;
+    private final DataUtil dataUtil;
 
 	public void createEmptyHabit(Long userId) {
 		Habit habit = new Habit();
@@ -38,9 +32,9 @@ public class HabitService {
 	}
 	
 	public List<HabitDto> showHabits(Long userId) {
-		List<Habit> habits = habitDao.findByUserId(userId);
-		
-		return dataUtil.convertToDtoList(habits);
+	    List<Habit> habits = habitDao.findByUserIdOrderByIdAsc(userId);
+	    
+	    return dataUtil.convertToDtoList(habits);
 	}
 	
 	public void updateHabit(Long habitId, HabitDto dto) {

@@ -1,7 +1,11 @@
 package com.vinz.energy.EnergyForge.db;
 
-import com.vinz.energy.EnergyForge.db.enums.CharacterType;
+import java.util.Set;
 
+import com.vinz.energy.EnergyForge.db.enums.CharacterType;
+import com.vinz.energy.EnergyForge.db.equipments.EquippedItem;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,6 +16,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -56,6 +61,8 @@ public class Character {
     @JoinColumn(name = "user_id", nullable = true)
     private User user;
     
+    @OneToMany(mappedBy = "character", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<EquippedItem> equippedItems;
 }
 
 

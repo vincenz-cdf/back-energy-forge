@@ -1,5 +1,7 @@
 package com.vinz.energy.EnergyForge.dto;
 
+import java.util.Set;
+
 import com.vinz.energy.EnergyForge.db.enums.CharacterType;
 
 import lombok.AllArgsConstructor;
@@ -23,4 +25,5 @@ public class CharacterDto {
 	private CharacterType characterType;
 	private Long userId;
 	
+	private Set<EquipmentDto> equipment;
 }

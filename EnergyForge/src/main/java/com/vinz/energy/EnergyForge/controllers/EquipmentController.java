@@ -19,6 +19,7 @@ import com.vinz.energy.EnergyForge.db.equipments.EquippedItem;
 import com.vinz.energy.EnergyForge.dto.ArmorDto;
 import com.vinz.energy.EnergyForge.dto.EquipmentDto;
 import com.vinz.energy.EnergyForge.dto.EquippedItemDto;
+import com.vinz.energy.EnergyForge.dto.WeaponDto;
 import com.vinz.energy.EnergyForge.service.EquipmentService;
 import com.vinz.energy.EnergyForge.service.Global;
 
@@ -31,8 +32,8 @@ public class EquipmentController {
 	@Autowired
 	private Global global;
 	
-	@GetMapping("/equipments")
-	public ResponseEntity<Map<String, Object>> showAllEquipments() {
+	@GetMapping("/armors")
+	public ResponseEntity<Map<String, Object>> showAllArmors() {
 	    try {
 	        Long userId = global.getCurrentUserId();
 	        
@@ -48,6 +49,28 @@ public class EquipmentController {
 	        throw new ResponseStatusException(
 	            HttpStatus.INTERNAL_SERVER_ERROR, 
 	            "Unable to retrieve armors",
+	            e
+	        );
+	    }
+	}
+	
+	@GetMapping("/weapons")
+	public ResponseEntity<Map<String, Object>> showAllWeapons() {
+	    try {
+	        Long userId = global.getCurrentUserId();
+	        
+	        //D'un user
+	        List<WeaponDto> weapons = equipmentService.getAllWeapons();
+	        
+	        Map<String, Object> response = new HashMap<>();
+	        response.put("status", "success");
+	        response.put("message", "Habits successfully retrieved.");
+	        response.put("data", weapons); 
+	        return new ResponseEntity<>(response, HttpStatus.OK);
+	    } catch (Exception e) {
+	        throw new ResponseStatusException(
+	            HttpStatus.INTERNAL_SERVER_ERROR, 
+	            "Unable to retrieve weapons",
 	            e
 	        );
 	    }

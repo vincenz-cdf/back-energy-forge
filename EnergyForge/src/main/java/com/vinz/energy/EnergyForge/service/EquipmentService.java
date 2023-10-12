@@ -13,15 +13,19 @@ import com.vinz.energy.EnergyForge.dao.ArmorDao;
 import com.vinz.energy.EnergyForge.dao.CharacterDao;
 import com.vinz.energy.EnergyForge.dao.EquipmentDao;
 import com.vinz.energy.EnergyForge.dao.EquippedItemDao;
+import com.vinz.energy.EnergyForge.dao.WeaponDao;
 import com.vinz.energy.EnergyForge.db.equipments.Armor;
 import com.vinz.energy.EnergyForge.db.equipments.Equipment;
 import com.vinz.energy.EnergyForge.db.equipments.EquipmentSlot;
 import com.vinz.energy.EnergyForge.db.equipments.EquippedItem;
+import com.vinz.energy.EnergyForge.db.equipments.Weapon;
 import com.vinz.energy.EnergyForge.dto.ArmorDto;
 import com.vinz.energy.EnergyForge.dto.EquippedItemDto;
+import com.vinz.energy.EnergyForge.dto.WeaponDto;
 import com.vinz.energy.EnergyForge.exception.AppException;
 import com.vinz.energy.EnergyForge.mappers.ArmorMapper;
 import com.vinz.energy.EnergyForge.mappers.EquippedItemMapper;
+import com.vinz.energy.EnergyForge.mappers.WeaponMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -33,7 +37,13 @@ public class EquipmentService {
 	private ArmorDao armorDao;
 	
 	@Autowired
+	private WeaponDao weaponDao;
+	
+	@Autowired
 	private ArmorMapper armorMapper;
+	
+	@Autowired
+	private WeaponMapper weaponMapper;
 	
 	@Autowired
 	private CharacterDao characterDao;
@@ -53,6 +63,14 @@ public class EquipmentService {
         List<Armor> armors = armorDao.findAll();
         return armorMapper.toDtoList(armors);
 	}
+	
+	@Transactional
+	public List<WeaponDto> getAllWeapons() {
+        List<Weapon> weapons = weaponDao.findAll();
+        return weaponMapper.toDtoList(weapons);
+	}
+	
+	
 	
 	@Transactional
 	public EquippedItemDto equipCharacterWithSpecificGear(Long charId, Long gearId) {

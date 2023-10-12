@@ -2,12 +2,12 @@ package com.vinz.energy.EnergyForge.db.equipments;
 
 import java.util.Set;
 
+import org.hibernate.annotations.Type;
+
 import com.vinz.energy.EnergyForge.db.equipments.abilities.WeaponAbility;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;

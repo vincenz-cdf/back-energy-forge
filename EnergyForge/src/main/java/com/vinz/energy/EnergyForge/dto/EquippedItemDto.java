@@ -15,6 +15,9 @@ public class EquippedItemDto {
     private Long id;
     private Long characterId;
     private Long equipmentId;
+    private String equipmentName;
+    private Integer equipmentValue;
+    private String equipmentSpritePath;
     private EquipmentSlot slot;
     
 }

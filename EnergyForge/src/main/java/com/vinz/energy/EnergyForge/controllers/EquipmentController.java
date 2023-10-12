@@ -17,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.vinz.energy.EnergyForge.db.equipments.EquippedItem;
 import com.vinz.energy.EnergyForge.dto.ArmorDto;
+import com.vinz.energy.EnergyForge.dto.EquipmentDto;
 import com.vinz.energy.EnergyForge.dto.EquippedItemDto;
 import com.vinz.energy.EnergyForge.service.EquipmentService;
 import com.vinz.energy.EnergyForge.service.Global;
@@ -53,13 +54,14 @@ public class EquipmentController {
 	}
 	
 	@PostMapping("/equipments/{charId}")
-	public ResponseEntity<Map<String, String>> equipCharacterWithGear(@PathVariable Long charId, @RequestBody Long gearId) {
+	public ResponseEntity<Map<String, Object>> equipCharacterWithGear(@PathVariable Long charId, @RequestBody Long gearId) {
 	    try {
-	        equipmentService.equipCharacterWithSpecificGear(charId, gearId);
+	        EquippedItemDto equippedItem = equipmentService.equipCharacterWithSpecificGear(charId, gearId);
 	        
-            Map<String, String> response = new HashMap<>();
+            Map<String, Object> response = new HashMap<>();
             response.put("status", "success");
             response.put("message", "Gear successfully equipped.");
+            response.put("data", equippedItem);
             return new ResponseEntity<>(response, HttpStatus.OK);
 	    } catch (Exception e) {
 	        throw new ResponseStatusException(

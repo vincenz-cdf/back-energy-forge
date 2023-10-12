@@ -1,9 +1,9 @@
 package com.vinz.energy.EnergyForge.service;
 
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -15,6 +15,7 @@ import com.vinz.energy.EnergyForge.dao.EquipmentDao;
 import com.vinz.energy.EnergyForge.dao.EquippedItemDao;
 import com.vinz.energy.EnergyForge.db.equipments.Armor;
 import com.vinz.energy.EnergyForge.db.equipments.Equipment;
+import com.vinz.energy.EnergyForge.db.equipments.EquipmentSlot;
 import com.vinz.energy.EnergyForge.db.equipments.EquippedItem;
 import com.vinz.energy.EnergyForge.dto.ArmorDto;
 import com.vinz.energy.EnergyForge.dto.EquippedItemDto;
@@ -43,6 +44,7 @@ public class EquipmentService {
 	@Autowired
 	private EquippedItemMapper equippedItemMapper;
 	
+	
 	@Autowired
 	private EquipmentDao equipmentDao;
 
@@ -53,15 +55,29 @@ public class EquipmentService {
 	}
 	
 	@Transactional
-	public void equipCharacterWithSpecificGear(Long charId, Long gearId) {
+	public EquippedItemDto equipCharacterWithSpecificGear(Long charId, Long gearId) {
 		
-		EquippedItem equippedItem = new EquippedItem();
+		EquippedItem equippedItem;
 		
 		com.vinz.energy.EnergyForge.db.Character character = characterDao.findById(charId)
                 .orElseThrow(() -> new AppException("Unknown character", HttpStatus.NOT_FOUND));
 		
+		
 		Equipment equipment = equipmentDao.findById(gearId)
                 .orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND));
+		
+		//REFACTORISER
+		Optional<EquippedItem> firstHeadItemOptional = character.getEquippedItems().stream()
+			    .filter(element -> EquipmentSlot.HEAD.equals(element.getSlot()))
+			    .findFirst();
+
+		if(firstHeadItemOptional.isPresent()) {
+			equippedItem = firstHeadItemOptional.get();
+		} else {
+    		equippedItem = new EquippedItem();
+        }
+		//REFACTORISER
+		
 
 		equippedItem.setCharacter(character);
 		equippedItem.setEquipment(equipment);
@@ -69,7 +85,7 @@ public class EquipmentService {
 		
 		equippedItemDao.save(equippedItem);
 		
-		Hibernate.initialize(character.getEquippedItems().size());
+		return equippedItemMapper.toDto(equippedItem);
 		
 	}
 }

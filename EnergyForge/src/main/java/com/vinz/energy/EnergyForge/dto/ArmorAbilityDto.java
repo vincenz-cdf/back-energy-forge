@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class ArmorAbilityDto {
 	private Long id;
-	private ArmorDto dto;
+	private ArmorDto armor;
 	private EquipmentAbilityDto ability;
 	
 }

@@ -2,14 +2,10 @@ package com.vinz.energy.EnergyForge.dto;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import com.vinz.energy.EnergyForge.db.equipments.EquipmentSlot;
-import com.vinz.energy.EnergyForge.db.equipments.EquippedItem;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
@@ -71,6 +67,5 @@ public class EquipmentDto {
 	public void setEquippedItems(List<EquippedItemDto> equippedItems) {
 		this.equippedItems = equippedItems;
 	}
-
 	
 }

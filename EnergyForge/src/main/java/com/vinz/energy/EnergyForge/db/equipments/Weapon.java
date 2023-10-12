@@ -8,6 +8,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
@@ -25,8 +27,11 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "weapon")
 public class Weapon {
-
+	
+	
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     @OneToOne
     @JoinColumn(name = "equipment_id", referencedColumnName = "id")
     private Equipment equipment;
@@ -35,9 +40,6 @@ public class Weapon {
     private Integer atkValue;
     @Column(nullable = false)
     private Boolean isMelee;
-    @Enumerated(EnumType.STRING)
-    @Column(name = "slot", nullable = false)
-    private EquipmentSlot slot;
     
     @OneToMany(mappedBy = "weapon")
     private Set<WeaponAbility> weaponAbilities;

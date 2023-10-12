@@ -1,5 +1,7 @@
 package com.vinz.energy.EnergyForge.db;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import com.vinz.energy.EnergyForge.db.enums.CharacterType;
@@ -23,10 +25,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@Data
 @Entity
 @Table(name = "character")
 public class Character {
@@ -62,7 +60,89 @@ public class Character {
     private User user;
     
     @OneToMany(mappedBy = "character", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<EquippedItem> equippedItems;
+    private List<EquippedItem> equippedItems = new ArrayList<EquippedItem>();
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Integer getLevel() {
+		return level;
+	}
+
+	public void setLevel(Integer level) {
+		this.level = level;
+	}
+
+	public Integer getHp() {
+		return hp;
+	}
+
+	public void setHp(Integer hp) {
+		this.hp = hp;
+	}
+
+	public Integer getArmor() {
+		return armor;
+	}
+
+	public void setArmor(Integer armor) {
+		this.armor = armor;
+	}
+
+	public Integer getAtk() {
+		return atk;
+	}
+
+	public void setAtk(Integer atk) {
+		this.atk = atk;
+	}
+
+	public String getSpritePath() {
+		return spritePath;
+	}
+
+	public void setSpritePath(String spritePath) {
+		this.spritePath = spritePath;
+	}
+
+	public CharacterType getCharacterType() {
+		return characterType;
+	}
+
+	public void setCharacterType(CharacterType characterType) {
+		this.characterType = characterType;
+	}
+
+	public User getUser() {
+		return user;
+	}
+
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	public List<EquippedItem> getEquippedItems() {
+		return equippedItems;
+	}
+
+	public void setEquippedItems(List<EquippedItem> equippedItems) {
+		this.equippedItems = equippedItems;
+	}
+    
+    
 }
 
 

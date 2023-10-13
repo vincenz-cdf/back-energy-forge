@@ -3,7 +3,9 @@ package com.vinz.energy.EnergyForge.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.ToString;
 
+@ToString
 public class WeaponDto {
     private Integer id;
     private EquipmentDto equipment;

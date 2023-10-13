@@ -15,12 +15,16 @@ public interface WeaponAbilityMapper {
     @Mapping(source = "ability.id", target = "equipmentAbilityId")
     @Mapping(source = "ability.name", target = "equipmentAbilityName")
     @Mapping(source = "ability.description", target = "equipmentAbilityDescription")
+    @Mapping(source = "ability.value", target = "equipmentAbilityValue")
+    @Mapping(source = "ability.effect", target = "equipmentAbilityEffect")
     WeaponAbilityDto toDto(WeaponAbility weaponAbility);
 
     @Mapping(source = "weaponId", target = "weapon.id")
     @Mapping(target = "ability.id", source = "equipmentAbilityId")
     @Mapping(target = "ability.name", source = "equipmentAbilityName")
     @Mapping(target = "ability.description", source = "equipmentAbilityDescription")
+    @Mapping(target = "ability.value", source = "equipmentAbilityValue")
+    @Mapping(target = "ability.effect", source = "equipmentAbilityEffect")
     WeaponAbility toEntity(WeaponAbilityDto weaponAbilityDto);
 
     List<WeaponAbilityDto> toDtoList(List<WeaponAbility> weaponAbilities);

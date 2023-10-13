@@ -76,7 +76,7 @@ public class UserService {
     private void createFirstCharacterForNewAccount(Long userId) {
     	Character character = new Character();
     	character.setArmor(0);
-    	character.setAtk(0);
+    	character.setAtk(8);
     	character.setHp(50);
     	character.setMaxHp(50);
     	character.setMaxArmor(0);

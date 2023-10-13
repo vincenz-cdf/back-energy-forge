@@ -101,9 +101,17 @@ public class EquipmentService {
 	}
 
 	private Optional<EquippedItem> findExistingEquippedItemBySlot(com.vinz.energy.EnergyForge.db.Character character, EquipmentSlot slot) {
-	    return character.getEquippedItems().stream()
-	            .filter(element -> slot.equals(element.getSlot()))
-	            .findFirst();
+		if(slot == EquipmentSlot.BODY || slot == EquipmentSlot.HEAD) {
+		    return character.getEquippedItems().stream()
+		            .filter(element -> slot.equals(element.getSlot()))
+		            .findFirst();
+		} else if(slot == EquipmentSlot.LEFTHAND || slot == EquipmentSlot.ZWEIHAND) {
+		    return character.getEquippedItems().stream()
+		            .filter(element -> element.getSlot() == EquipmentSlot.LEFTHAND || element.getSlot() == EquipmentSlot.ZWEIHAND)
+		            .findFirst();
+		}
+		
+		return null;
 	}
 
 }

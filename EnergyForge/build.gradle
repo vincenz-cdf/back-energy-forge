@@ -38,6 +38,13 @@ dependencies {
 	
 	implementation 'org.springframework.boot:spring-boot-starter-logging:3.1.4'
 	implementation 'com.vladmihalcea:hibernate-types-60:2.21.1'
+	
+	// https://mvnrepository.com/artifact/com.h2database/h2
+	testImplementation 'com.h2database:h2:2.2.224'
+	
+	// https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+	
 }
 
 tasks.named('test') {

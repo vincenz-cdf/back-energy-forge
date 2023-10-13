@@ -21,6 +21,8 @@ public class CharacterDto {
 	private Integer level;
 	private Integer hp;
 	private Integer armor;
+	private Integer maxHp;
+	private Integer maxArmor;
 	private Integer atk;
 	private String spritePath;
 	private CharacterType characterType;
@@ -106,6 +108,22 @@ public class CharacterDto {
 
 	public void setEquippedItems(List<EquippedItemDto> equippedItems) {
 		this.equippedItems = equippedItems;
+	}
+
+	public Integer getMaxHp() {
+		return maxHp;
+	}
+
+	public void setMaxHp(Integer maxHp) {
+		this.maxHp = maxHp;
+	}
+
+	public Integer getMaxArmor() {
+		return maxArmor;
+	}
+
+	public void setMaxArmor(Integer maxArmor) {
+		this.maxArmor = maxArmor;
 	}
 	
 	

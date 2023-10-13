@@ -19,7 +19,6 @@ public class ScheduledTasks {
     @Transactional
     @Scheduled(cron = "0 0 0 * * ?")
     public void resetHabitCheckedStatus() {
-    	System.out.println("CRON ACTION");
         List<Habit> checkedHabits = habitDao.findByChecked(true);
         checkedHabits.forEach(habit -> habit.setChecked(false));
         habitDao.saveAll(checkedHabits);

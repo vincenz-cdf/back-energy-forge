@@ -78,6 +78,8 @@ public class UserService {
     	character.setArmor(0);
     	character.setAtk(0);
     	character.setHp(50);
+    	character.setMaxHp(50);
+    	character.setMaxArmor(0);
     	character.setLevel(1);
     	character.setCharacterType(CharacterType.HERO);
     	character.setName(Global.defaultCharNames[random.nextInt(Global.defaultCharNames.length)]);

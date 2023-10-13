@@ -1,8 +1,8 @@
 package com.vinz.energy.EnergyForge.db.equipments;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.hibernate.annotations.Type;
 
 import com.vinz.energy.EnergyForge.db.equipments.abilities.WeaponAbility;
 
@@ -15,15 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@Data
 @Entity
 @Table(name = "weapon")
 public class Weapon {
@@ -42,7 +34,48 @@ public class Weapon {
     private Boolean isMelee;
     
     @OneToMany(mappedBy = "weapon")
-    private Set<WeaponAbility> weaponAbilities;
+    private List<WeaponAbility> weaponAbilities = new ArrayList<WeaponAbility>();
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public Equipment getEquipment() {
+		return equipment;
+	}
+
+	public void setEquipment(Equipment equipment) {
+		this.equipment = equipment;
+	}
+
+	public Integer getAtkValue() {
+		return atkValue;
+	}
+
+	public void setAtkValue(Integer atkValue) {
+		this.atkValue = atkValue;
+	}
+
+	public Boolean getIsMelee() {
+		return isMelee;
+	}
+
+	public void setIsMelee(Boolean isMelee) {
+		this.isMelee = isMelee;
+	}
+
+	public List<WeaponAbility> getWeaponAbilities() {
+		return weaponAbilities;
+	}
+
+	public void setWeaponAbilities(List<WeaponAbility> weaponAbilities) {
+		this.weaponAbilities = weaponAbilities;
+	}
+
     
     
 }

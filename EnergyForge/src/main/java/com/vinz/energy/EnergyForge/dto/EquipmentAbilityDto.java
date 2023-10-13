@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class EquipmentAbilityDto {
 
-	private Long id;
+	private Integer id;
 	private String name;
 	private String description;
 	private Integer value;

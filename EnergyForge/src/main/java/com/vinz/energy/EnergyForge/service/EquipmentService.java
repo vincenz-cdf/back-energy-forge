@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import com.vinz.energy.EnergyForge.db.equipments.EquipmentSlot;
 import com.vinz.energy.EnergyForge.db.equipments.EquippedItem;
 import com.vinz.energy.EnergyForge.db.equipments.Weapon;
 import com.vinz.energy.EnergyForge.dto.ArmorDto;
+import com.vinz.energy.EnergyForge.dto.CharacterDto;
 import com.vinz.energy.EnergyForge.dto.EquippedItemDto;
 import com.vinz.energy.EnergyForge.dto.WeaponDto;
 import com.vinz.energy.EnergyForge.exception.AppException;
@@ -54,6 +56,8 @@ public class EquipmentService {
 	@Autowired
 	private EquippedItemMapper equippedItemMapper;
 	
+	@Autowired
+	private CharacterService characterService;
 	
 	@Autowired
 	private EquipmentDao equipmentDao;
@@ -73,37 +77,33 @@ public class EquipmentService {
 	
 	
 	@Transactional
-	public EquippedItemDto equipCharacterWithSpecificGear(Long charId, Long gearId) {
-		
-		EquippedItem equippedItem;
-		
-		com.vinz.energy.EnergyForge.db.Character character = characterDao.findById(charId)
-                .orElseThrow(() -> new AppException("Unknown character", HttpStatus.NOT_FOUND));
-		
-		
-		Equipment equipment = equipmentDao.findById(gearId)
-                .orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND));
-		
-		//REFACTORISER
-		Optional<EquippedItem> firstHeadItemOptional = character.getEquippedItems().stream()
-			    .filter(element -> EquipmentSlot.HEAD.equals(element.getSlot()))
-			    .findFirst();
+	public CharacterDto equipCharacterWithSpecificGear(Long charId, Long gearId) {
 
-		if(firstHeadItemOptional.isPresent()) {
-			equippedItem = firstHeadItemOptional.get();
-		} else {
-    		equippedItem = new EquippedItem();
-        }
-		//REFACTORISER
-		
+	    EquippedItem equippedItem = new EquippedItem();
 
-		equippedItem.setCharacter(character);
-		equippedItem.setEquipment(equipment);
-		equippedItem.setSlot(equipment.getSlot());
-		
-		equippedItemDao.save(equippedItem);
-		
-		return equippedItemMapper.toDto(equippedItem);
-		
+	    com.vinz.energy.EnergyForge.db.Character character = characterDao.findById(charId)
+	            .orElseThrow(() -> new AppException("Unknown character", HttpStatus.NOT_FOUND));
+
+	    Equipment equipment = equipmentDao.findById(gearId)
+	            .orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND));
+
+	    equippedItem = findExistingEquippedItemBySlot(character, equipment.getSlot()).orElse(equippedItem);
+
+	    equippedItem.setCharacter(character);
+	    equippedItem.setEquipment(equipment);
+	    equippedItem.setSlot(equipment.getSlot());
+
+	    equippedItemDao.save(equippedItem);
+	    
+	    
+	    return characterService.characterStatsUpdateAfterEquip(charId, equipment, equippedItem);
+
 	}
+
+	private Optional<EquippedItem> findExistingEquippedItemBySlot(com.vinz.energy.EnergyForge.db.Character character, EquipmentSlot slot) {
+	    return character.getEquippedItems().stream()
+	            .filter(element -> slot.equals(element.getSlot()))
+	            .findFirst();
+	}
+
 }

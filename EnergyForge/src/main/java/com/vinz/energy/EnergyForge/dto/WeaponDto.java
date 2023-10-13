@@ -1,18 +1,19 @@
 package com.vinz.energy.EnergyForge.dto;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class WeaponDto {
-    private Long id;
+    private Integer id;
     private EquipmentDto equipment;
     private Integer atkValue;
     private Boolean isMelee;
-    private Set<WeaponAbilityDto> weaponAbilities;
-	public Long getId() {
+    private List<WeaponAbilityDto> weaponAbilities = new ArrayList<WeaponAbilityDto>();
+	public Integer getId() {
 		return id;
 	}
-	public void setId(Long id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 	public EquipmentDto getEquipment() {
@@ -33,12 +34,12 @@ public class WeaponDto {
 	public void setIsMelee(Boolean isMelee) {
 		this.isMelee = isMelee;
 	}
-	public Set<WeaponAbilityDto> getWeaponAbilities() {
+	public List<WeaponAbilityDto> getWeaponAbilities() {
 		return weaponAbilities;
 	}
-	public void setWeaponAbilities(Set<WeaponAbilityDto> weaponAbilities) {
+	public void setWeaponAbilities(List<WeaponAbilityDto> weaponAbilities) {
 		this.weaponAbilities = weaponAbilities;
 	}
-    
+	
     
 }

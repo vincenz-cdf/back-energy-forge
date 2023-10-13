@@ -11,12 +11,16 @@ import com.vinz.energy.EnergyForge.dto.WeaponAbilityDto;
 @Mapper(componentModel = "spring", uses = {WeaponMapper.class, EquipmentAbilityMapper.class, EquippedItemMapper.class,})
 public interface WeaponAbilityMapper {
 	
-    @Mapping(source = "weapon", target = "weapon")
-    @Mapping(source = "ability", target = "ability")
+    @Mapping(source = "weapon.id", target = "weaponId")
+    @Mapping(source = "ability.id", target = "equipmentAbilityId")
+    @Mapping(source = "ability.name", target = "equipmentAbilityName")
+    @Mapping(source = "ability.description", target = "equipmentAbilityDescription")
     WeaponAbilityDto toDto(WeaponAbility weaponAbility);
 
-    @Mapping(source = "weapon", target = "weapon")
-    @Mapping(source = "ability", target = "ability")
+    @Mapping(source = "weaponId", target = "weapon.id")
+    @Mapping(target = "ability.id", source = "equipmentAbilityId")
+    @Mapping(target = "ability.name", source = "equipmentAbilityName")
+    @Mapping(target = "ability.description", source = "equipmentAbilityDescription")
     WeaponAbility toEntity(WeaponAbilityDto weaponAbilityDto);
 
     List<WeaponAbilityDto> toDtoList(List<WeaponAbility> weaponAbilities);

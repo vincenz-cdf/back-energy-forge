@@ -2,27 +2,45 @@ package com.vinz.energy.EnergyForge.dto;
 
 
 public class WeaponAbilityDto {
-	private Long id;
-	private WeaponDto weapon;
-	private EquipmentAbilityDto ability;
-	public Long getId() {
+	private Integer id;
+
+	private Long weaponId;
+	private Integer equipmentAbilityId;
+	
+	private String equipmentAbilityName;
+	private String equipmentAbilityDescription;
+	
+	public Integer getId() {
 		return id;
 	}
-	public void setId(Long id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
-	public WeaponDto getWeapon() {
-		return weapon;
+	public Long getWeaponId() {
+		return weaponId;
 	}
-	public void setWeapon(WeaponDto weapon) {
-		this.weapon = weapon;
+	public void setWeaponId(Long weaponId) {
+		this.weaponId = weaponId;
 	}
-	public EquipmentAbilityDto getAbility() {
-		return ability;
+	public Integer getEquipmentAbilityId() {
+		return equipmentAbilityId;
 	}
-	public void setAbility(EquipmentAbilityDto ability) {
-		this.ability = ability;
+	public void setEquipmentAbilityId(Integer equipmentAbilityId) {
+		this.equipmentAbilityId = equipmentAbilityId;
 	}
+	public String getEquipmentAbilityName() {
+		return equipmentAbilityName;
+	}
+	public void setEquipmentAbilityName(String equipmentAbilityName) {
+		this.equipmentAbilityName = equipmentAbilityName;
+	}
+	public String getEquipmentAbilityDescription() {
+		return equipmentAbilityDescription;
+	}
+	public void setEquipmentAbilityDescription(String equipmentAbilityDescription) {
+		this.equipmentAbilityDescription = equipmentAbilityDescription;
+	}
+
 	
 	
 }

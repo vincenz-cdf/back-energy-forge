@@ -24,7 +24,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
+@ToString
 @Entity
 @Table(name = "character")
 public class Character {
@@ -44,6 +46,12 @@ public class Character {
     
     @Column(nullable = false)
     private Integer armor;
+    
+    @Column(nullable = false)
+    private Integer maxHp;
+    
+    @Column(nullable = false)
+    private Integer maxArmor;
 
     @Column(nullable = false)
     private Integer atk;
@@ -140,6 +148,22 @@ public class Character {
 
 	public void setEquippedItems(List<EquippedItem> equippedItems) {
 		this.equippedItems = equippedItems;
+	}
+
+	public Integer getMaxHp() {
+		return maxHp;
+	}
+
+	public void setMaxHp(Integer maxHp) {
+		this.maxHp = maxHp;
+	}
+
+	public Integer getMaxArmor() {
+		return maxArmor;
+	}
+
+	public void setMaxArmor(Integer maxArmor) {
+		this.maxArmor = maxArmor;
 	}
     
     

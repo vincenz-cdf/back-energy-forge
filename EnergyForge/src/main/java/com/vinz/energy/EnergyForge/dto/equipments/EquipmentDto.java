@@ -1,9 +1,10 @@
-package com.vinz.energy.EnergyForge.dto;
+package com.vinz.energy.EnergyForge.dto.equipments;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.vinz.energy.EnergyForge.db.equipments.EquipmentSlot;
+import com.vinz.energy.EnergyForge.dto.UserItemDto;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,7 @@ public class EquipmentDto {
 	private EquipmentSlot slot;
 	
 	private List<EquippedItemDto> equippedItems = new ArrayList<EquippedItemDto>();
+	private List<UserItemDto> userItems = new ArrayList<UserItemDto>();
 
 	public Long getId() {
 		return id;
@@ -67,5 +69,14 @@ public class EquipmentDto {
 	public void setEquippedItems(List<EquippedItemDto> equippedItems) {
 		this.equippedItems = equippedItems;
 	}
+
+	public List<UserItemDto> getUserItems() {
+		return userItems;
+	}
+
+	public void setUserItems(List<UserItemDto> userItems) {
+		this.userItems = userItems;
+	}
+	
 	
 }

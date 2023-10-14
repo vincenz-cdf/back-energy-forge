@@ -14,9 +14,9 @@ import com.vinz.energy.EnergyForge.dao.UserDao;
 import com.vinz.energy.EnergyForge.db.Character;
 import com.vinz.energy.EnergyForge.db.User;
 import com.vinz.energy.EnergyForge.db.enums.CharacterType;
-import com.vinz.energy.EnergyForge.dto.CredentialsDto;
-import com.vinz.energy.EnergyForge.dto.SignUpDto;
 import com.vinz.energy.EnergyForge.dto.UserDto;
+import com.vinz.energy.EnergyForge.dto.auth.CredentialsDto;
+import com.vinz.energy.EnergyForge.dto.auth.SignUpDto;
 import com.vinz.energy.EnergyForge.exception.AppException;
 import com.vinz.energy.EnergyForge.mappers.UserMapper;
 
@@ -45,7 +45,7 @@ public class UserService {
                 .orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
 
         if (passwordEncoder.matches(CharBuffer.wrap(credentialsDto.password()), user.getPassword())) {
-            return userMapper.toUserDto(user);
+            return userMapper.toDto(user);
         }
         throw new AppException("Invalid password", HttpStatus.BAD_REQUEST);
     }
@@ -64,13 +64,13 @@ public class UserService {
         
         createFirstCharacterForNewAccount(savedUser.getId());
 
-        return userMapper.toUserDto(savedUser);
+        return userMapper.toDto(savedUser);
     }
     
     public UserDto findByLogin(String login) {
         User user = userDao.findByLogin(login)
                 .orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
-        return userMapper.toUserDto(user);
+        return userMapper.toDto(user);
     }
     
     private void createFirstCharacterForNewAccount(Long userId) {

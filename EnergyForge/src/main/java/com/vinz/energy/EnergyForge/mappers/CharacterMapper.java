@@ -3,7 +3,6 @@ package com.vinz.energy.EnergyForge.mappers;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.hibernate.Hibernate;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

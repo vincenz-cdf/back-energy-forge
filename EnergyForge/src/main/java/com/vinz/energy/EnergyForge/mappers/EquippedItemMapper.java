@@ -4,11 +4,9 @@ import java.util.List;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.NullValueCheckStrategy;
-import org.mapstruct.NullValueMappingStrategy;
 
 import com.vinz.energy.EnergyForge.db.equipments.EquippedItem;
-import com.vinz.energy.EnergyForge.dto.EquippedItemDto;
+import com.vinz.energy.EnergyForge.dto.equipments.EquippedItemDto;
 
 @Mapper(componentModel = "spring")
 public interface EquippedItemMapper {

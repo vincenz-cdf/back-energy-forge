@@ -4,6 +4,7 @@ package com.vinz.energy.EnergyForge.db.equipments;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.vinz.energy.EnergyForge.db.UserItem;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -38,6 +39,9 @@ public class Equipment {
     
     @OneToMany(mappedBy = "equipment")
     private List<EquippedItem> equippedItems = new ArrayList<EquippedItem>();
+    
+    @OneToMany(mappedBy = "equipment")
+    private List<UserItem> userItems = new ArrayList<UserItem>();
 
 
 	public Long getId() {
@@ -86,6 +90,14 @@ public class Equipment {
 
 	public void setEquippedItems(List<EquippedItem> equippedItems) {
 		this.equippedItems = equippedItems;
+	}
+
+	public List<UserItem> getUserItems() {
+		return userItems;
+	}
+
+	public void setUserItems(List<UserItem> userItems) {
+		this.userItems = userItems;
 	}
 
     

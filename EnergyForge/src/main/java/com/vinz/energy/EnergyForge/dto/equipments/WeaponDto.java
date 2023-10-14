@@ -1,7 +1,9 @@
-package com.vinz.energy.EnergyForge.dto;
+package com.vinz.energy.EnergyForge.dto.equipments;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.vinz.energy.EnergyForge.dto.equipments.abilities.WeaponAbilityDto;
 
 import lombok.ToString;
 

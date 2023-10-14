@@ -27,7 +27,7 @@ public class ProfileService {
     public UserDto findById(Long id) {
         User user = userDao.findById(id)
                 .orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
-        return userMapper.toUserDto(user);
+        return userMapper.toDto(user);
     }
     
     public Long getCurrentUserId() {

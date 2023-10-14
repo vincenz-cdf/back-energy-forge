@@ -9,9 +9,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.vinz.energy.EnergyForge.config.UserAuthProvider;
-import com.vinz.energy.EnergyForge.dto.CredentialsDto;
-import com.vinz.energy.EnergyForge.dto.SignUpDto;
 import com.vinz.energy.EnergyForge.dto.UserDto;
+import com.vinz.energy.EnergyForge.dto.auth.CredentialsDto;
+import com.vinz.energy.EnergyForge.dto.auth.SignUpDto;
 import com.vinz.energy.EnergyForge.service.UserService;
 
 import java.net.URI;

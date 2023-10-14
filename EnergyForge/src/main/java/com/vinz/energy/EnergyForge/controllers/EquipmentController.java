@@ -3,7 +3,6 @@ package com.vinz.energy.EnergyForge.controllers;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,12 +14,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.vinz.energy.EnergyForge.db.equipments.EquippedItem;
-import com.vinz.energy.EnergyForge.dto.ArmorDto;
 import com.vinz.energy.EnergyForge.dto.CharacterDto;
-import com.vinz.energy.EnergyForge.dto.EquipmentDto;
-import com.vinz.energy.EnergyForge.dto.EquippedItemDto;
-import com.vinz.energy.EnergyForge.dto.WeaponDto;
+import com.vinz.energy.EnergyForge.dto.equipments.ArmorDto;
+import com.vinz.energy.EnergyForge.dto.equipments.WeaponDto;
 import com.vinz.energy.EnergyForge.service.EquipmentService;
 import com.vinz.energy.EnergyForge.service.Global;
 
@@ -39,7 +35,7 @@ public class EquipmentController {
 	        Long userId = global.getCurrentUserId();
 	        
 	        //D'un user
-	        List<ArmorDto> armors = equipmentService.getAllArmors();
+	        List<ArmorDto> armors = equipmentService.getOwnedArmors(userId);
 	        
 	        Map<String, Object> response = new HashMap<>();
 	        response.put("status", "success");
@@ -61,7 +57,7 @@ public class EquipmentController {
 	        Long userId = global.getCurrentUserId();
 	        
 	        //D'un user
-	        List<WeaponDto> weapons = equipmentService.getAllWeapons();
+	        List<WeaponDto> weapons = equipmentService.getOwnedWeapons(userId);
 	        
 	        Map<String, Object> response = new HashMap<>();
 	        response.put("status", "success");

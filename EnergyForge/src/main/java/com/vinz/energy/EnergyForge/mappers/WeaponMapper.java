@@ -6,9 +6,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import com.vinz.energy.EnergyForge.db.equipments.Weapon;
-import com.vinz.energy.EnergyForge.dto.WeaponDto;
+import com.vinz.energy.EnergyForge.dto.equipments.WeaponDto;
 
-@Mapper(componentModel = "spring", uses = {EquippedItemMapper.class, WeaponAbilityMapper.class})
+@Mapper(componentModel = "spring", uses = {EquippedItemMapper.class, WeaponAbilityMapper.class, UserItemMapper.class})
 public interface WeaponMapper {
 	@Mapping(source = "weaponAbilities", target = "weaponAbilities")
 	WeaponDto toDto(Weapon weapon);

@@ -1,4 +1,4 @@
-package com.vinz.energy.EnergyForge.dto;
+package com.vinz.energy.EnergyForge.dto.equipments.abilities;
 
 import com.vinz.energy.EnergyForge.db.enums.Effect;
 

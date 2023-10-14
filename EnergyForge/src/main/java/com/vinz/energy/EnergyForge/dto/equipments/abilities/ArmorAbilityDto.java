@@ -1,5 +1,7 @@
-package com.vinz.energy.EnergyForge.dto;
+package com.vinz.energy.EnergyForge.dto.equipments.abilities;
 
+
+import com.vinz.energy.EnergyForge.dto.equipments.ArmorDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -2,14 +2,11 @@ package com.vinz.energy.EnergyForge.dto;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import com.vinz.energy.EnergyForge.db.enums.CharacterType;
-import com.vinz.energy.EnergyForge.db.equipments.EquippedItem;
+import com.vinz.energy.EnergyForge.dto.equipments.EquippedItemDto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 

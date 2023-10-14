@@ -1,8 +1,8 @@
-package com.vinz.energy.EnergyForge.dto;
+package com.vinz.energy.EnergyForge.dto.equipments;
 
 import java.util.Set;
 
-import com.vinz.energy.EnergyForge.db.equipments.EquipmentSlot;
+import com.vinz.energy.EnergyForge.dto.equipments.abilities.ArmorAbilityDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

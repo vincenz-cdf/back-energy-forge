@@ -2,7 +2,6 @@ package com.vinz.energy.EnergyForge.db;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import com.vinz.energy.EnergyForge.db.enums.CharacterType;
 import com.vinz.energy.EnergyForge.db.equipments.EquippedItem;
@@ -20,10 +19,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @ToString

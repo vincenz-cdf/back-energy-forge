@@ -1,14 +1,10 @@
 package com.vinz.energy.EnergyForge.combat;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
-
-import org.hibernate.Hibernate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,13 +19,12 @@ import com.vinz.energy.EnergyForge.db.Character;
 import com.vinz.energy.EnergyForge.db.User;
 import com.vinz.energy.EnergyForge.db.enums.CharacterType;
 import com.vinz.energy.EnergyForge.db.enums.Effect;
-import com.vinz.energy.EnergyForge.db.equipments.EquippedItem;
 import com.vinz.energy.EnergyForge.dto.AttackActions;
 import com.vinz.energy.EnergyForge.dto.CharacterDto;
 import com.vinz.energy.EnergyForge.dto.CumulatedTeamStats;
-import com.vinz.energy.EnergyForge.dto.EquippedItemDto;
-import com.vinz.energy.EnergyForge.dto.WeaponAbilityDto;
-import com.vinz.energy.EnergyForge.dto.WeaponDto;
+import com.vinz.energy.EnergyForge.dto.equipments.EquippedItemDto;
+import com.vinz.energy.EnergyForge.dto.equipments.WeaponDto;
+import com.vinz.energy.EnergyForge.dto.equipments.abilities.WeaponAbilityDto;
 import com.vinz.energy.EnergyForge.exception.AppException;
 import com.vinz.energy.EnergyForge.mappers.CharacterMapper;
 import com.vinz.energy.EnergyForge.mappers.WeaponMapper;

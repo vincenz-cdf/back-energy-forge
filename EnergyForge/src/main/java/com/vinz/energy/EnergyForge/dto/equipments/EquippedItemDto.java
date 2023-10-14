@@ -1,4 +1,4 @@
-package com.vinz.energy.EnergyForge.dto;
+package com.vinz.energy.EnergyForge.dto.equipments;
 
 import com.vinz.energy.EnergyForge.db.equipments.EquipmentSlot;
 

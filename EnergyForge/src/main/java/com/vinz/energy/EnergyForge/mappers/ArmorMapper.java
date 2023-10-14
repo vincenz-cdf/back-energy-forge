@@ -6,9 +6,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import com.vinz.energy.EnergyForge.db.equipments.Armor;
-import com.vinz.energy.EnergyForge.dto.ArmorDto;
+import com.vinz.energy.EnergyForge.dto.equipments.ArmorDto;
 
-@Mapper(componentModel = "spring", uses = {ArmorAbilityMapper.class, EquippedItemMapper.class,})
+@Mapper(componentModel = "spring", uses = {ArmorAbilityMapper.class, EquippedItemMapper.class, UserItemMapper.class})
 public interface ArmorMapper {
 
     @Mapping(target = "armorAbilities", ignore = true)  // Avoiding circular mapping for now

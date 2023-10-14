@@ -1,7 +1,6 @@
 package com.vinz.energy.EnergyForge.dto;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 

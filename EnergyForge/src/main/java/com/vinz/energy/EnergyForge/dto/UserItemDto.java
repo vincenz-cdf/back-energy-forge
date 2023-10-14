@@ -1,7 +1,10 @@
 package com.vinz.energy.EnergyForge.dto;
 
-public class UserItemDto {
+import java.io.Serializable;
 
+public class UserItemDto implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 	private Long Id;
 	private Long equipmentId;
 	private Long userId;

@@ -10,7 +10,7 @@ import com.vinz.energy.EnergyForge.dto.auth.SignUpDto;
 @Mapper(componentModel = "spring" , uses = {UserItemMapper.class})
 public interface UserMapper {
 	
-    //@Mapping(source = "userItems", target = "userItems")
+    @Mapping(source = "userItems", target = "userItems")
 	UserDto toDto(User user);
     
     /*

@@ -1,5 +1,6 @@
 package com.vinz.energy.EnergyForge.dto;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,8 +14,9 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class CharacterDto {
+public class CharacterDto implements Serializable {
 
+	private static final long serialVersionUID = 1L;
 	private Long id;
 	private String name;
 	private Integer level;

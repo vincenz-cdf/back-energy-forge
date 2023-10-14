@@ -1,5 +1,6 @@
 package com.vinz.energy.EnergyForge.dto.equipments;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,8 +9,9 @@ import com.vinz.energy.EnergyForge.dto.equipments.abilities.WeaponAbilityDto;
 import lombok.ToString;
 
 @ToString
-public class WeaponDto {
-    private Integer id;
+public class WeaponDto implements Serializable {
+    private static final long serialVersionUID = 1L;
+	private Integer id;
     private EquipmentDto equipment;
     private Integer atkValue;
     private Boolean isMelee;

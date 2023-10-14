@@ -1,13 +1,15 @@
 package com.vinz.energy.EnergyForge.dto;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import lombok.ToString;
 
 @ToString
-public class CumulatedTeamStats {
+public class CumulatedTeamStats implements Serializable {
 
+	private static final long serialVersionUID = 1L;
 	private Integer totalHp = 0;
 	private Integer totalArmor = 0;
 	private List<CharacterDto> yourDto = new ArrayList<CharacterDto>();

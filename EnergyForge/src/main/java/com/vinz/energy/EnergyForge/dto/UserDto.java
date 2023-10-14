@@ -1,9 +1,9 @@
 package com.vinz.energy.EnergyForge.dto;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vinz.energy.EnergyForge.db.UserItem;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,9 +14,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class UserDto {
+public class UserDto implements Serializable {
 
-    private Long id;
+    private static final long serialVersionUID = 1L;
+	private Long id;
     private String email;
     private String login;
     private String token;
@@ -24,10 +25,7 @@ public class UserDto {
     private Integer energy;
     private Integer coin;
     
-    /*
-    @Builder.Default
-    private List<UserItemDto> userItems = new ArrayList<UserItemDto>();
-    */
+    private List<UserItemDto> userItems;
     
     
     

@@ -20,6 +20,7 @@ import com.vinz.energy.EnergyForge.dto.auth.SignUpDto;
 import com.vinz.energy.EnergyForge.exception.AppException;
 import com.vinz.energy.EnergyForge.mappers.UserMapper;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -40,6 +41,7 @@ public class UserService {
 	
 	Random random = new Random();
 
+	@Transactional
     public UserDto login(CredentialsDto credentialsDto) {
         User user = userDao.findByLogin(credentialsDto.login())
                 .orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
@@ -50,6 +52,7 @@ public class UserService {
         throw new AppException("Invalid password", HttpStatus.BAD_REQUEST);
     }
     
+	@Transactional
     public UserDto register(SignUpDto userDto) {
         Optional<User> optionalUser = userDao.findByLogin(userDto.login());
 

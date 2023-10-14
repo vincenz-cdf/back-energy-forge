@@ -14,6 +14,10 @@ INSERT INTO weapon (equipment_id, atk_value, is_melee) VALUES (4, 35, TRUE);
 INSERT INTO equipment_ability (name, description, value, effect) VALUES ('Riposte', 'This weapon has 10% chance to reattack', 10, 'RIPOSTE');
 INSERT INTO weapon_ability (weapon_id, ability_id) VALUES (4, 2);
 
+
+select * from user_item
+
+select * from app_user au 
 select * from equipment;
 select * from weapon;
 select * from weapon_ability

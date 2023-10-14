@@ -1,5 +1,6 @@
 package com.vinz.energy.EnergyForge.dto.equipments;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import com.vinz.energy.EnergyForge.dto.equipments.abilities.ArmorAbilityDto;
@@ -13,7 +14,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ArmorDto {
+public class ArmorDto implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private Long id;
 	private EquipmentDto equipment;
 	private Integer armorValue;

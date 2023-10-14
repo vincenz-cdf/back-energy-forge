@@ -1,7 +1,10 @@
 package com.vinz.energy.EnergyForge.dto;
 
-public class AttackActions {
+import java.io.Serializable;
 
+public class AttackActions implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 	private Integer atkAmount;
 	private Integer atkCount = 1;
 	public Integer getAtkAmount() {

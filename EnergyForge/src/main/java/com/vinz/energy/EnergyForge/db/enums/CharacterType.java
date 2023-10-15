@@ -1,5 +1,5 @@
 package com.vinz.energy.EnergyForge.db.enums;
 
 public enum CharacterType {
-	HERO, NPC
+	HERO, BRIGAND_THUG, BRIGAND_POACHER
 }

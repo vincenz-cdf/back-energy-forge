@@ -89,6 +89,9 @@ public class UserService {
     	character.setSpritePath("assets/sprites/characters/mainchar.png");
     	character.setUser(userDao.findById(userId)
                 .orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND)));
+    	character.setExperiencePoint(0);
+    	character.setMorale(10);
+    	character.setMaxMorale(10);
     	
     	characterDao.save(character);
     }

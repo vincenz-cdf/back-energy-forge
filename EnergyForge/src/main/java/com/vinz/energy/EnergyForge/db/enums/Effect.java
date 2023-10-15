@@ -3,5 +3,14 @@ package com.vinz.energy.EnergyForge.db.enums;
 public enum Effect {
 
 	SWINGSPLIT,
-	RIPOSTE
+	RIPOSTE,
+	ROUNDSWING,
+	REPEL,
+	SHIELDSPLIT,
+	SPEARWALL,
+	KO,
+	LASH,
+	CLEAVE,
+	DARMOR,
+	PUNCTURE
 }

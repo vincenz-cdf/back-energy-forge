@@ -28,6 +28,9 @@ public class CharacterDto implements Serializable {
 	private String spritePath;
 	private CharacterType characterType;
 	private Long userId;
+	private Integer maxMorale;
+	private Integer morale;
+	private Integer experiencePoint;
 	
 	private List<EquippedItemDto> equippedItems = new ArrayList<EquippedItemDto>();
 
@@ -125,6 +128,34 @@ public class CharacterDto implements Serializable {
 
 	public void setMaxArmor(Integer maxArmor) {
 		this.maxArmor = maxArmor;
+	}
+
+	public Integer getMaxMorale() {
+		return maxMorale;
+	}
+
+	public void setMaxMorale(Integer maxMorale) {
+		this.maxMorale = maxMorale;
+	}
+
+	public Integer getMorale() {
+		return morale;
+	}
+
+	public void setMorale(Integer morale) {
+		this.morale = morale;
+	}
+
+	public Integer getExperiencePoint() {
+		return experiencePoint;
+	}
+
+	public void setExperiencePoint(Integer experiencePoint) {
+		this.experiencePoint = experiencePoint;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
 	}
 	
 	

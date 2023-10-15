@@ -64,6 +64,15 @@ public class Character {
     
     @OneToMany(mappedBy = "character", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EquippedItem> equippedItems = new ArrayList<EquippedItem>();
+    
+    @Column(nullable = false)
+    private Integer morale;
+    
+    @Column(nullable = false)
+    private Integer maxMorale;
+    
+    @Column(nullable = false)
+    private Integer experiencePoint;
 
 	public Long getId() {
 		return id;
@@ -159,6 +168,30 @@ public class Character {
 
 	public void setMaxArmor(Integer maxArmor) {
 		this.maxArmor = maxArmor;
+	}
+
+	public Integer getMorale() {
+		return morale;
+	}
+
+	public void setMorale(Integer morale) {
+		this.morale = morale;
+	}
+
+	public Integer getMaxMorale() {
+		return maxMorale;
+	}
+
+	public void setMaxMorale(Integer maxMorale) {
+		this.maxMorale = maxMorale;
+	}
+
+	public Integer getExperiencePoint() {
+		return experiencePoint;
+	}
+
+	public void setExperiencePoint(Integer experiencePoint) {
+		this.experiencePoint = experiencePoint;
 	}
     
     

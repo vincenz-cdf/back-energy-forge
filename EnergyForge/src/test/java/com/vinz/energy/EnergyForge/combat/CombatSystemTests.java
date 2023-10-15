@@ -153,6 +153,9 @@ class CombatSystemTests {
 		return allTeamStats;
 	}
 
+	//Ajouter notion morale
+	//DeathCount
+	//Xp fin
 	private void beginFight(CumulatedTeamStats allTeamStats) {
 
 		List<WeaponDto> yourWeapon = new ArrayList<WeaponDto>();

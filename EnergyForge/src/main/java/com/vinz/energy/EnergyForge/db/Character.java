@@ -16,6 +16,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -73,6 +74,9 @@ public class Character {
     
     @Column(nullable = false)
     private Integer experiencePoint;
+    
+    @ManyToMany(mappedBy = "characters")
+    private List<CombatInstance> combatInstances = new ArrayList<>();
 
 	public Long getId() {
 		return id;
@@ -192,6 +196,14 @@ public class Character {
 
 	public void setExperiencePoint(Integer experiencePoint) {
 		this.experiencePoint = experiencePoint;
+	}
+
+	public List<CombatInstance> getCombatInstances() {
+		return combatInstances;
+	}
+
+	public void setCombatInstances(List<CombatInstance> combatInstances) {
+		this.combatInstances = combatInstances;
 	}
     
     

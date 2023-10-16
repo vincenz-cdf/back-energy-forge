@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/energyforgedb
+    url: jdbc:postgresql://localhost:5432/energyforgedb?stringtype=unspecified
     username: energyforge
     password: 1dsivincent2
   jpa:

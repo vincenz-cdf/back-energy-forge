@@ -153,9 +153,11 @@ class CombatSystemTests {
 		return allTeamStats;
 	}
 
+	//TODO: nouveauté sur CombatSystem
 	//Ajouter notion morale
 	//DeathCount
 	//Xp fin
+	//si pas de weapon équppé on prend 8 variable de classe
 	private void beginFight(CumulatedTeamStats allTeamStats) {
 
 		List<WeaponDto> yourWeapon = new ArrayList<WeaponDto>();

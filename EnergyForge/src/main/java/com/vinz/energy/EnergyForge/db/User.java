@@ -47,9 +47,11 @@ public class User implements Serializable {
     @Builder.Default
     @Column(nullable = false)
     private Integer coin = 0;
-
     
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private List<UserItem> userItems;
+    
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private List<CombatInstance> combatInstances;
 
 }

@@ -27,5 +27,4 @@ public class UserDto implements Serializable {
     private List<UserItemDto> userItems;
     
     
-    
 }

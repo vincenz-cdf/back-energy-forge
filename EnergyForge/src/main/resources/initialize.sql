@@ -91,13 +91,3 @@ VALUES ('Bandit Outlaw', 1, 55, 0, 55, 0, 8, '', 'BRIGAND_THUG', 4, 4, 15, 1);
 
 --POUR TEST
 
-insert into user_item(equipment_id, user_id) values (1, 2);
-insert into user_item(equipment_id, user_id) values (2, 2);
-insert into user_item(equipment_id, user_id) values (3, 2);
-insert into user_item(equipment_id, user_id) values (4, 2);
-insert into user_item(equipment_id, user_id) values (5, 2);
-insert into user_item(equipment_id, user_id) values (6, 2);
-insert into user_item(equipment_id, user_id) values (7, 2);
-insert into user_item(equipment_id, user_id) values (8, 2);
-insert into user_item(equipment_id, user_id) values (16, 2);
-insert into user_item(equipment_id, user_id) values (19, 2);

@@ -66,6 +66,7 @@ public class UserService {
         User savedUser = userDao.save(user);
         
         createFirstCharacterForNewAccount(savedUser.getId());
+        createFirstCharacterForNewAccount(savedUser.getId());
 
         return userMapper.toDto(savedUser);
     }

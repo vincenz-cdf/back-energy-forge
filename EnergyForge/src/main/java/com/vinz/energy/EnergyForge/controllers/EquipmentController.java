@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +20,13 @@ import com.vinz.energy.EnergyForge.dto.CharacterDto;
 import com.vinz.energy.EnergyForge.dto.equipments.ArmorDto;
 import com.vinz.energy.EnergyForge.dto.equipments.WeaponDto;
 import com.vinz.energy.EnergyForge.service.EquipmentService;
+import com.vinz.energy.EnergyForge.service.ExpeditionService;
 import com.vinz.energy.EnergyForge.service.Global;
 
 @RestController
 public class EquipmentController {
+	
+	private static final Logger logger = LoggerFactory.getLogger(ExpeditionService.class);
 	
 	@Autowired
 	private EquipmentService equipmentService;
@@ -43,6 +48,7 @@ public class EquipmentController {
 	        response.put("data", armors); 
 	        return new ResponseEntity<>(response, HttpStatus.OK);
 	    } catch (Exception e) {
+	    	logger.error(e.getMessage());
 	        throw new ResponseStatusException(
 	            HttpStatus.INTERNAL_SERVER_ERROR, 
 	            "Unable to retrieve armors",
@@ -65,6 +71,7 @@ public class EquipmentController {
 	        response.put("data", weapons); 
 	        return new ResponseEntity<>(response, HttpStatus.OK);
 	    } catch (Exception e) {
+	    	logger.error(e.getMessage());
 	        throw new ResponseStatusException(
 	            HttpStatus.INTERNAL_SERVER_ERROR, 
 	            "Unable to retrieve weapons",
@@ -84,6 +91,7 @@ public class EquipmentController {
             response.put("data", charDto);
             return new ResponseEntity<>(response, HttpStatus.OK);
 	    } catch (Exception e) {
+	    	logger.error(e.getMessage());
 	        throw new ResponseStatusException(
 	            HttpStatus.INTERNAL_SERVER_ERROR, 
 	            "Unable to equip",

@@ -67,14 +67,13 @@ public class CharacterService {
 	private void handleArmorEquipping(com.vinz.energy.EnergyForge.db.Character currentChar, Equipment equipment) {
 	    Armor armor = armorDao.findByEquipmentId(equipment.getId())
 	        .orElseThrow(() -> new AppException("Unknown armor", HttpStatus.NOT_FOUND));
+	    EquipmentSlot otherPartSlot = equipment.getSlot()==EquipmentSlot.HEAD ? EquipmentSlot.BODY : EquipmentSlot.HEAD;
 
-	    EquipmentSlot otherPartSlot = (equipment.getSlot().equals(EquipmentSlot.HEAD)) ? EquipmentSlot.BODY : EquipmentSlot.HEAD;
-
-	    EquippedItem equippedOtherPart = findExistingEquippedItemBySlot(currentChar, otherPartSlot).orElse(null);
+	    EquippedItem equippedOtherPart = findExistingEquippedItemBySlot(currentChar, otherPartSlot);
 
 	    Integer totalArmorValue = armor.getArmorValue();
 	    if(equippedOtherPart != null) {
-	        totalArmorValue += findArmorValueByEquippedItemId(equippedOtherPart.getId());
+	        totalArmorValue += findArmorValueByEquippedItemId(equippedOtherPart.getEquipment().getId());
 	    }
 
 	    currentChar.setArmor(totalArmorValue);
@@ -82,15 +81,24 @@ public class CharacterService {
 	}
 
 	private Integer findArmorValueByEquippedItemId(Long itemId) {
-	    return armorDao.findByEquipmentId(itemId)
-	        .orElseThrow(() -> new AppException("Unknown armor", HttpStatus.NOT_FOUND))
-	        .getArmorValue();
+		Armor armor = armorDao.findByEquipmentId(itemId)
+		        .orElseThrow(() -> new AppException("Unknown armor", HttpStatus.NOT_FOUND));
+		
+		
+	    return armor.getArmorValue();
 	}
 
 	
-	private Optional<EquippedItem> findExistingEquippedItemBySlot(com.vinz.energy.EnergyForge.db.Character character, EquipmentSlot slot) {
-	    return character.getEquippedItems().stream()
-	            .filter(element -> slot.equals(element.getSlot()))
-	            .findFirst();
+	private EquippedItem findExistingEquippedItemBySlot(com.vinz.energy.EnergyForge.db.Character character, EquipmentSlot slot) {
+		Character c = characterDao.findById(character.getId())
+		        .orElseThrow(() -> new AppException("Unknown char", HttpStatus.NOT_FOUND));
+		
+	    for(EquippedItem ei : c.getEquippedItems()) {
+	    	
+	    	if(ei.getSlot() == slot) {
+	    		return ei;
+	    	}
+	    }
+	    return null;
 	}
 }

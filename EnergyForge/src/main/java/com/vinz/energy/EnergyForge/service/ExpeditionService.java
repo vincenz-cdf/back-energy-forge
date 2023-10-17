@@ -160,8 +160,13 @@ public class ExpeditionService {
 		
 		Character character = characterDao.findById(charId)
 		        .orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
-				
-		combatInstance.getCharacters().add(character);
+		
+		if(combatInstance.getCharacters().contains(character)) {
+			combatInstance.getCharacters().remove(character);
+		} else {
+			combatInstance.getCharacters().add(character);
+		}
+
 		combatInstanceDao.save(combatInstance);
 
 	}

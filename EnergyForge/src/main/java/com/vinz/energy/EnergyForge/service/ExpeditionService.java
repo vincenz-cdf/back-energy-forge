@@ -96,8 +96,6 @@ public class ExpeditionService {
 		switch (scenario) {
 		case T_L1:
 			characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING1));
-			characters.add(characterDao.findById(3l)
-			        .orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND)));
 			break;
 		default:
 			break;
@@ -149,5 +147,22 @@ public class ExpeditionService {
 		        .orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
 		
 		return characterMapper.toCharacterDtos(combatInstance.getCharacters());
+	}
+	
+	public List<CharacterDto> listCurrentCharacters(Long userId) {
+		
+		return characterMapper.toCharacterDtos(characterDao.findByUserId(userId));	
+	}
+	
+	public void putHeroCharacterInCombat(Long ciId, Long charId) {
+		CombatInstance combatInstance = combatInstanceDao.findById(ciId)
+		        .orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
+		
+		Character character = characterDao.findById(charId)
+		        .orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
+				
+		combatInstance.getCharacters().add(character);
+		combatInstanceDao.save(combatInstance);
+
 	}
 }

@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -65,6 +66,44 @@ public class ExpeditionController {
 	        throw new ResponseStatusException(
 	            HttpStatus.INTERNAL_SERVER_ERROR, 
 	            "Unable to retrieve Combat instance chars",
+	            e
+	        );
+	    }
+	}
+	
+	@GetMapping("/combatinstance/currentCharacters")
+	public ResponseEntity<Map<String, Object>> listCurrentCharacters() {
+	    try {
+	    	Long userId = global.getCurrentUserId();
+	        
+	        List<CharacterDto> dto = expeditionService.listCurrentCharacters(userId);
+	        
+	        Map<String, Object> response = new HashMap<>();
+	        response.put("status", "success");
+	        response.put("message", "Chars successfully retrieved.");
+	        response.put("data", dto);
+	        return new ResponseEntity<>(response, HttpStatus.OK);
+	    } catch (Exception e) {
+	        throw new ResponseStatusException(
+	            HttpStatus.INTERNAL_SERVER_ERROR, 
+	            "Unable to retrieve chars",
+	            e
+	        );
+	    }
+	}
+	
+	@PutMapping("/combatinstance/{ciId}/character/{charId}")
+	public ResponseEntity<Map<String, String>> putHeroCharacterInCombat(@PathVariable Long ciId, @PathVariable Long charId) {
+	    try {
+	    	expeditionService.putHeroCharacterInCombat(ciId, charId);
+	        Map<String, String> response = new HashMap<>();
+	        response.put("status", "success");
+	        response.put("message", "Character successfully added to combat instance.");
+	        return new ResponseEntity<>(response, HttpStatus.OK);
+	    } catch (Exception e) {
+	        throw new ResponseStatusException(
+	            HttpStatus.INTERNAL_SERVER_ERROR, 
+	            "Unable to add character to combat instance",
 	            e
 	        );
 	    }

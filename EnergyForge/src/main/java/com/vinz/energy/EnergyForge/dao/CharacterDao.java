@@ -11,9 +11,10 @@ import org.springframework.data.repository.query.Param;
 
 
 public interface CharacterDao extends JpaRepository<Character, Long> {
-    @Query("SELECT c FROM Character c WHERE c.user.id = :userId ORDER BY c.level ASC")
+    @Query("SELECT c FROM Character c WHERE c.user.id = :userId ORDER BY c.level ASC LIMIT 3")
     List<Character> findByUserIdOrderByLevelAsc(@Param("userId") Long userId);
     
-    
     List<Character> findByCharacterType(CharacterType characterType);
+    
+    List<Character> findByUserId(Long userId);
 }

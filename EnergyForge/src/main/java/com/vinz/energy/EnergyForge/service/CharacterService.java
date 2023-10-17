@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import com.vinz.energy.EnergyForge.dao.ArmorDao;
 import com.vinz.energy.EnergyForge.dao.CharacterDao;
-import com.vinz.energy.EnergyForge.dao.UserDao;
 import com.vinz.energy.EnergyForge.dao.WeaponDao;
 import com.vinz.energy.EnergyForge.db.Character;
 import com.vinz.energy.EnergyForge.db.equipments.Armor;
@@ -27,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class CharacterService {
 
-    private final UserDao userDao;
     private final CharacterDao characterDao;
     private final CharacterMapper characterMapper;
     

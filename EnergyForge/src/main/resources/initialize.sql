@@ -83,18 +83,21 @@ insert into app_user (email, login, password, coin, energy) values ('overloadPat
 
 --Brigand Thug, 25HEAD, 40BODY
 INSERT INTO CHARACTER (name, level, hp, armor, max_hp, max_armor, atk, sprite_path, character_type, morale, max_morale, experience_point, user_id)
+VALUES ('Training Partner', 1, 50, 0, 50, 0, 8, 'assets/sprites/enemies/trainer1.png', 'TRAINING1', 4, 4, 15, 1);
+
+INSERT INTO CHARACTER (name, level, hp, armor, max_hp, max_armor, atk, sprite_path, character_type, morale, max_morale, experience_point, user_id)
 VALUES ('Bandit Outlaw', 1, 55, 0, 55, 0, 8, '', 'BRIGAND_THUG', 4, 4, 15, 1);
 
 
 --POUR TEST
-select * from app_user au 
-insert into user_item(equipment_id, user_id) values (1, 1);
-insert into user_item(equipment_id, user_id) values (2, 1);
-insert into user_item(equipment_id, user_id) values (3, 1);
-insert into user_item(equipment_id, user_id) values (4, 1);
-insert into user_item(equipment_id, user_id) values (5, 1);
-insert into user_item(equipment_id, user_id) values (6, 1);
-insert into user_item(equipment_id, user_id) values (7, 1);
-insert into user_item(equipment_id, user_id) values (8, 1);
-insert into user_item(equipment_id, user_id) values (16, 1);
-insert into user_item(equipment_id, user_id) values (19, 1);
+
+insert into user_item(equipment_id, user_id) values (1, 2);
+insert into user_item(equipment_id, user_id) values (2, 2);
+insert into user_item(equipment_id, user_id) values (3, 2);
+insert into user_item(equipment_id, user_id) values (4, 2);
+insert into user_item(equipment_id, user_id) values (5, 2);
+insert into user_item(equipment_id, user_id) values (6, 2);
+insert into user_item(equipment_id, user_id) values (7, 2);
+insert into user_item(equipment_id, user_id) values (8, 2);
+insert into user_item(equipment_id, user_id) values (16, 2);
+insert into user_item(equipment_id, user_id) values (19, 2);

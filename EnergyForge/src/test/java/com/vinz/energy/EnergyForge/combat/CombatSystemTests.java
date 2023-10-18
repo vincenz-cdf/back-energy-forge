@@ -193,7 +193,7 @@ class CombatSystemTests {
 
 				for (int i = 0; i < aa.getAtkCount(); i++) {
 					if (allTeamStats.getTotalArmor() > 0) {
-						Integer newArmorValue = allTeamStats.getTotalArmor() - aa.getAtkAmount();
+						Integer newArmorValue = allTeamStats.getTotalArmor() - aa.getAtkAmount().get(i);
 
 						if (newArmorValue <= 0) {
 							allTeamStats.setTotalArmor(0);
@@ -202,7 +202,7 @@ class CombatSystemTests {
 							allTeamStats.setTotalArmor(newArmorValue);
 						}
 					} else {
-						allTeamStats.setTotalHp(allTeamStats.getTotalHp() - aa.getAtkAmount());
+						allTeamStats.setTotalHp(allTeamStats.getTotalHp() - aa.getAtkAmount().get(i));
 					}
 				}
 
@@ -214,7 +214,7 @@ class CombatSystemTests {
 
 				for (int i = 0; i < aa.getAtkCount(); i++) {
 					if (allTeamStats.getEnemyArmor() > 0) {
-						Integer newArmorValue = allTeamStats.getEnemyArmor() - aa.getAtkAmount();
+						Integer newArmorValue = allTeamStats.getEnemyArmor() - aa.getAtkAmount().get(i);
 						if (newArmorValue <= 0) {
 							allTeamStats.setEnemyArmor(0);
 							allTeamStats.setEnemyHp(allTeamStats.getEnemyHp() + newArmorValue);
@@ -222,7 +222,7 @@ class CombatSystemTests {
 							allTeamStats.setEnemyArmor(newArmorValue);
 						}
 					} else {
-						allTeamStats.setEnemyHp(allTeamStats.getEnemyHp() - aa.getAtkAmount());
+						allTeamStats.setEnemyHp(allTeamStats.getEnemyHp() - aa.getAtkAmount().get(i));
 					}
 				}
 
@@ -237,7 +237,7 @@ class CombatSystemTests {
 	private AttackActions weaponSpecialization(WeaponDto weapon) {
 
 		AttackActions aa = new AttackActions();
-		aa.setAtkAmount(weapon.getAtkValue());
+		aa.getAtkAmount().add(weapon.getAtkValue());
 
 		for (WeaponAbilityDto a : weapon.getWeaponAbilities()) {
 			
@@ -247,7 +247,7 @@ class CombatSystemTests {
 				if (random.nextInt(100) + 1 <= a.getEquipmentAbilityValue()+30) {
 					aa.setAtkCount(aa.getAtkCount() + 1);
 					if (random.nextInt(100) + 1 <= a.getEquipmentAbilityValue()) {
-						aa.setAtkAmount(aa.getAtkAmount() * 2);
+						aa.getAtkAmount().add(weapon.getAtkValue() * 2);
 					} else {
 						return aa;
 					}
@@ -256,7 +256,7 @@ class CombatSystemTests {
 
 			if (a.getEquipmentAbilityEffect() == Effect.RIPOSTE) {
 				if (random.nextInt(100) + 1 <= a.getEquipmentAbilityValue()+30) {
-					aa.setAtkAmount(aa.getAtkAmount() * 2);
+					aa.getAtkAmount().add(weapon.getAtkValue() * 2);
 				}
 			}
 		}
@@ -264,4 +264,5 @@ class CombatSystemTests {
 		return aa;
 
 	}
+	
 }

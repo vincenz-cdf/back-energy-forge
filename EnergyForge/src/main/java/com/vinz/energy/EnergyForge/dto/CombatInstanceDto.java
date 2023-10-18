@@ -1,17 +1,17 @@
 package com.vinz.energy.EnergyForge.dto;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.vinz.energy.EnergyForge.db.CombatInstance;
 import com.vinz.energy.EnergyForge.db.enums.CombatStatus;
 import com.vinz.energy.EnergyForge.db.enums.Scenario;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 
-@AllArgsConstructor
-@NoArgsConstructor
-public class CombatInstanceDto {
+public class CombatInstanceDto implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	private Long id;
 	
@@ -26,6 +26,24 @@ public class CombatInstanceDto {
 	private Scenario scenario;
    
 	private List<Long> characterIds;
+	
+	public CombatInstanceDto() {
+		
+	}
+	
+	public CombatInstanceDto(CombatInstance ci) {
+		this.id = ci.getId();
+		this.label = ci.getLabel();
+		this.status = ci.getStatus();
+		this.userId = ci.getUser().getId();
+		this.indexes = ci.getIndexes();
+		this.scenario = ci.getScenario();
+		this.characterIds = new ArrayList<Long>();
+		
+		for(com.vinz.energy.EnergyForge.db.Character c : ci.getCharacters()) {
+			this.characterIds.add(c.getId());
+		}
+	}
 
 	public Long getId() {
 		return id;

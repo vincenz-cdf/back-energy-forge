@@ -108,4 +108,24 @@ public class ExpeditionController {
 	        );
 	    }
 	}
+	
+	@PostMapping("/combatinstance/{id}/launch")
+	public ResponseEntity<Map<String, Object>> launchCombatInstance(@PathVariable Long id) {
+	    try {
+	        
+	        expeditionService.calculateCombatResult(id);
+	        
+	        Map<String, Object> response = new HashMap<>();
+	        response.put("status", "success");
+	        response.put("message", "Chars successfully retrieved.");
+	        response.put("data", null);
+	        return new ResponseEntity<>(response, HttpStatus.OK);
+	    } catch (Exception e) {
+	        throw new ResponseStatusException(
+	            HttpStatus.INTERNAL_SERVER_ERROR, 
+	            "Unable to retrieve chars",
+	            e
+	        );
+	    }
+	}
 }

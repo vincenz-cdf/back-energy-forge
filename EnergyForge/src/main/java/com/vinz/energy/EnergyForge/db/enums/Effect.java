@@ -12,5 +12,6 @@ public enum Effect {
 	LASH,
 	CLEAVE,
 	DARMOR,
-	PUNCTURE
+	PUNCTURE,
+	RANGED_REDUCTION
 }

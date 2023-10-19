@@ -67,16 +67,26 @@ INSERT INTO weapon (equipment_id, atk_value, is_melee) VALUES (15, 25, TRUE);
 INSERT INTO equipment_ability (name, description, value, effect) VALUES ('Puncture', '15% to ignore armor', 15, 'PUNCTURE');
 INSERT INTO weapon_ability (weapon_id, ability_id) VALUES (15, 11);
 
+INSERT INTO equipment (name, value, sprite_path, slot) VALUES ('Shortbow', 200, 'assets/sprites/equipments/weapon/ranged/shortbow.png', 'ZWEIHAND');
+INSERT INTO weapon (equipment_id, atk_value, is_melee) VALUES (16, 40, FALSE);
+INSERT INTO equipment_ability (name, description, value, effect) VALUES ('Quick Shot', 'This weapon has 10% chance to reattack', 10, 'QUICKSHOT');
+INSERT INTO weapon_ability (weapon_id, ability_id) VALUES (16, 12);
+
 INSERT INTO equipment (name, value, sprite_path, slot) VALUES ('Copper Armor T1', 20, 'assets/sprites/equipments/armor/body/copperarmor.png', 'BODY');
-INSERT INTO armor (equipment_id, armor_value) VALUES (16, 10);
+INSERT INTO armor (equipment_id, armor_value) VALUES (17, 10);
 INSERT INTO equipment (name, value, sprite_path, slot) VALUES ('Copper Armor T2', 40, 'assets/sprites/equipments/armor/body/copperarmor.png', 'BODY');
-INSERT INTO armor (equipment_id, armor_value) VALUES (17, 20);
+INSERT INTO armor (equipment_id, armor_value) VALUES (18, 20);
 INSERT INTO equipment (name, value, sprite_path, slot) VALUES ('Copper Armor T3', 55, 'assets/sprites/equipments/armor/body/copperarmor.png', 'BODY');
-INSERT INTO armor (equipment_id, armor_value) VALUES (18, 25);
+INSERT INTO armor (equipment_id, armor_value) VALUES (19, 25);
 INSERT INTO equipment (name, value, sprite_path, slot) VALUES ('Copper Armor T4', 65, 'assets/sprites/equipments/armor/body/copperarmor.png', 'BODY');
-INSERT INTO armor (equipment_id, armor_value) VALUES (19, 30);
+INSERT INTO armor (equipment_id, armor_value) VALUES (20, 30);
 INSERT INTO equipment (name, value, sprite_path, slot) VALUES ('Copper Armor T5', 75, 'assets/sprites/equipments/armor/body/copperarmor.png', 'BODY');
-INSERT INTO armor (equipment_id, armor_value) VALUES (20, 35);
+INSERT INTO armor (equipment_id, armor_value) VALUES (21, 35);
+
+INSERT INTO equipment (name, value, sprite_path, slot) VALUES ('Wooden Shield', 100, 'assets/sprites/equipments/shield/woodenshield.png', 'RIGHTHAND');
+INSERT INTO weapon (equipment_id, atk_value, is_melee) VALUES (22, 0, TRUE);
+INSERT INTO equipment_ability (name, description, value, effect) VALUES ('Shieldwall', '15% to block the highest damage', 15, 'SHIELDWALL');
+INSERT INTO weapon_ability (weapon_id, ability_id) VALUES (22, 13);
 
 
 insert into app_user (email, login, password, coin, energy) values ('overloadPatri@abc.com', 'batch_energy_forge', 'OoOA&é00xAeç', 0, 0);
@@ -87,7 +97,3 @@ VALUES ('Training Partner', 1, 50, 0, 50, 0, 8, 'assets/sprites/enemies/trainer1
 
 INSERT INTO CHARACTER (name, level, hp, armor, max_hp, max_armor, atk, sprite_path, character_type, morale, max_morale, experience_point, user_id)
 VALUES ('Bandit Outlaw', 1, 55, 0, 55, 0, 8, '', 'BRIGAND_THUG', 4, 4, 15, 1);
-
-
---POUR TEST
-

@@ -3,6 +3,7 @@ package com.vinz.energy.EnergyForge.service;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -213,20 +214,36 @@ public class ExpeditionService {
 	private CumulatedTeamStats calculateTeamStats(List<Character> yourTeam, List<Character> enemyTeam) {
 		CumulatedTeamStats allTeamStats = new CumulatedTeamStats();
 
+		int i = 0;
 		for (Character c : yourTeam) {
 			CharacterDto dto = characterMapper.toDto(c);
 
 			allTeamStats.setTotalHp(allTeamStats.getTotalHp() + dto.getHp());
 			allTeamStats.setTotalArmor(allTeamStats.getTotalArmor() + dto.getArmor());
 			allTeamStats.getYourDto().add(dto);
+			
+			if(i==0) {
+				allTeamStats.getYourDeathThreshold().add(dto.getHp() + dto.getArmor());
+			} else {
+				allTeamStats.getYourDeathThreshold().add(allTeamStats.getEnemyDeathThreshold().get(i-1)+dto.getHp() + dto.getArmor());
+			}
+			i++;
 		}
 
+		i = 0;
 		for (Character c : enemyTeam) {
 			CharacterDto dto = characterMapper.toDto(c);
 
 			allTeamStats.setEnemyHp(allTeamStats.getEnemyHp() + dto.getHp());
 			allTeamStats.setEnemyArmor(allTeamStats.getEnemyArmor() + dto.getArmor());
 			allTeamStats.getEnemyDto().add(dto);
+
+			if(i==0) {
+				allTeamStats.getEnemyDeathThreshold().add(dto.getHp() + dto.getArmor());
+			} else {
+				allTeamStats.getEnemyDeathThreshold().add(allTeamStats.getEnemyDeathThreshold().get(i-1)+dto.getHp() + dto.getArmor());
+			}
+			i++;
 		}
 
 		return allTeamStats;
@@ -236,30 +253,40 @@ public class ExpeditionService {
 	// Ajouter notion morale
 	// DeathCount
 	// Xp fin
-	// si pas de weapon équppé on prend 8 variable de classe
 	// Spread hp losses
 	private void beginFight(CumulatedTeamStats allTeamStats) {
 	    List<WeaponDto> yourWeapon = fetchTeamWeapons(allTeamStats.getYourDto());
 	    List<WeaponDto> enemyWeapon = fetchTeamWeapons(allTeamStats.getEnemyDto());
+	    
 
-		List<Effect> yourEffect = new ArrayList<Effect>();
-		List<Effect> enemyEffect = new ArrayList<Effect>();
-		for (WeaponDto w : yourWeapon) {
-			yourEffect.add(w.getWeaponAbilities().get(0).getEquipmentAbilityEffect());
-			if(!w.getIsMelee()) {
-				yourEffect.add(Effect.RANGED_REDUCTION);
-			}
-		}
-		for (WeaponDto w : enemyWeapon) {
-			enemyEffect.add(w.getWeaponAbilities().get(0).getEquipmentAbilityEffect());
-			if(!w.getIsMelee()) {
-				enemyEffect.add(Effect.RANGED_REDUCTION);
-			}
-		}
+		Integer yourTotalPull = 
+				allTeamStats.getYourDeathThreshold().get(allTeamStats.getYourDeathThreshold().size()-1);
+		Integer enemyTotalPull =
+				allTeamStats.getEnemyDeathThreshold().get(allTeamStats.getEnemyDeathThreshold().size()-1);
+		Integer yourDeathCount = 0;
+		Integer enemyDeathCount = 0;
 
 		while (allTeamStats.getTotalHp() > 0 && allTeamStats.getEnemyHp() > 0) {
+			
+			List<Effect> yourEffect = new ArrayList<Effect>();
+			List<Effect> enemyEffect = new ArrayList<Effect>();
+			for (WeaponDto w : yourWeapon) {
+				yourEffect.add(w.getWeaponAbilities().get(0).getEquipmentAbilityEffect());
+				if(!w.getIsMelee()) {
+					yourEffect.add(Effect.RANGED_REDUCTION);
+				}
+			}
+			for (WeaponDto w : enemyWeapon) {
+				enemyEffect.add(w.getWeaponAbilities().get(0).getEquipmentAbilityEffect());
+				if(!w.getIsMelee()) {
+					enemyEffect.add(Effect.RANGED_REDUCTION);
+				}
+			}
+			
+			int yourRangedBros = Collections.frequency(yourEffect, Effect.RANGED_REDUCTION);
+			int enemyRangedBros = Collections.frequency(enemyEffect, Effect.RANGED_REDUCTION);
 
-			// ENEMYWEAPON AGAINST YOUR TEAM
+			// ENEMYWEAPONS AGAINST YOUR TEAM
 			for (WeaponDto w : enemyWeapon) {
 
 				AttackActions aa = new AttackActions(Arrays.asList(8), 1);
@@ -268,10 +295,11 @@ public class ExpeditionService {
 					aa = weaponSpecialization(w);
 				}
 
+				Integer totalDamageDealtByWeapon = 0;
 				for (int i = 0; i < aa.getAtkCount(); i++) {
 					Integer attackValue = aa.getAtkAmount().get(i);
 					
-					if(yourEffect.contains(Effect.RANGED_REDUCTION)) {
+					if(yourEffect.contains(Effect.RANGED_REDUCTION) && yourRangedBros >= yourWeapon.size()-yourDeathCount) {
 						attackValue = attackValue/2;
 						yourEffect.remove(Effect.RANGED_REDUCTION);
 					}
@@ -289,15 +317,29 @@ public class ExpeditionService {
 						allTeamStats.setTotalHp(allTeamStats.getTotalHp() - attackValue);
 					}
 
+					totalDamageDealtByWeapon += attackValue;
 				}
 				
 								
 				//Si backlash il ya (ROUNDSWING)
 				allTeamStats.setTotalHp(allTeamStats.getTotalHp() - aa.getBacklash());
+				
+				//Compter les pseudo-morts 
+				yourTotalPull = yourTotalPull - totalDamageDealtByWeapon;
+				int indexThreshold = allTeamStats.getYourDeathThreshold().size()-1-yourDeathCount;
+				
+				if(indexThreshold >= 0) {
+					if(yourTotalPull < allTeamStats.getYourDeathThreshold().get(indexThreshold)) {
+						yourDeathCount += 1;
+					}
+				}
+				
+				totalDamageDealtByWeapon = 0;
+				
 
 			}
 
-			// YOURWEAPON AGAINST ENEMY TEAM
+			// YOURWEAPONS AGAINST ENEMY TEAM
 			for (WeaponDto w : yourWeapon) {
 
 				AttackActions aa = new AttackActions(Arrays.asList(8), 1);
@@ -306,11 +348,12 @@ public class ExpeditionService {
 					aa = weaponSpecialization(w);
 				}
 
+				Integer totalDamageDealtByWeapon = 0;
 				for (int i = 0; i < aa.getAtkCount(); i++) {
 
 					Integer attackValue = aa.getAtkAmount().get(i);
 					
-					if(yourEffect.contains(Effect.RANGED_REDUCTION)) {
+					if(yourEffect.contains(Effect.RANGED_REDUCTION) && enemyRangedBros >= enemyWeapon.size()-enemyDeathCount) {
 						attackValue = attackValue/2;
 						yourEffect.remove(Effect.RANGED_REDUCTION);
 					}
@@ -326,11 +369,22 @@ public class ExpeditionService {
 					} else {
 						allTeamStats.setEnemyHp(allTeamStats.getEnemyHp() - attackValue);
 					}
-
+					totalDamageDealtByWeapon += attackValue;
 				}
 
 				//Si backlash il ya (ROUNDSWING)
 				allTeamStats.setEnemyHp(allTeamStats.getEnemyHp() - aa.getBacklash());
+				
+				//Compter les pseudo-morts 
+				enemyTotalPull = enemyTotalPull - totalDamageDealtByWeapon;
+				int indexThreshold = allTeamStats.getEnemyDeathThreshold().size()-1-enemyDeathCount;
+				
+				if(indexThreshold >= 0) {
+					if(enemyTotalPull < allTeamStats.getEnemyDeathThreshold().get(indexThreshold)) {
+						enemyDeathCount += 1;
+					}
+				}
+				
 
 			}
 

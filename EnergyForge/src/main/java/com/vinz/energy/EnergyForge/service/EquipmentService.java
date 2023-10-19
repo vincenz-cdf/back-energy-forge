@@ -2,7 +2,7 @@ package com.vinz.energy.EnergyForge.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,6 @@ import com.vinz.energy.EnergyForge.dto.equipments.ArmorDto;
 import com.vinz.energy.EnergyForge.dto.equipments.WeaponDto;
 import com.vinz.energy.EnergyForge.exception.AppException;
 import com.vinz.energy.EnergyForge.mappers.ArmorMapper;
-import com.vinz.energy.EnergyForge.mappers.EquippedItemMapper;
 import com.vinz.energy.EnergyForge.mappers.WeaponMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -51,9 +50,6 @@ public class EquipmentService {
 
 	@Autowired
 	private EquippedItemDao equippedItemDao;
-
-	@Autowired
-	private EquippedItemMapper equippedItemMapper;
 
 	@Autowired
 	private CharacterService characterService;
@@ -101,36 +97,33 @@ public class EquipmentService {
 	@Transactional
 	public CharacterDto equipCharacterWithSpecificGear(Long charId, Long gearId) {
 
-		EquippedItem equippedItem = new EquippedItem();
+	    EquippedItem newEquippedItem = new EquippedItem();
+	    com.vinz.energy.EnergyForge.db.Character character = characterDao.findById(charId)
+	            .orElseThrow(() -> new AppException("Unknown character", HttpStatus.NOT_FOUND));
 
-		com.vinz.energy.EnergyForge.db.Character character = characterDao.findById(charId)
-				.orElseThrow(() -> new AppException("Unknown character", HttpStatus.NOT_FOUND));
+	    Equipment equipment = equipmentDao.findById(gearId)
+	            .orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND));
 
-		Equipment equipment = equipmentDao.findById(gearId)
-				.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND));
+	    // 1. Remove any existing equipped items of the same slot as the new equipment.
+	    character.getEquippedItems().removeIf(item -> item.getSlot() == equipment.getSlot());
 
-		equippedItem = findExistingEquippedItemBySlot(character, equipment.getSlot()).orElse(equippedItem);
+	    // 2. If equipping a ZWEIHAND, remove LEFTHAND and RIGHTHAND.
+	    if (equipment.getSlot() == EquipmentSlot.ZWEIHAND) {
+	        character.getEquippedItems().removeIf(item -> item.getSlot() == EquipmentSlot.LEFTHAND || item.getSlot() == EquipmentSlot.RIGHTHAND);
+	    }
 
-		equippedItem.setCharacter(character);
-		equippedItem.setEquipment(equipment);
-		equippedItem.setSlot(equipment.getSlot());
+	    // 3. If equipping a LEFTHAND or RIGHTHAND, remove ZWEIHAND.
+	    else if (equipment.getSlot() == EquipmentSlot.LEFTHAND || equipment.getSlot() == EquipmentSlot.RIGHTHAND) {
+	        character.getEquippedItems().removeIf(item -> item.getSlot() == EquipmentSlot.ZWEIHAND);
+	    }
 
-		equippedItemDao.save(equippedItem);
+	    newEquippedItem.setCharacter(character);
+	    newEquippedItem.setEquipment(equipment);
+	    newEquippedItem.setSlot(equipment.getSlot());
+	    equippedItemDao.save(newEquippedItem);
 
-		return characterService.characterStatsUpdateAfterEquip(charId, equipment, equippedItem);
-
+	    return characterService.characterStatsUpdateAfterEquip(charId, equipment, newEquippedItem);
 	}
 
-	private Optional<EquippedItem> findExistingEquippedItemBySlot(com.vinz.energy.EnergyForge.db.Character character,
-			EquipmentSlot slot) {
-		if (slot == EquipmentSlot.BODY || slot == EquipmentSlot.HEAD) {
-			return character.getEquippedItems().stream().filter(element -> slot.equals(element.getSlot())).findFirst();
-		} else if (slot == EquipmentSlot.LEFTHAND || slot == EquipmentSlot.ZWEIHAND) {
-			return character.getEquippedItems().stream().filter(element -> element.getSlot() == EquipmentSlot.LEFTHAND
-					|| element.getSlot() == EquipmentSlot.ZWEIHAND).findFirst();
-		}
-
-		return null;
-	}
 
 }

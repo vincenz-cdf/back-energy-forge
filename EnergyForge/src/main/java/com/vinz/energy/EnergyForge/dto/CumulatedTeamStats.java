@@ -13,10 +13,12 @@ public class CumulatedTeamStats implements Serializable {
 	private Integer totalHp = 0;
 	private Integer totalArmor = 0;
 	private List<CharacterDto> yourDto = new ArrayList<CharacterDto>();
+	private List<Integer> yourDeathThreshold = new ArrayList<Integer>();
 	
 	private Integer enemyHp = 0;
 	private Integer enemyArmor = 0;
 	private List<CharacterDto> enemyDto = new ArrayList<CharacterDto>();
+	private List<Integer> enemyDeathThreshold = new ArrayList<Integer>();
 	
 	public Integer getTotalHp() {
 		return totalHp;
@@ -53,6 +55,21 @@ public class CumulatedTeamStats implements Serializable {
 	}
 	public void setEnemyDto(List<CharacterDto> enemyDto) {
 		this.enemyDto = enemyDto;
+	}
+	public List<Integer> getYourDeathThreshold() {
+		return yourDeathThreshold;
+	}
+	public void setYourDeathThreshold(List<Integer> yourDeathThreshold) {
+		this.yourDeathThreshold = yourDeathThreshold;
+	}
+	public List<Integer> getEnemyDeathThreshold() {
+		return enemyDeathThreshold;
+	}
+	public void setEnemyDeathThreshold(List<Integer> enemyDeathThreshold) {
+		this.enemyDeathThreshold = enemyDeathThreshold;
+	}
+	public static long getSerialversionuid() {
+		return serialVersionUID;
 	}
 	
 	

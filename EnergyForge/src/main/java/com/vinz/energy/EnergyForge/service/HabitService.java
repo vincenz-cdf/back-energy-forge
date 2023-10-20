@@ -18,46 +18,55 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Service
 public class HabitService {
-	
-    private final UserDao userDao;
-    private final HabitDao habitDao;
-    private final HabitMapper habitMapper;
+
+	private final UserDao userDao;
+	private final HabitDao habitDao;
+	private final HabitMapper habitMapper;
 
 	public void createEmptyHabit(Long userId) {
 		Habit habit = new Habit();
 		habit.setChecked(false);
 		habit.setTitle("New Task");
 		habit.setUser(userDao.findById(userId).orElseThrow(() -> new RuntimeException("User not found")));
-		
+
 		habitDao.save(habit);
 	}
-	
+
 	public List<HabitDto> showHabits(Long userId) {
-	    List<Habit> habits = habitDao.findByUserIdOrderByIdAsc(userId);
-	    
-	    return habitMapper.toHabitDtos(habits);
+		List<Habit> habits = habitDao.findByUserIdOrderByIdAsc(userId);
+
+		return habitMapper.toHabitDtos(habits);
 	}
-	
+
 	public void updateHabit(Long habitId, HabitDto dto) {
-		Habit habitDb = habitDao.findById(habitId).orElseThrow(() -> new AppException("Unknown habit", HttpStatus.NOT_FOUND));
-		
-		if(!habitDb.getChecked() && dto.getChecked()) {
+		Habit habitDb = habitDao.findById(habitId)
+				.orElseThrow(() -> new AppException("Unknown habit", HttpStatus.NOT_FOUND));
+
+		if (!habitDb.getChecked() && dto.getChecked()) {
 			incrementEnergy(habitDb.getUser().getId());
 		}
-		
+
 		habitDb.setChecked(dto.getChecked());
 		habitDb.setTitle(dto.getTitle());
-		
+
 		habitDao.save(habitDb);
-		
+
 	}
-	
+
 	private void incrementEnergy(Long userId) {
 		User user = userDao.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 		Integer currentEnergy = user.getEnergy();
-		user.setEnergy(currentEnergy+2);
-		
+		user.setEnergy(currentEnergy + 2);
+
 		userDao.save(user);
+
+	}
+
+	public void deleteHabit(Long id) {
+		Habit habitDb = habitDao.findById(id).orElseThrow(() -> new AppException("Unkown habit", HttpStatus.NOT_FOUND));
+		
+		habitDao.delete(habitDb);
+		habitDao.flush();
 		
 	}
 }

@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.vinz.energy.EnergyForge.db.enums.Effect;
-import com.vinz.energy.EnergyForge.dto.equipments.WeaponDto;
 
 @SpringBootTest
 class EnergyForgeApplicationTests {

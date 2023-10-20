@@ -113,7 +113,7 @@ public class ExpeditionController {
 	public ResponseEntity<Map<String, Object>> launchCombatInstance(@PathVariable Long id) {
 	    try {
 	        
-	        expeditionService.calculateCombatResult(id);
+	        //expeditionService.calculateCombatResult(id);
 	        
 	        Map<String, Object> response = new HashMap<>();
 	        response.put("status", "success");

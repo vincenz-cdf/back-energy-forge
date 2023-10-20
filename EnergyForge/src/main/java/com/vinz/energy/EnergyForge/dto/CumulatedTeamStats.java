@@ -8,69 +8,56 @@ import lombok.ToString;
 
 @ToString
 public class CumulatedTeamStats implements Serializable {
+	
+	public static class TeamStats implements Serializable {
+	    private static final long serialVersionUID = 1L;
+		private Integer hp = 0;
+	    private Integer armor = 0;
+	    private List<CharacterDto> dto = new ArrayList<CharacterDto>();
+	    private List<Integer> deathThreshold = new ArrayList<Integer>();
+		public Integer getHp() {
+			return hp;
+		}
+		public void setHp(Integer hp) {
+			this.hp = hp;
+		}
+		public Integer getArmor() {
+			return armor;
+		}
+		public void setArmor(Integer armor) {
+			this.armor = armor;
+		}
+		public List<CharacterDto> getDto() {
+			return dto;
+		}
+		public void setDto(List<CharacterDto> dto) {
+			this.dto = dto;
+		}
+		public List<Integer> getDeathThreshold() {
+			return deathThreshold;
+		}
+		public void setDeathThreshold(List<Integer> deathThreshold) {
+			this.deathThreshold = deathThreshold;
+		}
 
-	private static final long serialVersionUID = 1L;
-	private Integer totalHp = 0;
-	private Integer totalArmor = 0;
-	private List<CharacterDto> yourDto = new ArrayList<CharacterDto>();
-	private List<Integer> yourDeathThreshold = new ArrayList<Integer>();
-	
-	private Integer enemyHp = 0;
-	private Integer enemyArmor = 0;
-	private List<CharacterDto> enemyDto = new ArrayList<CharacterDto>();
-	private List<Integer> enemyDeathThreshold = new ArrayList<Integer>();
-	
-	public Integer getTotalHp() {
-		return totalHp;
+	    
 	}
-	public void setTotalHp(Integer totalHp) {
-		this.totalHp = totalHp;
+
+    private static final long serialVersionUID = 1L;
+	private TeamStats yourStats = new TeamStats();
+    private TeamStats enemyStats = new TeamStats();
+
+	public TeamStats getYourStats() {
+		return yourStats;
 	}
-	public Integer getTotalArmor() {
-		return totalArmor;
+	public void setYourStats(TeamStats yourStats) {
+		this.yourStats = yourStats;
 	}
-	public void setTotalArmor(Integer totalArmor) {
-		this.totalArmor = totalArmor;
+	public TeamStats getEnemyStats() {
+		return enemyStats;
 	}
-	public Integer getEnemyHp() {
-		return enemyHp;
+	public void setEnemyStats(TeamStats enemyStats) {
+		this.enemyStats = enemyStats;
 	}
-	public void setEnemyHp(Integer enemyHp) {
-		this.enemyHp = enemyHp;
-	}
-	public Integer getEnemyArmor() {
-		return enemyArmor;
-	}
-	public void setEnemyArmor(Integer enemyArmor) {
-		this.enemyArmor = enemyArmor;
-	}
-	public List<CharacterDto> getYourDto() {
-		return yourDto;
-	}
-	public void setYourDto(List<CharacterDto> yourDto) {
-		this.yourDto = yourDto;
-	}
-	public List<CharacterDto> getEnemyDto() {
-		return enemyDto;
-	}
-	public void setEnemyDto(List<CharacterDto> enemyDto) {
-		this.enemyDto = enemyDto;
-	}
-	public List<Integer> getYourDeathThreshold() {
-		return yourDeathThreshold;
-	}
-	public void setYourDeathThreshold(List<Integer> yourDeathThreshold) {
-		this.yourDeathThreshold = yourDeathThreshold;
-	}
-	public List<Integer> getEnemyDeathThreshold() {
-		return enemyDeathThreshold;
-	}
-	public void setEnemyDeathThreshold(List<Integer> enemyDeathThreshold) {
-		this.enemyDeathThreshold = enemyDeathThreshold;
-	}
-	public static long getSerialversionuid() {
-		return serialVersionUID;
-	}
-	
 	
 }

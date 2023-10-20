@@ -185,6 +185,7 @@ public class ExpeditionService {
 
 	}
 
+	/*
 	public CombatInstanceDto calculateCombatResult(Long combatInstanceId) {
 		CombatInstance combatInstance = combatInstanceDao.findById(combatInstanceId)
 				.orElseThrow(() -> new AppException("Unknown char", HttpStatus.NOT_FOUND));
@@ -472,4 +473,5 @@ public class ExpeditionService {
 		}
 		return teamWeapons;
 	}
+	*/
 }

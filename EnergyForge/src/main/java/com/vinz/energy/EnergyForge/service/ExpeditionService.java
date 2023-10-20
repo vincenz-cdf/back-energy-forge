@@ -1,6 +1,5 @@
 package com.vinz.energy.EnergyForge.service;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -174,7 +173,7 @@ public class ExpeditionService {
 				.orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
 
 		Character character = characterDao.findById(charId)
-				.orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
+				.orElseThrow(() -> new AppException("Unknown character", HttpStatus.NOT_FOUND));
 
 		if (combatInstance.getCharacters().contains(character)) {
 			combatInstance.getCharacters().remove(character);
@@ -187,29 +186,28 @@ public class ExpeditionService {
 	}
 
 	public CombatInstanceDto calculateCombatResult(Long combatInstanceId) {
-	    CombatInstance combatInstance = combatInstanceDao.findById(combatInstanceId)
-	            .orElseThrow(() -> new AppException("Unknown char", HttpStatus.NOT_FOUND));
-	    
-	    List<Character> allCharacters = combatInstance.getCharacters();
-	    List<Character> yourTeam = new ArrayList<>();
-	    List<Character> enemyTeam = new ArrayList<>();
-	    
-	    for (Character character : allCharacters) {
-	        if (character.getCharacterType() == CharacterType.HERO) {
-	            yourTeam.add(character);
-	        } else {
-	            enemyTeam.add(character);
-	        }
-	    }
+		CombatInstance combatInstance = combatInstanceDao.findById(combatInstanceId)
+				.orElseThrow(() -> new AppException("Unknown char", HttpStatus.NOT_FOUND));
 
-	    if (yourTeam.isEmpty() || enemyTeam.isEmpty()) {
-	        throw new AppException("Not enough chars", HttpStatus.BAD_REQUEST);
-	    }
+		List<Character> allCharacters = combatInstance.getCharacters();
+		List<Character> yourTeam = new ArrayList<>();
+		List<Character> enemyTeam = new ArrayList<>();
 
-	    beginFight(calculateTeamStats(yourTeam, enemyTeam));
-	    return null;
+		for (Character character : allCharacters) {
+			if (character.getCharacterType() == CharacterType.HERO) {
+				yourTeam.add(character);
+			} else {
+				enemyTeam.add(character);
+			}
+		}
+
+		if (yourTeam.isEmpty() || enemyTeam.isEmpty()) {
+			throw new AppException("Not enough chars", HttpStatus.BAD_REQUEST);
+		}
+
+		beginFight(calculateTeamStats(yourTeam, enemyTeam));
+		return null;
 	}
-
 
 	private CumulatedTeamStats calculateTeamStats(List<Character> yourTeam, List<Character> enemyTeam) {
 		CumulatedTeamStats allTeamStats = new CumulatedTeamStats();
@@ -221,11 +219,12 @@ public class ExpeditionService {
 			allTeamStats.setTotalHp(allTeamStats.getTotalHp() + dto.getHp());
 			allTeamStats.setTotalArmor(allTeamStats.getTotalArmor() + dto.getArmor());
 			allTeamStats.getYourDto().add(dto);
-			
-			if(i==0) {
+
+			if (i == 0) {
 				allTeamStats.getYourDeathThreshold().add(dto.getHp() + dto.getArmor());
 			} else {
-				allTeamStats.getYourDeathThreshold().add(allTeamStats.getEnemyDeathThreshold().get(i-1)+dto.getHp() + dto.getArmor());
+				allTeamStats.getYourDeathThreshold()
+						.add(allTeamStats.getEnemyDeathThreshold().get(i - 1) + dto.getHp() + dto.getArmor());
 			}
 			i++;
 		}
@@ -238,10 +237,11 @@ public class ExpeditionService {
 			allTeamStats.setEnemyArmor(allTeamStats.getEnemyArmor() + dto.getArmor());
 			allTeamStats.getEnemyDto().add(dto);
 
-			if(i==0) {
+			if (i == 0) {
 				allTeamStats.getEnemyDeathThreshold().add(dto.getHp() + dto.getArmor());
 			} else {
-				allTeamStats.getEnemyDeathThreshold().add(allTeamStats.getEnemyDeathThreshold().get(i-1)+dto.getHp() + dto.getArmor());
+				allTeamStats.getEnemyDeathThreshold()
+						.add(allTeamStats.getEnemyDeathThreshold().get(i - 1) + dto.getHp() + dto.getArmor());
 			}
 			i++;
 		}
@@ -255,36 +255,42 @@ public class ExpeditionService {
 	// Xp fin
 	// Spread hp losses
 	private void beginFight(CumulatedTeamStats allTeamStats) {
-	    List<WeaponDto> yourWeapon = fetchTeamWeapons(allTeamStats.getYourDto());
-	    List<WeaponDto> enemyWeapon = fetchTeamWeapons(allTeamStats.getEnemyDto());
-	    
+		List<WeaponDto> yourWeapon = fetchTeamWeapons(allTeamStats.getYourDto());
+		List<WeaponDto> enemyWeapon = fetchTeamWeapons(allTeamStats.getEnemyDto());
 
-		Integer yourTotalPull = 
-				allTeamStats.getYourDeathThreshold().get(allTeamStats.getYourDeathThreshold().size()-1);
-		Integer enemyTotalPull =
-				allTeamStats.getEnemyDeathThreshold().get(allTeamStats.getEnemyDeathThreshold().size()-1);
+		Integer yourTotalPull = allTeamStats.getYourDeathThreshold()
+				.get(allTeamStats.getYourDeathThreshold().size() - 1);
+		Integer enemyTotalPull = allTeamStats.getEnemyDeathThreshold()
+				.get(allTeamStats.getEnemyDeathThreshold().size() - 1);
 		Integer yourDeathCount = 0;
 		Integer enemyDeathCount = 0;
 
 		while (allTeamStats.getTotalHp() > 0 && allTeamStats.getEnemyHp() > 0) {
-			
+
 			List<Effect> yourEffect = new ArrayList<Effect>();
 			List<Effect> enemyEffect = new ArrayList<Effect>();
 			for (WeaponDto w : yourWeapon) {
 				yourEffect.add(w.getWeaponAbilities().get(0).getEquipmentAbilityEffect());
-				if(!w.getIsMelee()) {
+				if (!w.getIsMelee()) {
 					yourEffect.add(Effect.RANGED_REDUCTION);
 				}
 			}
 			for (WeaponDto w : enemyWeapon) {
 				enemyEffect.add(w.getWeaponAbilities().get(0).getEquipmentAbilityEffect());
-				if(!w.getIsMelee()) {
+				if (!w.getIsMelee()) {
 					enemyEffect.add(Effect.RANGED_REDUCTION);
 				}
 			}
-			
+
 			int yourRangedBros = Collections.frequency(yourEffect, Effect.RANGED_REDUCTION);
 			int enemyRangedBros = Collections.frequency(enemyEffect, Effect.RANGED_REDUCTION);
+			
+			for(int i=0; i < yourRangedBros; i++) {
+				enemyEffect.remove(Effect.RANGED_REDUCTION);
+			}
+			for(int i=0; i < enemyRangedBros; i++) {
+				yourEffect.remove(Effect.RANGED_REDUCTION);
+			}
 
 			// ENEMYWEAPONS AGAINST YOUR TEAM
 			for (WeaponDto w : enemyWeapon) {
@@ -298,12 +304,13 @@ public class ExpeditionService {
 				Integer totalDamageDealtByWeapon = 0;
 				for (int i = 0; i < aa.getAtkCount(); i++) {
 					Integer attackValue = aa.getAtkAmount().get(i);
-					
-					if(yourEffect.contains(Effect.RANGED_REDUCTION) && yourRangedBros >= yourWeapon.size()-yourDeathCount) {
-						attackValue = attackValue/2;
+
+					if (yourEffect.contains(Effect.RANGED_REDUCTION)
+							&& yourRangedBros >= yourWeapon.size() - yourDeathCount) {
+						attackValue = attackValue / 2;
 						yourEffect.remove(Effect.RANGED_REDUCTION);
 					}
-					
+
 					if (allTeamStats.getTotalArmor() > 0) {
 						Integer newArmorValue = allTeamStats.getTotalArmor() - attackValue;
 
@@ -319,23 +326,21 @@ public class ExpeditionService {
 
 					totalDamageDealtByWeapon += attackValue;
 				}
-				
-								
-				//Si backlash il ya (ROUNDSWING)
+
+				// Si backlash il ya (ROUNDSWING)
 				allTeamStats.setTotalHp(allTeamStats.getTotalHp() - aa.getBacklash());
-				
-				//Compter les pseudo-morts 
+
+				// Compter les pseudo-morts
 				yourTotalPull = yourTotalPull - totalDamageDealtByWeapon;
-				int indexThreshold = allTeamStats.getYourDeathThreshold().size()-1-yourDeathCount;
-				
-				if(indexThreshold >= 0) {
-					if(yourTotalPull < allTeamStats.getYourDeathThreshold().get(indexThreshold)) {
+				int indexThreshold = allTeamStats.getYourDeathThreshold().size() - 1 - yourDeathCount;
+
+				if (indexThreshold >= 0) {
+					if (yourTotalPull < allTeamStats.getYourDeathThreshold().get(indexThreshold)) {
 						yourDeathCount += 1;
 					}
 				}
-				
+
 				totalDamageDealtByWeapon = 0;
-				
 
 			}
 
@@ -352,12 +357,13 @@ public class ExpeditionService {
 				for (int i = 0; i < aa.getAtkCount(); i++) {
 
 					Integer attackValue = aa.getAtkAmount().get(i);
-					
-					if(yourEffect.contains(Effect.RANGED_REDUCTION) && enemyRangedBros >= enemyWeapon.size()-enemyDeathCount) {
-						attackValue = attackValue/2;
+
+					if (yourEffect.contains(Effect.RANGED_REDUCTION)
+							&& enemyRangedBros >= enemyWeapon.size() - enemyDeathCount) {
+						attackValue = attackValue / 2;
 						yourEffect.remove(Effect.RANGED_REDUCTION);
 					}
-					
+
 					if (allTeamStats.getEnemyArmor() > 0) {
 						Integer newArmorValue = allTeamStats.getEnemyArmor() - attackValue;
 						if (newArmorValue <= 0) {
@@ -372,19 +378,18 @@ public class ExpeditionService {
 					totalDamageDealtByWeapon += attackValue;
 				}
 
-				//Si backlash il ya (ROUNDSWING)
+				// Si backlash il ya (ROUNDSWING)
 				allTeamStats.setEnemyHp(allTeamStats.getEnemyHp() - aa.getBacklash());
-				
-				//Compter les pseudo-morts 
+
+				// Compter les pseudo-morts
 				enemyTotalPull = enemyTotalPull - totalDamageDealtByWeapon;
-				int indexThreshold = allTeamStats.getEnemyDeathThreshold().size()-1-enemyDeathCount;
-				
-				if(indexThreshold >= 0) {
-					if(enemyTotalPull < allTeamStats.getEnemyDeathThreshold().get(indexThreshold)) {
+				int indexThreshold = allTeamStats.getEnemyDeathThreshold().size() - 1 - enemyDeathCount;
+
+				if (indexThreshold >= 0) {
+					if (enemyTotalPull < allTeamStats.getEnemyDeathThreshold().get(indexThreshold)) {
 						enemyDeathCount += 1;
 					}
 				}
-				
 
 			}
 
@@ -447,26 +452,24 @@ public class ExpeditionService {
 		return aa;
 
 	}
-	
-	
-	private List<WeaponDto> fetchTeamWeapons(List<CharacterDto> teamDto) {
-	    List<WeaponDto> teamWeapons = new ArrayList<>();
-	    
-	    for (CharacterDto c : teamDto) {
-	        List<EquippedItemDto> equippedWeapons = c.getEquippedItems().stream()
-	                .filter(e -> e.getSlot().isWeapon())
-	                .collect(Collectors.toList());
 
-	        if (equippedWeapons.isEmpty()) {
-	            teamWeapons.add(new WeaponDto());
-	            continue;
-	        }
-	        
-	        for (EquippedItemDto weaponItem : equippedWeapons) {
-	            teamWeapons.add(weaponMapper.toDto(weaponDao.findByEquipmentId(weaponItem.getEquipmentId())
-	                    .orElseThrow(() -> new AppException("Unknown char", HttpStatus.NOT_FOUND))));
-	        }
-	    }
-	    return teamWeapons;
+	private List<WeaponDto> fetchTeamWeapons(List<CharacterDto> teamDto) {
+		List<WeaponDto> teamWeapons = new ArrayList<>();
+
+		for (CharacterDto c : teamDto) {
+			List<EquippedItemDto> equippedWeapons = c.getEquippedItems().stream().filter(e -> e.getSlot().isWeapon())
+					.collect(Collectors.toList());
+
+			if (equippedWeapons.isEmpty()) {
+				teamWeapons.add(new WeaponDto());
+				continue;
+			}
+
+			for (EquippedItemDto weaponItem : equippedWeapons) {
+				teamWeapons.add(weaponMapper.toDto(weaponDao.findByEquipmentId(weaponItem.getEquipmentId())
+						.orElseThrow(() -> new AppException("Unknown char", HttpStatus.NOT_FOUND))));
+			}
+		}
+		return teamWeapons;
 	}
 }

@@ -3,8 +3,11 @@ package com.vinz.energy.EnergyForge.combat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -91,6 +94,9 @@ class CombatSystemTests {
 		character.setName("test");
 		character.setSpritePath("assets/sprites/characters/mainchar.png");
 		character.setUser(user);
+		character.setExperiencePoint(0);
+		character.setMorale(0);
+		character.setMaxMorale(10);
 		characterDao.save(character);
 
 		Character character2 = new Character();
@@ -104,6 +110,9 @@ class CombatSystemTests {
 		character2.setName("test2");
 		character2.setSpritePath("assets/sprites/characters/mainchar.png");
 		character2.setUser(user2);
+		character2.setExperiencePoint(0);
+		character2.setMorale(0);
+		character2.setMaxMorale(10);
 		characterDao.save(character2);
 
 	}
@@ -122,78 +131,117 @@ class CombatSystemTests {
 			equipmentService.equipCharacterWithSpecificGear(2l, 2l);
 			equipmentService.equipCharacterWithSpecificGear(2l, 3l);
 
-			beginFight(calculateTeamStats(Arrays.asList(1l), Arrays.asList(2l)));
+			beginFight(calculateTeamStats(Arrays.asList(characterDao.findById(1l).orElseThrow(() -> new AppException("Unknown character", HttpStatus.NOT_FOUND))), 
+					Arrays.asList(characterDao.findById(2l).orElseThrow(() -> new AppException("Unknown character", HttpStatus.NOT_FOUND)))));
 
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
 	}
-
-	private CumulatedTeamStats calculateTeamStats(List<Long> yourTeam, List<Long> enemyTeam) {
+	private CumulatedTeamStats calculateTeamStats(List<Character> yourTeam, List<Character> enemyTeam) {
 		CumulatedTeamStats allTeamStats = new CumulatedTeamStats();
 
-		for (Long id : yourTeam) {
-			CharacterDto dto = characterMapper.toDto(characterDao.findById(id)
-					.orElseThrow(() -> new AppException("Unknown char", HttpStatus.NOT_FOUND)));
+		int i = 0;
+		for (Character c : yourTeam) {
+			CharacterDto dto = characterMapper.toDto(c);
 
 			allTeamStats.setTotalHp(allTeamStats.getTotalHp() + dto.getHp());
 			allTeamStats.setTotalArmor(allTeamStats.getTotalArmor() + dto.getArmor());
 			allTeamStats.getYourDto().add(dto);
+
+			if (i == 0) {
+				allTeamStats.getYourDeathThreshold().add(dto.getHp() + dto.getArmor());
+			} else {
+				allTeamStats.getYourDeathThreshold()
+						.add(allTeamStats.getEnemyDeathThreshold().get(i - 1) + dto.getHp() + dto.getArmor());
+			}
+			i++;
 		}
 
-		for (Long id : enemyTeam) {
-			CharacterDto dto = characterMapper.toDto(characterDao.findById(id)
-					.orElseThrow(() -> new AppException("Unknown char", HttpStatus.NOT_FOUND)));
+		i = 0;
+		for (Character c : enemyTeam) {
+			CharacterDto dto = characterMapper.toDto(c);
 
 			allTeamStats.setEnemyHp(allTeamStats.getEnemyHp() + dto.getHp());
 			allTeamStats.setEnemyArmor(allTeamStats.getEnemyArmor() + dto.getArmor());
 			allTeamStats.getEnemyDto().add(dto);
+
+			if (i == 0) {
+				allTeamStats.getEnemyDeathThreshold().add(dto.getHp() + dto.getArmor());
+			} else {
+				allTeamStats.getEnemyDeathThreshold()
+						.add(allTeamStats.getEnemyDeathThreshold().get(i - 1) + dto.getHp() + dto.getArmor());
+			}
+			i++;
 		}
 
 		return allTeamStats;
 	}
 
-	//TODO: nouveauté sur CombatSystem
-	//Ajouter notion morale
-	//DeathCount
-	//Xp fin
-	//si pas de weapon équppé on prend 8 variable de classe
+	// TODO: nouveauté sur CombatSystem
+	// Ajouter notion morale
+	// DeathCount
+	// Xp fin
+	// Spread hp losses
 	private void beginFight(CumulatedTeamStats allTeamStats) {
+		List<WeaponDto> yourWeapon = fetchTeamWeapons(allTeamStats.getYourDto());
+		List<WeaponDto> enemyWeapon = fetchTeamWeapons(allTeamStats.getEnemyDto());
 
-		List<WeaponDto> yourWeapon = new ArrayList<WeaponDto>();
-		List<WeaponDto> enemyWeapon = new ArrayList<WeaponDto>();
-
-		for (CharacterDto c : allTeamStats.getYourDto()) {
-
-			for (EquippedItemDto item : c.getEquippedItems()) {
-				if (item.getSlot().isWeapon()) {
-					yourWeapon.add(weaponMapper.toDto(weaponDao.findByEquipmentId(item.getEquipmentId())
-							.orElseThrow(() -> new AppException("Unknown char", HttpStatus.NOT_FOUND))));
-				}
-			}
-
-		}
-
-		for (CharacterDto c : allTeamStats.getEnemyDto()) {
-
-			for (EquippedItemDto item : c.getEquippedItems()) {
-				if (item.getSlot().isWeapon()) {
-					enemyWeapon.add(weaponMapper.toDto(weaponDao.findByEquipmentId(item.getEquipmentId())
-							.orElseThrow(() -> new AppException("Unknown char", HttpStatus.NOT_FOUND))));
-				}
-			}
-
-		}
+		Integer yourTotalPull = allTeamStats.getYourDeathThreshold()
+				.get(allTeamStats.getYourDeathThreshold().size() - 1);
+		Integer enemyTotalPull = allTeamStats.getEnemyDeathThreshold()
+				.get(allTeamStats.getEnemyDeathThreshold().size() - 1);
+		Integer yourDeathCount = 0;
+		Integer enemyDeathCount = 0;
 
 		while (allTeamStats.getTotalHp() > 0 && allTeamStats.getEnemyHp() > 0) {
 
+			List<Effect> yourEffect = new ArrayList<Effect>();
+			List<Effect> enemyEffect = new ArrayList<Effect>();
+			for (WeaponDto w : yourWeapon) {
+				yourEffect.add(w.getWeaponAbilities().get(0).getEquipmentAbilityEffect());
+				if (!w.getIsMelee()) {
+					yourEffect.add(Effect.RANGED_REDUCTION);
+				}
+			}
+			for (WeaponDto w : enemyWeapon) {
+				enemyEffect.add(w.getWeaponAbilities().get(0).getEquipmentAbilityEffect());
+				if (!w.getIsMelee()) {
+					enemyEffect.add(Effect.RANGED_REDUCTION);
+				}
+			}
+
+			int yourRangedBros = Collections.frequency(yourEffect, Effect.RANGED_REDUCTION);
+			int enemyRangedBros = Collections.frequency(enemyEffect, Effect.RANGED_REDUCTION);
+			
+			for(int i=0; i < yourRangedBros; i++) {
+				enemyEffect.remove(Effect.RANGED_REDUCTION);
+			}
+			for(int i=0; i < enemyRangedBros; i++) {
+				yourEffect.remove(Effect.RANGED_REDUCTION);
+			}
+
+			// ENEMYWEAPONS AGAINST YOUR TEAM
 			for (WeaponDto w : enemyWeapon) {
 
-				AttackActions aa = weaponSpecialization(w);
+				AttackActions aa = new AttackActions(Arrays.asList(8), 1);
 
+				if (w.getId() != null) {
+					aa = weaponSpecialization(w);
+				}
+
+				Integer totalDamageDealtByWeapon = 0;
 				for (int i = 0; i < aa.getAtkCount(); i++) {
+					Integer attackValue = aa.getAtkAmount().get(i);
+
+					if (yourEffect.contains(Effect.RANGED_REDUCTION)
+							&& yourRangedBros >= yourWeapon.size() - yourDeathCount) {
+						attackValue = attackValue / 2;
+						yourEffect.remove(Effect.RANGED_REDUCTION);
+					}
+
 					if (allTeamStats.getTotalArmor() > 0) {
-						Integer newArmorValue = allTeamStats.getTotalArmor() - aa.getAtkAmount().get(i);
+						Integer newArmorValue = allTeamStats.getTotalArmor() - attackValue;
 
 						if (newArmorValue <= 0) {
 							allTeamStats.setTotalArmor(0);
@@ -202,19 +250,51 @@ class CombatSystemTests {
 							allTeamStats.setTotalArmor(newArmorValue);
 						}
 					} else {
-						allTeamStats.setTotalHp(allTeamStats.getTotalHp() - aa.getAtkAmount().get(i));
+						allTeamStats.setTotalHp(allTeamStats.getTotalHp() - attackValue);
+					}
+
+					totalDamageDealtByWeapon += attackValue;
+				}
+
+				// Si backlash il ya (ROUNDSWING)
+				allTeamStats.setTotalHp(allTeamStats.getTotalHp() - aa.getBacklash());
+
+				// Compter les pseudo-morts
+				yourTotalPull = yourTotalPull - totalDamageDealtByWeapon;
+				int indexThreshold = allTeamStats.getYourDeathThreshold().size() - 1 - yourDeathCount;
+
+				if (indexThreshold >= 0) {
+					if (yourTotalPull < allTeamStats.getYourDeathThreshold().get(indexThreshold)) {
+						yourDeathCount += 1;
 					}
 				}
 
+				totalDamageDealtByWeapon = 0;
+
 			}
 
+			// YOURWEAPONS AGAINST ENEMY TEAM
 			for (WeaponDto w : yourWeapon) {
 
-				AttackActions aa = weaponSpecialization(w);
+				AttackActions aa = new AttackActions(Arrays.asList(8), 1);
 
+				if (w.getId() != null) {
+					aa = weaponSpecialization(w);
+				}
+
+				Integer totalDamageDealtByWeapon = 0;
 				for (int i = 0; i < aa.getAtkCount(); i++) {
+
+					Integer attackValue = aa.getAtkAmount().get(i);
+
+					if (yourEffect.contains(Effect.RANGED_REDUCTION)
+							&& enemyRangedBros >= enemyWeapon.size() - enemyDeathCount) {
+						attackValue = attackValue / 2;
+						yourEffect.remove(Effect.RANGED_REDUCTION);
+					}
+
 					if (allTeamStats.getEnemyArmor() > 0) {
-						Integer newArmorValue = allTeamStats.getEnemyArmor() - aa.getAtkAmount().get(i);
+						Integer newArmorValue = allTeamStats.getEnemyArmor() - attackValue;
 						if (newArmorValue <= 0) {
 							allTeamStats.setEnemyArmor(0);
 							allTeamStats.setEnemyHp(allTeamStats.getEnemyHp() + newArmorValue);
@@ -222,16 +302,31 @@ class CombatSystemTests {
 							allTeamStats.setEnemyArmor(newArmorValue);
 						}
 					} else {
-						allTeamStats.setEnemyHp(allTeamStats.getEnemyHp() - aa.getAtkAmount().get(i));
+						allTeamStats.setEnemyHp(allTeamStats.getEnemyHp() - attackValue);
+					}
+					totalDamageDealtByWeapon += attackValue;
+				}
+
+				// Si backlash il ya (ROUNDSWING)
+				allTeamStats.setEnemyHp(allTeamStats.getEnemyHp() - aa.getBacklash());
+
+				// Compter les pseudo-morts
+				enemyTotalPull = enemyTotalPull - totalDamageDealtByWeapon;
+				int indexThreshold = allTeamStats.getEnemyDeathThreshold().size() - 1 - enemyDeathCount;
+
+				if (indexThreshold >= 0) {
+					if (enemyTotalPull < allTeamStats.getEnemyDeathThreshold().get(indexThreshold)) {
+						enemyDeathCount += 1;
 					}
 				}
 
 			}
 
 		}
-
+		
 		System.out.println(allTeamStats.getTotalHp());
 		System.out.println(allTeamStats.getEnemyHp());
+
 	}
 
 	private AttackActions weaponSpecialization(WeaponDto weapon) {
@@ -240,11 +335,9 @@ class CombatSystemTests {
 		aa.getAtkAmount().add(weapon.getAtkValue());
 
 		for (WeaponAbilityDto a : weapon.getWeaponAbilities()) {
-			
-			System.out.println(a);
-			
+
 			if (a.getEquipmentAbilityEffect() == Effect.SWINGSPLIT) {
-				if (random.nextInt(100) + 1 <= a.getEquipmentAbilityValue()+30) {
+				if (random.nextInt(100) + 1 <= a.getEquipmentAbilityValue()) {
 					aa.setAtkCount(aa.getAtkCount() + 1);
 					if (random.nextInt(100) + 1 <= a.getEquipmentAbilityValue()) {
 						aa.getAtkAmount().add(weapon.getAtkValue() * 2);
@@ -255,14 +348,61 @@ class CombatSystemTests {
 			}
 
 			if (a.getEquipmentAbilityEffect() == Effect.RIPOSTE) {
-				if (random.nextInt(100) + 1 <= a.getEquipmentAbilityValue()+30) {
-					aa.getAtkAmount().add(weapon.getAtkValue() * 2);
+				if (random.nextInt(100) + 1 <= a.getEquipmentAbilityValue()) {
+					aa.setAtkCount(aa.getAtkCount() + 1);
+					aa.getAtkAmount().add(weapon.getAtkValue());
 				}
 			}
+
+			if (a.getEquipmentAbilityEffect() == Effect.ROUNDSWING) {
+				boolean firstStrike = false;
+
+				if (random.nextInt(100) + 1 <= a.getEquipmentAbilityValue()) {
+					aa.setAtkCount(aa.getAtkCount() + 1);
+					aa.getAtkAmount().add(weapon.getAtkValue());
+					firstStrike = true;
+				}
+				if (random.nextInt(100) + 1 <= a.getEquipmentAbilityValue() - 10) {
+					aa.setBacklash(aa.getBacklash() + weapon.getAtkValue());
+					firstStrike = true;
+				}
+
+				if (firstStrike) {
+					if (random.nextInt(100) + 1 <= a.getEquipmentAbilityValue()) {
+						aa.setAtkCount(aa.getAtkCount() + 1);
+						aa.getAtkAmount().add(weapon.getAtkValue());
+					}
+					if (random.nextInt(100) + 1 <= a.getEquipmentAbilityValue() - 10) {
+						aa.setBacklash(aa.getBacklash() + weapon.getAtkValue());
+					}
+				}
+
+			}
+
 		}
 
 		return aa;
 
+	}
+
+	private List<WeaponDto> fetchTeamWeapons(List<CharacterDto> teamDto) {
+		List<WeaponDto> teamWeapons = new ArrayList<>();
+
+		for (CharacterDto c : teamDto) {
+			List<EquippedItemDto> equippedWeapons = c.getEquippedItems().stream().filter(e -> e.getSlot().isWeapon())
+					.collect(Collectors.toList());
+
+			if (equippedWeapons.isEmpty()) {
+				teamWeapons.add(new WeaponDto());
+				continue;
+			}
+
+			for (EquippedItemDto weaponItem : equippedWeapons) {
+				teamWeapons.add(weaponMapper.toDto(weaponDao.findByEquipmentId(weaponItem.getEquipmentId())
+						.orElseThrow(() -> new AppException("Unknown char", HttpStatus.NOT_FOUND))));
+			}
+		}
+		return teamWeapons;
 	}
 	
 }

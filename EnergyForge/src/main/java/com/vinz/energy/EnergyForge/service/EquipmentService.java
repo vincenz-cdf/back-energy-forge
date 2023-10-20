@@ -97,33 +97,51 @@ public class EquipmentService {
 	@Transactional
 	public CharacterDto equipCharacterWithSpecificGear(Long charId, Long gearId) {
 
-	    EquippedItem newEquippedItem = new EquippedItem();
-	    com.vinz.energy.EnergyForge.db.Character character = characterDao.findById(charId)
-	            .orElseThrow(() -> new AppException("Unknown character", HttpStatus.NOT_FOUND));
+		EquippedItem newEquippedItem = new EquippedItem();
+		com.vinz.energy.EnergyForge.db.Character character = characterDao.findById(charId)
+				.orElseThrow(() -> new AppException("Unknown character", HttpStatus.NOT_FOUND));
 
-	    Equipment equipment = equipmentDao.findById(gearId)
-	            .orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND));
+		Equipment equipment = equipmentDao.findById(gearId)
+				.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND));
 
-	    // 1. Remove any existing equipped items of the same slot as the new equipment.
-	    character.getEquippedItems().removeIf(item -> item.getSlot() == equipment.getSlot());
+		// Check if the character has already equipped the equipment
+		boolean isAlreadyEquipped = character.getEquippedItems().stream()
+				.anyMatch(equippedItem -> equippedItem.getEquipment().getId().equals(gearId));
 
-	    // 2. If equipping a ZWEIHAND, remove LEFTHAND and RIGHTHAND.
-	    if (equipment.getSlot() == EquipmentSlot.ZWEIHAND) {
-	        character.getEquippedItems().removeIf(item -> item.getSlot() == EquipmentSlot.LEFTHAND || item.getSlot() == EquipmentSlot.RIGHTHAND);
-	    }
+		if (isAlreadyEquipped) {
+			throw new AppException("Equipment is already equipped by the character", HttpStatus.CONFLICT);
+		}
 
-	    // 3. If equipping a LEFTHAND or RIGHTHAND, remove ZWEIHAND.
-	    else if (equipment.getSlot() == EquipmentSlot.LEFTHAND || equipment.getSlot() == EquipmentSlot.RIGHTHAND) {
-	        character.getEquippedItems().removeIf(item -> item.getSlot() == EquipmentSlot.ZWEIHAND);
-	    }
+		// Check if character previously had a ZWEIHAND or LEFTHAND equipped
+		boolean hadZwei = character.getEquippedItems().stream()
+				.anyMatch(item -> item.getSlot() == EquipmentSlot.ZWEIHAND);
 
-	    newEquippedItem.setCharacter(character);
-	    newEquippedItem.setEquipment(equipment);
-	    newEquippedItem.setSlot(equipment.getSlot());
-	    equippedItemDao.save(newEquippedItem);
+		// 1. Remove any existing equipped items of the same slot as the new equipment.
+		character.getEquippedItems().removeIf(item -> item.getSlot() == equipment.getSlot());
 
-	    return characterService.characterStatsUpdateAfterEquip(charId, equipment, newEquippedItem);
+		// 2. If equipping a ZWEIHAND, remove LEFTHAND and RIGHTHAND.
+		if (equipment.getSlot() == EquipmentSlot.ZWEIHAND) {
+			character.getEquippedItems().removeIf(
+					item -> item.getSlot() == EquipmentSlot.LEFTHAND || item.getSlot() == EquipmentSlot.RIGHTHAND);
+		}
+
+		// 3. If equipping a LEFTHAND or RIGHTHAND, remove ZWEIHAND.
+		else if (equipment.getSlot() == EquipmentSlot.LEFTHAND || equipment.getSlot() == EquipmentSlot.RIGHTHAND) {
+			character.getEquippedItems().removeIf(item -> item.getSlot() == EquipmentSlot.ZWEIHAND);
+		}
+
+		// If equipping a RIGHTHAND and previously had a ZWEIHAND or LEFTHAND, set atk
+		// to 0.
+		if (equipment.getSlot() == EquipmentSlot.RIGHTHAND && hadZwei) {
+			character.setAtk(0);
+		}
+
+		newEquippedItem.setCharacter(character);
+		newEquippedItem.setEquipment(equipment);
+		newEquippedItem.setSlot(equipment.getSlot());
+		equippedItemDao.save(newEquippedItem);
+
+		return characterService.characterStatsUpdateAfterEquip(charId, equipment, newEquippedItem);
 	}
-
 
 }

@@ -1,6 +1,5 @@
 package com.vinz.energy.EnergyForge.service;
 
-
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -25,22 +24,22 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class CharacterService {
 
-    private final CharacterDao characterDao;
-    private final CharacterMapper characterMapper;
-    
-    private final ArmorDao armorDao;
-    private final WeaponDao weaponDao;
+	private final CharacterDao characterDao;
+	private final CharacterMapper characterMapper;
+
+	private final ArmorDao armorDao;
+	private final WeaponDao weaponDao;
 
 	public List<CharacterDto> showCharacters(Long userId) {
-	    List<com.vinz.energy.EnergyForge.db.Character> chars = characterDao.findByUserIdOrderByLevelAsc(userId);
-	    
-	    return characterMapper.toCharacterDtos(chars);
+		List<com.vinz.energy.EnergyForge.db.Character> chars = characterDao.findByUserIdOrderByLevelAsc(userId);
+
+		return characterMapper.toCharacterDtos(chars);
 	}
-	
+
 	public CharacterDto characterStatsUpdateAfterEquip(Long charId, Equipment equipment, EquippedItem equippedItem) {
 	    Character currentChar = findCharacterById(charId);
-	    
-	    if(equipment.getSlot().isWeapon()) {
+
+	    if (equipment.getSlot().isWeapon()) {
 	        handleWeaponEquipping(currentChar, equipment);
 	    } else {
 	        handleArmorEquipping(currentChar, equipment);
@@ -48,30 +47,37 @@ public class CharacterService {
 
 	    currentChar.getEquippedItems().add(equippedItem);
 	    characterDao.save(currentChar);
-	    
+
 	    return characterMapper.toDto(currentChar);
 	}
 
-	private com.vinz.energy.EnergyForge.db.Character findCharacterById(Long charId) {
+	private Character findCharacterById(Long charId) {
 	    return characterDao.findById(charId)
-	        .orElseThrow(() -> new AppException("Unknown character", HttpStatus.NOT_FOUND));
+	            .orElseThrow(() -> new AppException("Unknown character", HttpStatus.NOT_FOUND));
 	}
 
-	private void handleWeaponEquipping(com.vinz.energy.EnergyForge.db.Character currentChar, Equipment equipment) {
+	private void handleWeaponEquipping(Character currentChar, Equipment equipment) {
 	    Weapon weapon = weaponDao.findByEquipmentId(equipment.getId())
-	        .orElseThrow(() -> new AppException("Unknown weapon", HttpStatus.NOT_FOUND));
-	    currentChar.setAtk(weapon.getAtkValue());
+	            .orElseThrow(() -> new AppException("Unknown weapon", HttpStatus.NOT_FOUND));
+	    if (weapon.getEquipment().getSlot() != EquipmentSlot.RIGHTHAND) {
+	        currentChar.setAtk(weapon.getAtkValue());
+	    } else {
+	        boolean hasLeftOrZweiHand = currentChar.getEquippedItems().stream()
+	                .anyMatch(item -> item.getSlot() == EquipmentSlot.LEFTHAND || item.getSlot() == EquipmentSlot.ZWEIHAND);
+	        if (!hasLeftOrZweiHand) {
+	            currentChar.setAtk(currentChar.getAtk());
+	        }
+	    }
 	}
 
-	private void handleArmorEquipping(com.vinz.energy.EnergyForge.db.Character currentChar, Equipment equipment) {
+	private void handleArmorEquipping(Character currentChar, Equipment equipment) {
 	    Armor armor = armorDao.findByEquipmentId(equipment.getId())
-	        .orElseThrow(() -> new AppException("Unknown armor", HttpStatus.NOT_FOUND));
-	    EquipmentSlot otherPartSlot = equipment.getSlot()==EquipmentSlot.HEAD ? EquipmentSlot.BODY : EquipmentSlot.HEAD;
+	            .orElseThrow(() -> new AppException("Unknown armor", HttpStatus.NOT_FOUND));
+	    EquipmentSlot otherPartSlot = equipment.getSlot() == EquipmentSlot.HEAD ? EquipmentSlot.BODY : EquipmentSlot.HEAD;
 
 	    EquippedItem equippedOtherPart = findExistingEquippedItemBySlot(currentChar, otherPartSlot);
-
 	    Integer totalArmorValue = armor.getArmorValue();
-	    if(equippedOtherPart != null) {
+	    if (equippedOtherPart != null) {
 	        totalArmorValue += findArmorValueByEquippedItemId(equippedOtherPart.getEquipment().getId());
 	    }
 
@@ -80,24 +86,15 @@ public class CharacterService {
 	}
 
 	private Integer findArmorValueByEquippedItemId(Long itemId) {
-		Armor armor = armorDao.findByEquipmentId(itemId)
-		        .orElseThrow(() -> new AppException("Unknown armor", HttpStatus.NOT_FOUND));
-		
-		
-	    return armor.getArmorValue();
+	    return armorDao.findByEquipmentId(itemId)
+	            .orElseThrow(() -> new AppException("Unknown armor", HttpStatus.NOT_FOUND))
+	            .getArmorValue();
 	}
 
-	
-	private EquippedItem findExistingEquippedItemBySlot(com.vinz.energy.EnergyForge.db.Character character, EquipmentSlot slot) {
-		Character c = characterDao.findById(character.getId())
-		        .orElseThrow(() -> new AppException("Unknown char", HttpStatus.NOT_FOUND));
-		
-	    for(EquippedItem ei : c.getEquippedItems()) {
-	    	
-	    	if(ei.getSlot() == slot) {
-	    		return ei;
-	    	}
-	    }
-	    return null;
+	private EquippedItem findExistingEquippedItemBySlot(Character character, EquipmentSlot slot) {
+	    return character.getEquippedItems().stream()
+	            .filter(ei -> ei.getSlot() == slot)
+	            .findFirst().orElse(null);
 	}
+
 }

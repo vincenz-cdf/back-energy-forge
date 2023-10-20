@@ -148,29 +148,32 @@ class CombatSystemTests {
 		CumulatedTeamStats.TeamStats yourStats = new CumulatedTeamStats.TeamStats();
 		CumulatedTeamStats.TeamStats enemyStats = new CumulatedTeamStats.TeamStats();
 
+		int i = 0;
+
 		for (Character c : yourTeam) {
 			CharacterDto dto = characterMapper.toDto(c);
 			yourStats.setHp(yourStats.getHp() + dto.getHp());
 			yourStats.setArmor(yourStats.getArmor() + dto.getArmor());
 			yourStats.getDto().add(dto);
 			int totalForCurrentCharacter = dto.getHp() + dto.getArmor();
-			if (!yourStats.getDeathThreshold().isEmpty()) {
-				totalForCurrentCharacter += yourStats.getDeathThreshold().get(yourStats.getDeathThreshold().size() - 1);
+			if (i != yourTeam.size() - 1) {
+				yourStats.getDeathThreshold().add(totalForCurrentCharacter);
 			}
-			yourStats.getDeathThreshold().add(totalForCurrentCharacter);
+			i++;
 		}
 
+		i = 0;
 		for (Character c : enemyTeam) {
 			CharacterDto dto = characterMapper.toDto(c);
 			enemyStats.setHp(enemyStats.getHp() + dto.getHp());
 			enemyStats.setArmor(enemyStats.getArmor() + dto.getArmor());
 			enemyStats.getDto().add(dto);
 			int totalForCurrentCharacter = dto.getHp() + dto.getArmor();
-			if (!enemyStats.getDeathThreshold().isEmpty()) {
-				totalForCurrentCharacter += enemyStats.getDeathThreshold()
-						.get(enemyStats.getDeathThreshold().size() - 1);
+
+			if (i != enemyTeam.size() - 1) {
+				enemyStats.getDeathThreshold().add(totalForCurrentCharacter);
 			}
-			enemyStats.getDeathThreshold().add(totalForCurrentCharacter);
+			i++;
 		}
 
 		allTeamStats.setYourStats(yourStats);
@@ -201,13 +204,26 @@ class CombatSystemTests {
 
 			adjustRangedEffects(enemyEffect, yourRangedBros);
 			adjustRangedEffects(yourEffect, enemyRangedBros);
-
-			processWeaponsAgainstTeam(enemyWeapon, allTeamStats.getYourStats(), yourEffect, enemyRangedBros,
+			
+			int totalDmgByEnemy = processWeaponsAgainstTeam(enemyWeapon, allTeamStats.getYourStats(), yourEffect, yourRangedBros,
 					yourDeathCount);
-			processWeaponsAgainstTeam(yourWeapon, allTeamStats.getEnemyStats(), enemyEffect, yourRangedBros,
+			int totalDmgByYou = processWeaponsAgainstTeam(yourWeapon, allTeamStats.getEnemyStats(), enemyEffect, enemyRangedBros,
 					enemyDeathCount);
 
-
+			for(int i = 0+enemyDeathCount; i < allTeamStats.getEnemyDeathThreshold().size(); i++) {
+				if(totalDmgByYou > allTeamStats.getEnemyDeathThreshold().get(i)) {
+					enemyDeathCount++;
+					break;
+				}
+			}
+			
+			for(int i = 0+yourDeathCount; i < allTeamStats.getYourDeathThreshold().size(); i++) {
+				if(totalDmgByEnemy > allTeamStats.getYourDeathThreshold().get(i)) {
+					yourDeathCount++;
+					break;
+				}
+			}
+			
 			System.out.println("Your deaths: " + yourDeathCount);
 			System.out.println("Enemy deaths: " + enemyDeathCount);
 
@@ -228,31 +244,9 @@ class CombatSystemTests {
 		return allTeamStats.getYourStats().getHp();
 	}
 
-	private List<Effect> buildEffectsList(List<WeaponDto> weapons) {
-		List<Effect> effects = new ArrayList<>();
-		for (WeaponDto weapon : weapons) {
-			effects.add(weapon.getWeaponAbilities().get(0).getEquipmentAbilityEffect());
-
-			if (!weapon.getIsMelee()) {
-				effects.add(Effect.RANGED_REDUCTION);
-			}
-
-			int shieldWallCount = Collections.frequency(weapon.getWeaponAbilities(), Effect.SHIELDWALL);
-			for (int i = 0; i < shieldWallCount; i++) {
-				effects.add(Effect.SHIELDWALL);
-			}
-		}
-		return effects;
-	}
-
-	private void adjustRangedEffects(List<Effect> effects, int rangedBrosCount) {
-		for (int i = 0; i < rangedBrosCount && effects.contains(Effect.RANGED_REDUCTION); i++) {
-			effects.remove(Effect.RANGED_REDUCTION);
-		}
-	}
-
 	private int processWeaponsAgainstTeam(List<WeaponDto> attackingWeapons, CumulatedTeamStats.TeamStats defenderStats,
 			List<Effect> defenderEffects, int rangedBrosCount, int deathCount) {
+		int totalDamage = 0;
 		for (WeaponDto weapon : attackingWeapons.stream()
 				.filter(w -> w.getEquipment().getSlot() != EquipmentSlot.RIGHTHAND).collect(Collectors.toList())) {
 			AttackActions aa = (weapon.getId() != null) ? weaponSpecialization(weapon)
@@ -276,10 +270,10 @@ class CombatSystemTests {
 			// If there is a backlash (ROUNDSWING)
 			defenderStats.setHp(defenderStats.getHp() - aa.getBacklash());
 			
-			return totalDamageDealtByWeapon;
+			totalDamage = totalDamageDealtByWeapon;
 		}
+		return totalDamage;
 		
-		return 0;
 	}
 
 	private int computeWeaponDamage(AttackActions aa, CumulatedTeamStats.TeamStats defenderStats,
@@ -288,7 +282,12 @@ class CombatSystemTests {
 		for (int i = 0; i < aa.getAtkCount(); i++) {
 			int attackValue = aa.getAtkAmount().get(i);
 
-			if (defenderEffects.contains(Effect.RANGED_REDUCTION) && rangedBrosCount > weapons.stream()
+			System.out.println("rangedcount");
+			System.out.println(rangedBrosCount);
+			System.out.println(weapons.stream()
+					.filter(w -> w.getEquipment().getSlot() != EquipmentSlot.RIGHTHAND).collect(Collectors.toList())
+					.size() - deathCount);
+			if (defenderEffects.contains(Effect.RANGED_REDUCTION) && rangedBrosCount < weapons.stream()
 					.filter(w -> w.getEquipment().getSlot() != EquipmentSlot.RIGHTHAND).collect(Collectors.toList())
 					.size() - deathCount) {
 				attackValue /= 2;
@@ -309,6 +308,29 @@ class CombatSystemTests {
 			totalDamage += attackValue;
 		}
 		return totalDamage;
+	}
+	
+	private List<Effect> buildEffectsList(List<WeaponDto> weapons) {
+		List<Effect> effects = new ArrayList<>();
+		for (WeaponDto weapon : weapons) {
+			effects.add(weapon.getWeaponAbilities().get(0).getEquipmentAbilityEffect());
+
+			if (!weapon.getIsMelee()) {
+				effects.add(Effect.RANGED_REDUCTION);
+			}
+
+			int shieldWallCount = Collections.frequency(weapon.getWeaponAbilities(), Effect.SHIELDWALL);
+			for (int i = 0; i < shieldWallCount; i++) {
+				effects.add(Effect.SHIELDWALL);
+			}
+		}
+		return effects;
+	}
+
+	private void adjustRangedEffects(List<Effect> effects, int rangedBrosCount) {
+		for (int i = 0; i < rangedBrosCount && effects.contains(Effect.RANGED_REDUCTION); i++) {
+			effects.remove(Effect.RANGED_REDUCTION);
+		}
 	}
 
 	private AttackActions weaponSpecialization(WeaponDto weapon) {

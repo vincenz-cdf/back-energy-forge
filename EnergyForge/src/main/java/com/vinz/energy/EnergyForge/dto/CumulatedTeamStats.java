@@ -39,6 +39,11 @@ public class CumulatedTeamStats implements Serializable {
 		public void setDeathThreshold(List<Integer> deathThreshold) {
 			this.deathThreshold = deathThreshold;
 		}
+		public static long getSerialversionuid() {
+			return serialVersionUID;
+		}
+
+	    
 
 	    
 	}
@@ -59,5 +64,11 @@ public class CumulatedTeamStats implements Serializable {
 	public void setEnemyStats(TeamStats enemyStats) {
 		this.enemyStats = enemyStats;
 	}
-	
+    public List<Integer> getEnemyDeathThreshold() {
+        return this.getEnemyStats().getDeathThreshold();
+    }
+
+    public List<Integer> getYourDeathThreshold() {
+        return this.getYourStats().getDeathThreshold();
+    }
 }

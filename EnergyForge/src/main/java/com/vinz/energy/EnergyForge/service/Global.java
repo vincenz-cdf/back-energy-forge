@@ -37,5 +37,4 @@ public class Global {
 	    return userPrincipal.getId();
 	}
 
-
 }

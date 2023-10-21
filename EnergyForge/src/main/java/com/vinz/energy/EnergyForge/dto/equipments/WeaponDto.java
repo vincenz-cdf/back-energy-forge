@@ -16,6 +16,10 @@ public class WeaponDto implements Serializable {
     private Integer atkValue;
     private Boolean isMelee;
     private List<WeaponAbilityDto> weaponAbilities = new ArrayList<WeaponAbilityDto>();
+    
+    private Long characterId;
+    private Long userId;
+    
 	public Integer getId() {
 		return id;
 	}
@@ -45,6 +49,21 @@ public class WeaponDto implements Serializable {
 	}
 	public void setWeaponAbilities(List<WeaponAbilityDto> weaponAbilities) {
 		this.weaponAbilities = weaponAbilities;
+	}
+	public Long getCharacterId() {
+		return characterId;
+	}
+	public void setCharacterId(Long characterId) {
+		this.characterId = characterId;
+	}
+	public Long getUserId() {
+		return userId;
+	}
+	public void setUserId(Long userId) {
+		this.userId = userId;
+	}
+	public static long getSerialversionuid() {
+		return serialVersionUID;
 	}
 	
     

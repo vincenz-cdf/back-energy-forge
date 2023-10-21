@@ -1,5 +1,7 @@
 package com.vinz.energy.EnergyForge.combat;
 
+import static org.mockito.ArgumentMatchers.anyBoolean;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -64,6 +66,12 @@ class CombatSystemTests {
 	Random random = new Random();
 
 	int SHIELDWALLVALUE = 15;
+	int STAGGERVALUE = 33;
+	int KOVALUE = 75;
+	int SPEARWALLVALUE = 20;
+	
+	private Long yourUserId;
+	private Long enemyUserId;
 
 	@Transactional
 	private void initializeAll() {
@@ -193,37 +201,49 @@ class CombatSystemTests {
 
 		int yourDeathCount = 0;
 		int enemyDeathCount = 0;
+		
+		//Rework pour helper ally
+		this.yourUserId = yourWeapon.get(0).getUserId();
+		this.enemyUserId = enemyWeapon.get(0).getUserId();
 
 		while (allTeamStats.getYourStats().getHp() > 0 && allTeamStats.getEnemyStats().getHp() > 0) {
 
-			List<Effect> yourEffect = buildEffectsList(yourWeapon);
-			List<Effect> enemyEffect = buildEffectsList(enemyWeapon);
+			List<Effect> yourEffect = buildEffectsList(yourWeapon, enemyWeapon);
+			List<Effect> enemyEffect = buildEffectsList(enemyWeapon, yourWeapon);
+
+			// Shield Splitter (Counter the shield count)
+			long yourShieldSplitterCount = yourWeapon.stream().filter(weapon -> weapon.getWeaponAbilities().stream()
+					.anyMatch(ability -> ability.getEquipmentAbilityEffect() == Effect.SHIELDSPLIT)).count();
+			long enemyShieldSplitterCount = enemyWeapon.stream().filter(weapon -> weapon.getWeaponAbilities().stream()
+					.anyMatch(ability -> ability.getEquipmentAbilityEffect() == Effect.SHIELDSPLIT)).count();
+			
+			//TODO: retirer nb SHIELDWALL
 
 			int yourRangedBros = Collections.frequency(yourEffect, Effect.RANGED_REDUCTION);
 			int enemyRangedBros = Collections.frequency(enemyEffect, Effect.RANGED_REDUCTION);
 
 			adjustRangedEffects(enemyEffect, yourRangedBros);
 			adjustRangedEffects(yourEffect, enemyRangedBros);
-			
-			int totalDmgByEnemy = processWeaponsAgainstTeam(enemyWeapon, allTeamStats.getYourStats(), yourEffect, yourRangedBros,
-					yourDeathCount);
-			int totalDmgByYou = processWeaponsAgainstTeam(yourWeapon, allTeamStats.getEnemyStats(), enemyEffect, enemyRangedBros,
-					enemyDeathCount);
 
-			for(int i = 0+enemyDeathCount; i < allTeamStats.getEnemyDeathThreshold().size(); i++) {
-				if(totalDmgByYou > allTeamStats.getEnemyDeathThreshold().get(i)) {
+			int totalDmgByEnemy = processWeaponsAgainstTeam(enemyWeapon, allTeamStats.getYourStats(), yourEffect,
+					yourRangedBros, yourDeathCount, enemyEffect, enemyUserId, false);
+			int totalDmgByYou = processWeaponsAgainstTeam(yourWeapon, allTeamStats.getEnemyStats(), enemyEffect,
+					enemyRangedBros, enemyDeathCount, yourEffect, yourUserId, true);
+
+			for (int i = 0 + enemyDeathCount; i < allTeamStats.getEnemyDeathThreshold().size(); i++) {
+				if (totalDmgByYou > allTeamStats.getEnemyDeathThreshold().get(i)) {
 					enemyDeathCount++;
 					break;
 				}
 			}
-			
-			for(int i = 0+yourDeathCount; i < allTeamStats.getYourDeathThreshold().size(); i++) {
-				if(totalDmgByEnemy > allTeamStats.getYourDeathThreshold().get(i)) {
+
+			for (int i = 0 + yourDeathCount; i < allTeamStats.getYourDeathThreshold().size(); i++) {
+				if (totalDmgByEnemy > allTeamStats.getYourDeathThreshold().get(i)) {
 					yourDeathCount++;
 					break;
 				}
 			}
-			
+
 			System.out.println("Your deaths: " + yourDeathCount);
 			System.out.println("Enemy deaths: " + enemyDeathCount);
 
@@ -245,54 +265,93 @@ class CombatSystemTests {
 	}
 
 	private int processWeaponsAgainstTeam(List<WeaponDto> attackingWeapons, CumulatedTeamStats.TeamStats defenderStats,
-			List<Effect> defenderEffects, int rangedBrosCount, int deathCount) {
+			List<Effect> defenderEffects, int rangedBrosCount, int deathCount, List<Effect> yourEffects, Long userId, boolean yourTurn) {
 		int totalDamage = 0;
 		for (WeaponDto weapon : attackingWeapons.stream()
 				.filter(w -> w.getEquipment().getSlot() != EquipmentSlot.RIGHTHAND).collect(Collectors.toList())) {
+
 			AttackActions aa = (weapon.getId() != null) ? weaponSpecialization(weapon)
 					: new AttackActions(Arrays.asList(8), 1);
-			int totalDamageDealtByWeapon = 0;
 
-			if (defenderEffects.contains(Effect.SHIELDWALL)) {
-				if (random.nextInt(100) + 1 > SHIELDWALLVALUE) {
-					totalDamageDealtByWeapon = computeWeaponDamage(aa, defenderStats, defenderEffects, rangedBrosCount,
-							deathCount, attackingWeapons);
-					defenderEffects.remove(Effect.SHIELDWALL);
-				}
-			} else {
-				totalDamageDealtByWeapon = computeWeaponDamage(aa, defenderStats, defenderEffects, rangedBrosCount,
-						deathCount, attackingWeapons);
+			int totalDamageDealtByWeapon = 0;
+			
+			Long userTurn = yourTurn ? this.yourUserId : this.enemyUserId;
+
+			// SHIELD WALL BLOCK 1 ATK
+			if (defenderEffects.contains(Effect.SHIELDWALL) && random.nextInt(100) + 1 <= SHIELDWALLVALUE
+					&& aa.getAtkCount() > 0) {
+				aa.setAtkCount(aa.getAtkCount() - 1);
+				defenderEffects.remove(Effect.SHIELDWALL);
 			}
 
+			// REPEL & STAGGER
+			if (defenderEffects.contains(Effect.REPEL) && random.nextInt(100) + 1 <= STAGGERVALUE
+					&& rangedBrosCount >= attackingWeapons.stream()
+							.filter(w -> w.getEquipment().getSlot() != EquipmentSlot.RIGHTHAND && aa.getAtkCount() > 0)
+							.collect(Collectors.toList()).size() - deathCount) {
+				aa.setAtkCount(aa.getAtkCount() - 1);
+				defenderEffects.remove(Effect.SHIELDWALL);
+			}
+
+			// Mace Stun
+			if (defenderEffects.contains(Effect.KO) && aa.getAtkCount() > 0) {
+				aa.setAtkCount(0);
+				defenderEffects.remove(Effect.KO);
+			}
+
+			// Stun Spear (la lance attaquera nb fois stun)
+			if (defenderEffects.contains(Effect.SPEARWALL) && aa.getAtkCount() > 0) {
+				aa.setAtkCount(0);
+				defenderEffects.remove(Effect.SPEARWALL);
+			}
+
+			// Ranged Reduction
+			if (defenderEffects.contains(Effect.RANGED_REDUCTION) && rangedBrosCount < attackingWeapons.stream()
+					.filter(w -> w.getEquipment().getSlot() != EquipmentSlot.RIGHTHAND).collect(Collectors.toList())
+					.size() - deathCount) {
+				aa.getAtkAmount().set(0, aa.getAtkAmount().get(0) / 2);
+				defenderEffects.remove(Effect.RANGED_REDUCTION);
+			}
+
+			// Reperer la bonne arme du bon perso du bon tour, tester avec weapon userId // Arevoir
+			if (aa.getWeaponId() == weapon.getId() && aa.getCharacterId() == weapon.getCharacterId() && userId == userTurn) {
+				// Reduction /2 pour mace qui a trigger le stun
+				if (yourEffects.contains(Effect.KO_BACKLASH)) {
+					aa.getAtkAmount().set(0, aa.getAtkAmount().get(0) / 2);
+					yourEffects.remove(Effect.KO_BACKLASH);
+				}
+
+				// Reduction /2 pour le spear qui a envoyé l'attaque,
+				if (yourEffects.contains(Effect.SPEARWALL_BACKLASH)) {
+					aa.getAtkAmount().set(0, aa.getAtkAmount().get(0) / 2);
+					
+				}
+			}
+
+			totalDamageDealtByWeapon = computeWeaponDamage(aa, defenderStats, weapon, defenderEffects, rangedBrosCount,
+					deathCount, attackingWeapons, yourEffects);
+
+			System.out.println(aa);
 			System.out.println(weapon);
 			System.out.println(totalDamageDealtByWeapon);
 
 			// If there is a backlash (ROUNDSWING)
 			defenderStats.setHp(defenderStats.getHp() - aa.getBacklash());
-			
+
 			totalDamage = totalDamageDealtByWeapon;
 		}
 		return totalDamage;
-		
+
 	}
 
-	private int computeWeaponDamage(AttackActions aa, CumulatedTeamStats.TeamStats defenderStats,
-			List<Effect> defenderEffects, int rangedBrosCount, int deathCount, List<WeaponDto> weapons) {
+	private int computeWeaponDamage(AttackActions aa, CumulatedTeamStats.TeamStats defenderStats, WeaponDto weapon,
+			List<Effect> defenderEffects, int rangedBrosCount, int deathCount, List<WeaponDto> weapons,
+			List<Effect> yourEffects) {
+
 		int totalDamage = 0;
+
 		for (int i = 0; i < aa.getAtkCount(); i++) {
 			int attackValue = aa.getAtkAmount().get(i);
-
-			System.out.println("rangedcount");
-			System.out.println(rangedBrosCount);
-			System.out.println(weapons.stream()
-					.filter(w -> w.getEquipment().getSlot() != EquipmentSlot.RIGHTHAND).collect(Collectors.toList())
-					.size() - deathCount);
-			if (defenderEffects.contains(Effect.RANGED_REDUCTION) && rangedBrosCount < weapons.stream()
-					.filter(w -> w.getEquipment().getSlot() != EquipmentSlot.RIGHTHAND).collect(Collectors.toList())
-					.size() - deathCount) {
-				attackValue /= 2;
-				defenderEffects.remove(Effect.RANGED_REDUCTION);
-			}
 
 			if (defenderStats.getArmor() > 0) {
 				int newArmorValue = defenderStats.getArmor() - attackValue;
@@ -306,23 +365,47 @@ class CombatSystemTests {
 				defenderStats.setHp(defenderStats.getHp() - attackValue);
 			}
 			totalDamage += attackValue;
+
+			defenderStats.setHp(defenderStats.getHp() - aa.getDirectHpDamage());
+			totalDamage += aa.getDirectHpDamage();
 		}
 		return totalDamage;
 	}
-	
-	private List<Effect> buildEffectsList(List<WeaponDto> weapons) {
+
+	private List<Effect> buildEffectsList(List<WeaponDto> weapons, List<WeaponDto> enemyWeapons) {
 		List<Effect> effects = new ArrayList<>();
 		for (WeaponDto weapon : weapons) {
-			effects.add(weapon.getWeaponAbilities().get(0).getEquipmentAbilityEffect());
 
 			if (!weapon.getIsMelee()) {
 				effects.add(Effect.RANGED_REDUCTION);
 			}
 
 			int shieldWallCount = Collections.frequency(weapon.getWeaponAbilities(), Effect.SHIELDWALL);
-			for (int i = 0; i < shieldWallCount; i++) {
+			if (shieldWallCount > 0) {
 				effects.add(Effect.SHIELDWALL);
 			}
+
+			int repelCount = Collections.frequency(weapon.getWeaponAbilities(), Effect.REPEL);
+			if (repelCount > 0) {
+				effects.add(Effect.REPEL);
+			}
+
+			int koCount = Collections.frequency(weapon.getWeaponAbilities(), Effect.KO);
+			if (koCount > 0 && random.nextInt(100) + 1 <= KOVALUE) {
+				effects.add(Effect.KO);
+				effects.add(Effect.KO_BACKLASH);
+			}
+
+			int spearWallCount = Collections.frequency(weapon.getWeaponAbilities(), Effect.SPEARWALL);
+			if (spearWallCount > 0) {
+				for (int j = 0; j < enemyWeapons.size(); j++) {
+					if (random.nextInt(100) + 1 <= SPEARWALLVALUE) {
+						effects.add(Effect.SPEARWALL);
+						effects.add(Effect.SPEARWALL_BACKLASH);
+					}
+				}
+			}
+
 		}
 		return effects;
 	}
@@ -383,6 +466,21 @@ class CombatSystemTests {
 
 			}
 
+			if (a.getEquipmentAbilityEffect() == Effect.PUNCTURE) {
+				if (random.nextInt(100) + 1 <= a.getEquipmentAbilityId()) {
+					aa.getAtkAmount().set(0, 0);
+					aa.setDirectHpDamage(aa.getDirectHpDamage() + weapon.getAtkValue());
+				}
+			}
+
+			/*
+			 * if (a.getEquipmentAbilityEffect() == Effect.KO ||
+			 * a.getEquipmentAbilityEffect() == Effect.SPEARWALL) {
+			 * aa.setWeaponId(weapon.getId()); }
+			 */
+			aa.setWeaponId(weapon.getId());
+			aa.setCharacterId(weapon.getCharacterId());
+
 		}
 
 		return aa;
@@ -402,11 +500,31 @@ class CombatSystemTests {
 			}
 
 			for (EquippedItemDto weaponItem : equippedWeapons) {
-				teamWeapons.add(weaponMapper.toDto(weaponDao.findByEquipmentId(weaponItem.getEquipmentId())
-						.orElseThrow(() -> new AppException("Unknown char", HttpStatus.NOT_FOUND))));
+				WeaponDto weapon = weaponMapper.toDto(weaponDao.findByEquipmentId(weaponItem.getEquipmentId())
+						.orElseThrow(() -> new AppException("Unknown char", HttpStatus.NOT_FOUND)));
+
+				if (equippedWeapons.size() == 2 && weapon.getEquipment().getSlot() == EquipmentSlot.LEFTHAND) {
+					weapon.setAtkValue(weapon.getAtkValue() * 3 / 4);
+				}
+
+				weapon.setCharacterId(c.getId());
+				weapon.setUserId(c.getUserId());
+
+				teamWeapons.add(weapon);
 			}
 		}
-		return teamWeapons;
+		return teamWeapons.stream().sorted((w1, w2) -> {
+			if (w1.getAtkValue() == null && w2.getAtkValue() == null) {
+				return 0; // both are null, so they are considered equal
+			}
+			if (w1.getAtkValue() == null) {
+				return 1; // w1 comes after w2
+			}
+			if (w2.getAtkValue() == null) {
+				return -1; // w1 comes before w2
+			}
+			return w1.getAtkValue().compareTo(w2.getAtkValue()); // compare the actual values
+		}).collect(Collectors.toList());
 	}
 
 }

@@ -15,8 +15,6 @@ public class AttackActions implements Serializable {
 	private Integer atkCount = 1;
 	private Integer backlash = 0;
 	private Integer directHpDamage = 0;
-	private Integer weaponId = null;
-	private Long characterId = null;
 	
 	public List<Integer> getAtkAmount() {
 		return atkAmount;
@@ -59,19 +57,5 @@ public class AttackActions implements Serializable {
 	public void setDirectHpDamage(Integer directHpDamage) {
 		this.directHpDamage = directHpDamage;
 	}
-	public Integer getWeaponId() {
-		return weaponId;
-	}
-	public void setWeaponId(Integer weaponId) {
-		this.weaponId = weaponId;
-	}
-	public Long getCharacterId() {
-		return characterId;
-	}
-	public void setCharacterId(Long characterId) {
-		this.characterId = characterId;
-	}
-
-	
 	
 }

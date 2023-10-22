@@ -18,7 +18,7 @@ public class TriggeringEffect implements Serializable {
 	private Effect effect;
 	private Long userId;
 	private Long characterId;
-	private Integer weaponId;
+	private Long weaponId;
 	public Effect getEffect() {
 		return effect;
 	}
@@ -37,10 +37,10 @@ public class TriggeringEffect implements Serializable {
 	public void setCharacterId(Long characterId) {
 		this.characterId = characterId;
 	}
-	public Integer getWeaponId() {
+	public Long getWeaponId() {
 		return weaponId;
 	}
-	public void setWeaponId(Integer weaponId) {
+	public void setWeaponId(Long weaponId) {
 		this.weaponId = weaponId;
 	}
 	

@@ -11,7 +11,7 @@ import lombok.ToString;
 @ToString
 public class WeaponDto implements Serializable {
     private static final long serialVersionUID = 1L;
-	private Integer id;
+	private Long id;
     private EquipmentDto equipment;
     private Integer atkValue;
     private Boolean isMelee;
@@ -20,10 +20,10 @@ public class WeaponDto implements Serializable {
     private Long characterId;
     private Long userId;
     
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	public EquipmentDto getEquipment() {

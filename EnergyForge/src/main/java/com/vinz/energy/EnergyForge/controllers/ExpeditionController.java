@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +31,8 @@ public class ExpeditionController {
 
 	@Autowired
 	private Global global;
+	
+	private static final Logger logger = LoggerFactory.getLogger(ExpeditionController.class);
 
 	@PostMapping("/combatinstance")
 	public ResponseEntity<Map<String, Object>> createOrRetrieveCombatI(@RequestBody RequestStringDto scenarioEnum) {
@@ -98,18 +102,18 @@ public class ExpeditionController {
 	}
 
 	@PostMapping("/combatinstance/{id}/launch")
-	public ResponseEntity<Map<String, Object>> launchCombatInstance(@PathVariable Long id) {
+	public ResponseEntity<Map<String, String>> launchCombatInstance(@PathVariable Long id) {
 		try {
 
-			CombatInstanceDto dto = expeditionService.calculateCombatResult(id);
+			expeditionService.calculateCombatResult(id);
 
-			Map<String, Object> response = new HashMap<>();
+			Map<String, String> response = new HashMap<>();
 			response.put("status", "success");
-			response.put("message", "Chars successfully retrieved.");
-			response.put("data", dto);
+			response.put("message", "Combat successfully done.");
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		} catch (Exception e) {
-			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to retrieve chars", e);
+			logger.error(e.getMessage());
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to fight", e);
 		}
 	}
 }

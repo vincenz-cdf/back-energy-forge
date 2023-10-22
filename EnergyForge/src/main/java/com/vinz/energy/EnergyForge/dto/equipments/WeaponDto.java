@@ -6,9 +6,13 @@ import java.util.List;
 
 import com.vinz.energy.EnergyForge.dto.equipments.abilities.WeaponAbilityDto;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class WeaponDto implements Serializable {
     private static final long serialVersionUID = 1L;
 	private Long id;

@@ -34,6 +34,7 @@ import com.vinz.energy.EnergyForge.dto.CombatIndexes;
 import com.vinz.energy.EnergyForge.dto.CombatInstanceDto;
 import com.vinz.energy.EnergyForge.dto.CumulatedTeamStats;
 import com.vinz.energy.EnergyForge.dto.TriggeringEffect;
+import com.vinz.energy.EnergyForge.dto.equipments.EquipmentDto;
 import com.vinz.energy.EnergyForge.dto.equipments.EquippedItemDto;
 import com.vinz.energy.EnergyForge.dto.equipments.WeaponDto;
 import com.vinz.energy.EnergyForge.dto.equipments.abilities.WeaponAbilityDto;
@@ -42,7 +43,10 @@ import com.vinz.energy.EnergyForge.mappers.CharacterMapper;
 import com.vinz.energy.EnergyForge.mappers.CombatInstanceMapper;
 import com.vinz.energy.EnergyForge.mappers.WeaponMapper;
 
+import jakarta.transaction.Transactional;
+
 @Service
+@Transactional
 public class ExpeditionService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ExpeditionService.class);
@@ -200,45 +204,47 @@ public class ExpeditionService {
 
 	}
 
-	public CombatInstanceDto calculateCombatResult(Long combatInstanceId) {
-		CombatInstance combatInstance = combatInstanceDao.findById(combatInstanceId)
-				.orElseThrow(() -> new AppException("Unknown char", HttpStatus.NOT_FOUND));
+	@Transactional
+	public void calculateCombatResult(Long combatInstanceId) {
+	    // Fetch the CombatInstance
+	    CombatInstance combatInstance = combatInstanceDao.findById(combatInstanceId)
+	            .orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
 
-		List<Character> allCharacters = combatInstance.getCharacters();
-		List<Character> yourTeam = new ArrayList<>();
-		List<Character> enemyTeam = new ArrayList<>();
+	    // Your existing logic for calculating combat results
+	    List<Character> allCharacters = combatInstance.getCharacters();
+	    List<Character> yourTeam = new ArrayList<>();
+	    List<Character> enemyTeam = new ArrayList<>();
+	    for (Character character : allCharacters) {
+	        if (character.getCharacterType() == CharacterType.HERO) {
+	            yourTeam.add(character);
+	        } else {
+	            enemyTeam.add(character);
+	        }
+	    }
+	    if (yourTeam.isEmpty() || enemyTeam.isEmpty()) {
+	        throw new AppException("Not enough chars", HttpStatus.BAD_REQUEST);
+	    }
+	    CumulatedTeamStats finalResult = beginFight(calculateTeamStats(yourTeam, enemyTeam));
+	    boolean hasWon = finalResult.getYourStats().getHp() > finalResult.getEnemyStats().getHp();
 
-		for (Character character : allCharacters) {
-			if (character.getCharacterType() == CharacterType.HERO) {
-				yourTeam.add(character);
-			} else {
-				enemyTeam.add(character);
-			}
-		}
+	    // Save the updated CombatInstance
+	    combatInstance.setStatus(CombatStatus.WON_FINAL);
+	    combatInstance.setAfterMathInfo(finalResult);
+	    combatInstanceDao.save(combatInstance);
 
-		if (yourTeam.isEmpty() || enemyTeam.isEmpty()) {
-			throw new AppException("Not enough chars", HttpStatus.BAD_REQUEST);
-		}
-
-		CumulatedTeamStats finalResult = beginFight(calculateTeamStats(yourTeam, enemyTeam));
-		int yourHp = finalResult.getYourStats().getHp();
-		int enemyHp = finalResult.getEnemyStats().getHp();
-
-		boolean hasWon = yourHp > enemyHp;
-
-		if (finalResult.getYourStats().getHp() > 0) {
-			for (Character c : yourTeam) {
-				c.setHp(yourHp / yourTeam.size() <= 0 ? 1 : yourHp / yourTeam.size());
-				characterDao.save(c);
-			}
-
-			// TODO: Adapter pour enemyTeam PvP (if pas HERO type)
-		}
-
-		combatInstance.setStatus(hasWon ? CombatStatus.WON_AWAIT : CombatStatus.LOST_AWAIT);
-
-		return combatInstanceMapper.toDto(combatInstance);
 	}
+
+	
+
+//	  int yourHp = finalResult.getYourStats().getHp(); int enemyHp =
+//	  finalResult.getEnemyStats().getHp();
+//	  
+//	  //Trigger apres boolean hasWon = yourHp > enemyHp; if (yourHp > 0) { for
+//	  (Character c : yourTeam) { c.setHp(yourHp / yourTeam.size() <= 0 ? 1 : yourHp
+//	  / yourTeam.size()); characterDao.save(c); }
+//	  
+//	  // TODO: Adapter pour enemyTeam PvP (if pas HERO type) } else { for
+//	  (Character c : yourTeam) { c.setHp(0); characterDao.save(c); } }
 
 	private CumulatedTeamStats calculateTeamStats(List<Character> yourTeam, List<Character> enemyTeam) {
 		CumulatedTeamStats allTeamStats = new CumulatedTeamStats();
@@ -394,16 +400,26 @@ public class ExpeditionService {
 					defenderEffects.remove(e);
 				}
 
-				// SHIELD WALL BLOCK 1 ATK
-				if (e.getEffect() == Effect.SHIELDWALL && random.nextInt(100) + 1 <= SHIELDWALLVALUE
-						&& aa.getAtkCount() > 0) {
-					if (weapon.getWeaponAbilities().get(0).getEquipmentAbilityEffect() == Effect.LASH) {
-						aa.getAtkAmount().set(0, (int) Math.round(weapon.getAtkValue() * 1.6));
-						if (aa.getAtkCount() == 0) {
-							aa.setAtkCount(1);
+				if (weapon.getWeaponAbilities().size() != 0) {
+					// SHIELD WALL BLOCK 1 ATK
+					if (e.getEffect() == Effect.SHIELDWALL && random.nextInt(100) + 1 <= SHIELDWALLVALUE
+							&& aa.getAtkCount() > 0) {
+						if (weapon.getWeaponAbilities().get(0).getEquipmentAbilityEffect() == Effect.LASH) {
+							aa.getAtkAmount().set(0, (int) Math.round(weapon.getAtkValue() * 1.6));
+							if (aa.getAtkCount() == 0) {
+								aa.setAtkCount(1);
+							}
+						} else {
+							aa.setAtkCount(aa.getAtkCount() - 1);
+							defenderEffects.remove(e);
 						}
-					} else {
-						aa.setAtkCount(aa.getAtkCount() - 1);
+					}
+
+					// Ranged Reduction
+					if (e.getEffect() == Effect.RANGED_REDUCTION && rangedBrosCount < attackingWeapons.stream()
+							.filter(w -> w.getEquipment().getSlot() != EquipmentSlot.RIGHTHAND)
+							.collect(Collectors.toList()).size() - deathCount) {
+						aa.getAtkAmount().set(0, aa.getAtkAmount().get(0) / 2);
 						defenderEffects.remove(e);
 					}
 				}
@@ -420,21 +436,16 @@ public class ExpeditionService {
 					defenderEffects.remove(e);
 				}
 
-				// Ranged Reduction
-				if (e.getEffect() == Effect.RANGED_REDUCTION && rangedBrosCount < attackingWeapons.stream()
-						.filter(w -> w.getEquipment().getSlot() != EquipmentSlot.RIGHTHAND).collect(Collectors.toList())
-						.size() - deathCount) {
-					aa.getAtkAmount().set(0, aa.getAtkAmount().get(0) / 2);
-					defenderEffects.remove(e);
-				}
 			}
 
 			for (TriggeringEffect e : yourEffects) {
 				// Reduction /2 pour mace qui a trigger le stun
 				if (e.getEffect() == Effect.KO_BACKLASH && weapon.getCharacterId() == e.getCharacterId()
 						&& weapon.getId() == e.getWeaponId()) {
-					aa.getAtkAmount().set(0, aa.getAtkAmount().get(0) / 2);
-					yourEffects.remove(e);
+					if (aa.getAtkAmount().size() != 0) {
+						aa.getAtkAmount().set(0, aa.getAtkAmount().get(0) / 2);
+						yourEffects.remove(e);
+					}
 				}
 			}
 
@@ -461,8 +472,10 @@ public class ExpeditionService {
 		int totalDamage = 0;
 
 		// Destroy Armor
-		if (weapon.getWeaponAbilities().get(0).getEquipmentAbilityEffect() == Effect.DARMOR) {
-			aa.getAtkAmount().set(0, aa.getAtkAmount().get(0) + (int) Math.round(defenderStats.getArmor() * 0.33));
+		if (weapon.getWeaponAbilities().size() != 0) {
+			if (weapon.getWeaponAbilities().get(0).getEquipmentAbilityEffect() == Effect.DARMOR) {
+				aa.getAtkAmount().set(0, aa.getAtkAmount().get(0) + (int) Math.round(defenderStats.getArmor() * 0.33));
+			}
 		}
 
 		for (int i = 0; i < aa.getAtkCount(); i++) {
@@ -474,11 +487,14 @@ public class ExpeditionService {
 					defenderStats.setArmor(0);
 
 					// Destroy Armor not Hp (hammers)
-					if (weapon.getWeaponAbilities().get(0).getEquipmentAbilityEffect() == Effect.DARMOR) {
-						if (newArmorValue < -10) {
-							newArmorValue = -10;
+					if (weapon.getWeaponAbilities().size() != 0) {
+						if (weapon.getWeaponAbilities().get(0).getEquipmentAbilityEffect() == Effect.DARMOR) {
+							if (newArmorValue < -10) {
+								newArmorValue = -10;
+							}
 						}
 					}
+
 					defenderStats.setHp(defenderStats.getHp() + newArmorValue);
 				} else {
 					defenderStats.setArmor(newArmorValue);
@@ -486,9 +502,11 @@ public class ExpeditionService {
 			} else {
 
 				// Destroy Armor not Hp (hammers)
-				if (weapon.getWeaponAbilities().get(0).getEquipmentAbilityEffect() == Effect.DARMOR) {
-					if (attackValue > 10) {
-						attackValue = 10;
+				if (weapon.getWeaponAbilities().size() != 0) {
+					if (weapon.getWeaponAbilities().get(0).getEquipmentAbilityEffect() == Effect.DARMOR) {
+						if (attackValue > 10) {
+							attackValue = 10;
+						}
 					}
 				}
 				defenderStats.setHp(defenderStats.getHp() - attackValue);
@@ -637,7 +655,11 @@ public class ExpeditionService {
 			if (SPEARBACKLASHCOUNT > 0 && e.getWeaponId() == weapon.getId() && e.getCharacterId() == e.getCharacterId()
 					&& weapon.getUserId() == e.getUserId()) {
 				aa.setAtkCount(SPEARBACKLASHCOUNT);
-				aa.getAtkAmount().set(0, aa.getAtkAmount().get(0) / 2);
+
+				if (aa.getAtkAmount().size() != 0) {
+					aa.getAtkAmount().set(0, aa.getAtkAmount().get(0) / 2);
+				}
+
 				for (int i = 0; i < SPEARBACKLASHCOUNT - 1; i++) {
 					aa.getAtkAmount().add(weapon.getAtkValue() / 2);
 				}
@@ -656,7 +678,8 @@ public class ExpeditionService {
 					.collect(Collectors.toList());
 
 			if (equippedWeapons.isEmpty()) {
-				teamWeapons.add(new WeaponDto());
+				teamWeapons.add(
+						new WeaponDto(0l, new EquipmentDto(), 8, true, new ArrayList<>(), c.getId(), c.getUserId()));
 				continue;
 			}
 

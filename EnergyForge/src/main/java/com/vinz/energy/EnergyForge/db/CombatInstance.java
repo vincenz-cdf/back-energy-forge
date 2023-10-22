@@ -10,6 +10,7 @@ import org.hibernate.type.SqlTypes;
 import com.vinz.energy.EnergyForge.db.enums.CombatStatus;
 import com.vinz.energy.EnergyForge.db.enums.Scenario;
 import com.vinz.energy.EnergyForge.dto.CombatIndexes;
+import com.vinz.energy.EnergyForge.dto.CumulatedTeamStats;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -42,7 +43,7 @@ public class CombatInstance implements Serializable {
 	private String label;
 	
     @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
 	private CombatStatus status;
     
     @ManyToOne
@@ -66,6 +67,10 @@ public class CombatInstance implements Serializable {
     	    inverseJoinColumns = @JoinColumn(name = "character_id")
     	)
     	private List<Character> characters = new ArrayList<>();
+    
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(nullable = true)
+    private CumulatedTeamStats afterMathInfo;
 
 
 	public Long getId() {
@@ -127,6 +132,12 @@ public class CombatInstance implements Serializable {
 	public void setCharacters(List<Character> characters) {
 		this.characters = characters;
 	}
-    
-    
+
+	public CumulatedTeamStats getAfterMathInfo() {
+		return afterMathInfo;
+	}
+
+	public void setAfterMathInfo(CumulatedTeamStats afterMathInfo) {
+		this.afterMathInfo = afterMathInfo;
+	}
 }

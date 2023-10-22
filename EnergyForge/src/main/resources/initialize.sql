@@ -85,7 +85,7 @@ INSERT INTO armor (equipment_id, armor_value) VALUES (21, 35);
 
 INSERT INTO equipment (name, value, sprite_path, slot) VALUES ('Wooden Shield', 100, 'assets/sprites/equipments/shield/woodenshield.png', 'RIGHTHAND');
 INSERT INTO weapon (equipment_id, atk_value, is_melee) VALUES (22, 0, TRUE);
-INSERT INTO equipment_ability (name, description, value, effect) VALUES ('Shieldwall', '15% to block the highest damage', 15, 'SHIELDWALL');
+INSERT INTO equipment_ability (name, description, value, effect) VALUES ('Shieldwall', 'ShieldWall : 15% to block the highest damage', 15, 'SHIELDWALL');
 INSERT INTO weapon_ability (weapon_id, ability_id) VALUES (22, 13);
 
 INSERT INTO equipment (name, value, sprite_path, slot) VALUES ('Copper Helmet T2', 100, 'assets/sprites/equipments/armor/head/copperhelm2.png', 'HEAD');

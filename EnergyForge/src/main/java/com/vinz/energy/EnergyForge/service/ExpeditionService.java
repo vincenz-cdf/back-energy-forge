@@ -39,6 +39,7 @@ import com.vinz.energy.EnergyForge.dto.equipments.WeaponDto;
 import com.vinz.energy.EnergyForge.dto.equipments.abilities.WeaponAbilityDto;
 import com.vinz.energy.EnergyForge.exception.AppException;
 import com.vinz.energy.EnergyForge.mappers.CharacterMapper;
+import com.vinz.energy.EnergyForge.mappers.CombatInstanceMapper;
 import com.vinz.energy.EnergyForge.mappers.WeaponMapper;
 
 @Service
@@ -64,8 +65,11 @@ public class ExpeditionService {
 	@Autowired
 	private WeaponDao weaponDao;
 
+	@Autowired
+	private CombatInstanceMapper combatInstanceMapper;
+
 	private Random random = new Random();
-	
+
 	int SHIELDWALLVALUE = 15;
 	int STAGGERVALUE = 33;
 	int KOVALUE = 75;
@@ -216,9 +220,24 @@ public class ExpeditionService {
 			throw new AppException("Not enough chars", HttpStatus.BAD_REQUEST);
 		}
 
-		int remainingHealth = beginFight(calculateTeamStats(yourTeam, enemyTeam));
-		
-		return null;
+		CumulatedTeamStats finalResult = beginFight(calculateTeamStats(yourTeam, enemyTeam));
+		int yourHp = finalResult.getYourStats().getHp();
+		int enemyHp = finalResult.getEnemyStats().getHp();
+
+		boolean hasWon = yourHp > enemyHp;
+
+		if (finalResult.getYourStats().getHp() > 0) {
+			for (Character c : yourTeam) {
+				c.setHp(yourHp / yourTeam.size() <= 0 ? 1 : yourHp / yourTeam.size());
+				characterDao.save(c);
+			}
+
+			// TODO: Adapter pour enemyTeam PvP (if pas HERO type)
+		}
+
+		combatInstance.setStatus(hasWon ? CombatStatus.WON_AWAIT : CombatStatus.LOST_AWAIT);
+
+		return combatInstanceMapper.toDto(combatInstance);
 	}
 
 	private CumulatedTeamStats calculateTeamStats(List<Character> yourTeam, List<Character> enemyTeam) {
@@ -265,14 +284,14 @@ public class ExpeditionService {
 	// DeathCount
 	// Xp fin
 	// Spread hp losses
-	private int beginFight(CumulatedTeamStats allTeamStats) {
+	private CumulatedTeamStats beginFight(CumulatedTeamStats allTeamStats) {
 		List<WeaponDto> yourWeapon = fetchTeamWeapons(allTeamStats.getYourStats().getDto());
 		List<WeaponDto> enemyWeapon = fetchTeamWeapons(allTeamStats.getEnemyStats().getDto());
 
 		int yourDeathCount = 0;
 		int enemyDeathCount = 0;
 
-		//TODO: Rework pour helper ally
+		// TODO: Rework pour helper ally
 		this.yourUserId = yourWeapon.get(0).getUserId();
 		this.enemyUserId = enemyWeapon.get(0).getUserId();
 
@@ -343,7 +362,7 @@ public class ExpeditionService {
 		}
 
 		// TODO: adapt to PvP
-		return allTeamStats.getYourStats().getHp();
+		return allTeamStats;
 	}
 
 	private int processWeaponsAgainstTeam(List<WeaponDto> attackingWeapons, CumulatedTeamStats.TeamStats defenderStats,
@@ -388,7 +407,7 @@ public class ExpeditionService {
 						defenderEffects.remove(e);
 					}
 				}
-				
+
 				// Mace Stun
 				if (e.getEffect() == Effect.KO && aa.getAtkCount() > 0) {
 					aa.setAtkCount(0);
@@ -441,6 +460,7 @@ public class ExpeditionService {
 
 		int totalDamage = 0;
 
+		// Destroy Armor
 		if (weapon.getWeaponAbilities().get(0).getEquipmentAbilityEffect() == Effect.DARMOR) {
 			aa.getAtkAmount().set(0, aa.getAtkAmount().get(0) + (int) Math.round(defenderStats.getArmor() * 0.33));
 		}
@@ -452,11 +472,25 @@ public class ExpeditionService {
 				int newArmorValue = defenderStats.getArmor() - attackValue;
 				if (newArmorValue <= 0) {
 					defenderStats.setArmor(0);
+
+					// Destroy Armor not Hp (hammers)
+					if (weapon.getWeaponAbilities().get(0).getEquipmentAbilityEffect() == Effect.DARMOR) {
+						if (newArmorValue < -10) {
+							newArmorValue = -10;
+						}
+					}
 					defenderStats.setHp(defenderStats.getHp() + newArmorValue);
 				} else {
 					defenderStats.setArmor(newArmorValue);
 				}
 			} else {
+
+				// Destroy Armor not Hp (hammers)
+				if (weapon.getWeaponAbilities().get(0).getEquipmentAbilityEffect() == Effect.DARMOR) {
+					if (attackValue > 10) {
+						attackValue = 10;
+					}
+				}
 				defenderStats.setHp(defenderStats.getHp() - attackValue);
 			}
 			totalDamage += attackValue;

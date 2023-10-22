@@ -23,109 +23,93 @@ import com.vinz.energy.EnergyForge.service.Global;
 
 @RestController
 public class ExpeditionController {
-	
+
 	@Autowired
 	private ExpeditionService expeditionService;
 
 	@Autowired
 	private Global global;
-	
+
 	@PostMapping("/combatinstance")
 	public ResponseEntity<Map<String, Object>> createOrRetrieveCombatI(@RequestBody RequestStringDto scenarioEnum) {
-	    try {
-	        Long userId = global.getCurrentUserId();
-	        
-	        CombatInstanceDto dto = expeditionService.createOrRetrieveCombatI(scenarioEnum.getString(), userId);
-	        
-	        Map<String, Object> response = new HashMap<>();
-	        response.put("status", "success");
-	        response.put("message", "Combat instance successfully retrieved.");
-	        response.put("data", dto); 
-	        return new ResponseEntity<>(response, HttpStatus.OK);
-	    } catch (Exception e) {
-	        throw new ResponseStatusException(
-	            HttpStatus.INTERNAL_SERVER_ERROR, 
-	            "Unable to retrieve Combat instance",
-	            e
-	        );
-	    }
+		try {
+			Long userId = global.getCurrentUserId();
+
+			CombatInstanceDto dto = expeditionService.createOrRetrieveCombatI(scenarioEnum.getString(), userId);
+
+			Map<String, Object> response = new HashMap<>();
+			response.put("status", "success");
+			response.put("message", "Combat instance successfully retrieved.");
+			response.put("data", dto);
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to retrieve Combat instance",
+					e);
+		}
 	}
-	
+
 	@GetMapping("/combatinstance/{id}/characters")
 	public ResponseEntity<Map<String, Object>> getCharactersForCombat(@PathVariable Long id) {
-	    try {
-	        
-	        List<CharacterDto> dto = expeditionService.getCharactersForCombat(id);
-	        
-	        Map<String, Object> response = new HashMap<>();
-	        response.put("status", "success");
-	        response.put("message", "Chars forcombat instance successfully retrieved.");
-	        response.put("data", dto); 
-	        return new ResponseEntity<>(response, HttpStatus.OK);
-	    } catch (Exception e) {
-	        throw new ResponseStatusException(
-	            HttpStatus.INTERNAL_SERVER_ERROR, 
-	            "Unable to retrieve Combat instance chars",
-	            e
-	        );
-	    }
+		try {
+
+			List<CharacterDto> dto = expeditionService.getCharactersForCombat(id);
+
+			Map<String, Object> response = new HashMap<>();
+			response.put("status", "success");
+			response.put("message", "Chars forcombat instance successfully retrieved.");
+			response.put("data", dto);
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+					"Unable to retrieve Combat instance chars", e);
+		}
 	}
-	
+
 	@GetMapping("/combatinstance/currentCharacters")
 	public ResponseEntity<Map<String, Object>> listCurrentCharacters() {
-	    try {
-	    	Long userId = global.getCurrentUserId();
-	        
-	        List<CharacterDto> dto = expeditionService.listCurrentCharacters(userId);
-	        
-	        Map<String, Object> response = new HashMap<>();
-	        response.put("status", "success");
-	        response.put("message", "Chars successfully retrieved.");
-	        response.put("data", dto);
-	        return new ResponseEntity<>(response, HttpStatus.OK);
-	    } catch (Exception e) {
-	        throw new ResponseStatusException(
-	            HttpStatus.INTERNAL_SERVER_ERROR, 
-	            "Unable to retrieve chars",
-	            e
-	        );
-	    }
+		try {
+			Long userId = global.getCurrentUserId();
+
+			List<CharacterDto> dto = expeditionService.listCurrentCharacters(userId);
+
+			Map<String, Object> response = new HashMap<>();
+			response.put("status", "success");
+			response.put("message", "Chars successfully retrieved.");
+			response.put("data", dto);
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to retrieve chars", e);
+		}
 	}
-	
+
 	@PutMapping("/combatinstance/{ciId}/character/{charId}")
-	public ResponseEntity<Map<String, String>> putHeroCharacterInCombat(@PathVariable Long ciId, @PathVariable Long charId) {
-	    try {
-	    	expeditionService.putHeroCharacterInCombat(ciId, charId);
-	        Map<String, String> response = new HashMap<>();
-	        response.put("status", "success");
-	        response.put("message", "Character successfully added to combat instance.");
-	        return new ResponseEntity<>(response, HttpStatus.OK);
-	    } catch (Exception e) {
-	        throw new ResponseStatusException(
-	            HttpStatus.INTERNAL_SERVER_ERROR, 
-	            "Unable to add character to combat instance",
-	            e
-	        );
-	    }
+	public ResponseEntity<Map<String, String>> putHeroCharacterInCombat(@PathVariable Long ciId,
+			@PathVariable Long charId) {
+		try {
+			expeditionService.putHeroCharacterInCombat(ciId, charId);
+			Map<String, String> response = new HashMap<>();
+			response.put("status", "success");
+			response.put("message", "Character successfully added to combat instance.");
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+					"Unable to add character to combat instance", e);
+		}
 	}
-	
+
 	@PostMapping("/combatinstance/{id}/launch")
 	public ResponseEntity<Map<String, Object>> launchCombatInstance(@PathVariable Long id) {
-	    try {
-	        
-	        //expeditionService.calculateCombatResult(id);
-	        
-	        Map<String, Object> response = new HashMap<>();
-	        response.put("status", "success");
-	        response.put("message", "Chars successfully retrieved.");
-	        response.put("data", null);
-	        return new ResponseEntity<>(response, HttpStatus.OK);
-	    } catch (Exception e) {
-	        throw new ResponseStatusException(
-	            HttpStatus.INTERNAL_SERVER_ERROR, 
-	            "Unable to retrieve chars",
-	            e
-	        );
-	    }
+		try {
+
+			CombatInstanceDto dto = expeditionService.calculateCombatResult(id);
+
+			Map<String, Object> response = new HashMap<>();
+			response.put("status", "success");
+			response.put("message", "Chars successfully retrieved.");
+			response.put("data", dto);
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to retrieve chars", e);
+		}
 	}
 }

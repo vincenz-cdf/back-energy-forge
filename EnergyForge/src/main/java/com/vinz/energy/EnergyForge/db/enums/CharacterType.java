@@ -5,5 +5,6 @@ public enum CharacterType {
 	
 	TRAINING1,
 	
-	BRIGAND_THUG, BRIGAND_POACHER
+	BRIGAND_THUG, BRIGAND_POACHER;
+	
 }

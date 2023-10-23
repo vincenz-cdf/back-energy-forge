@@ -27,6 +27,10 @@ public class CombatInstanceDto implements Serializable {
    
 	private List<Long> characterIds;
 	
+	private CumulatedTeamStats afterMathInfo;
+	
+	private CombatReward combatReward;
+	
 	public CombatInstanceDto() {
 		
 	}
@@ -43,6 +47,9 @@ public class CombatInstanceDto implements Serializable {
 		for(com.vinz.energy.EnergyForge.db.Character c : ci.getCharacters()) {
 			this.characterIds.add(c.getId());
 		}
+		
+		this.afterMathInfo = ci.getAfterMathInfo();
+		this.combatReward = ci.getCombatReward();
 	}
 
 	public Long getId() {
@@ -100,6 +107,25 @@ public class CombatInstanceDto implements Serializable {
 	public void setLabel(String label) {
 		this.label = label;
 	}
-	
+
+	public CumulatedTeamStats getAfterMathInfo() {
+		return afterMathInfo;
+	}
+
+	public void setAfterMathInfo(CumulatedTeamStats afterMathInfo) {
+		this.afterMathInfo = afterMathInfo;
+	}
+
+	public CombatReward getCombatReward() {
+		return combatReward;
+	}
+
+	public void setCombatReward(CombatReward combatReward) {
+		this.combatReward = combatReward;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
 	
 }

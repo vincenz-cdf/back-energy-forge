@@ -32,6 +32,7 @@ import com.vinz.energy.EnergyForge.dto.AttackActions;
 import com.vinz.energy.EnergyForge.dto.CharacterDto;
 import com.vinz.energy.EnergyForge.dto.CombatIndexes;
 import com.vinz.energy.EnergyForge.dto.CombatInstanceDto;
+import com.vinz.energy.EnergyForge.dto.CombatReward;
 import com.vinz.energy.EnergyForge.dto.CumulatedTeamStats;
 import com.vinz.energy.EnergyForge.dto.TriggeringEffect;
 import com.vinz.energy.EnergyForge.dto.equipments.EquipmentDto;
@@ -86,12 +87,11 @@ public class ExpeditionService {
 	public CombatInstanceDto createOrRetrieveCombatI(String scenarioEnum, Long userId) {
 
 		try {
-
 			Scenario scenario = Scenario.valueOf(scenarioEnum);
 			User user = userDao.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 			boolean isCampaign = scenario.isCampaign();
-
-			CombatInstance ci = combatInstanceDao.findByUserIdAndScenarioAndStatus(userId, scenario, CombatStatus.AWAIT)
+			
+			CombatInstance ci = combatInstanceDao.findByUserIdAndScenarioAndStatusIn(userId, scenario, Arrays.asList(CombatStatus.AWAIT, CombatStatus.WON_AWAIT, CombatStatus.LOST_AWAIT, CombatStatus.WON_FINAL, CombatStatus.LOST_FINAL))
 					.orElse(null);
 
 			if (ci == null) {
@@ -122,6 +122,13 @@ public class ExpeditionService {
 		}
 
 		return null;
+	}
+
+	public CombatInstanceDto getCombatInstance(Long combatInstanceId) {
+		CombatInstance combatInstance = combatInstanceDao.findById(combatInstanceId)
+				.orElseThrow(() -> new RuntimeException("Combat Instance not found"));
+
+		return new CombatInstanceDto(combatInstance);
 	}
 
 	private List<Character> pregenerateNpcsForCampaign(Scenario scenario) {
@@ -206,45 +213,93 @@ public class ExpeditionService {
 
 	@Transactional
 	public void calculateCombatResult(Long combatInstanceId) {
-	    // Fetch the CombatInstance
-	    CombatInstance combatInstance = combatInstanceDao.findById(combatInstanceId)
-	            .orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
+		// Fetch the CombatInstance
+		CombatInstance combatInstance = combatInstanceDao.findById(combatInstanceId)
+				.orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
 
-	    // Your existing logic for calculating combat results
-	    List<Character> allCharacters = combatInstance.getCharacters();
-	    List<Character> yourTeam = new ArrayList<>();
-	    List<Character> enemyTeam = new ArrayList<>();
-	    for (Character character : allCharacters) {
-	        if (character.getCharacterType() == CharacterType.HERO) {
-	            yourTeam.add(character);
-	        } else {
-	            enemyTeam.add(character);
-	        }
-	    }
-	    if (yourTeam.isEmpty() || enemyTeam.isEmpty()) {
-	        throw new AppException("Not enough chars", HttpStatus.BAD_REQUEST);
-	    }
-	    CumulatedTeamStats finalResult = beginFight(calculateTeamStats(yourTeam, enemyTeam));
-	    boolean hasWon = finalResult.getYourStats().getHp() > finalResult.getEnemyStats().getHp();
+		// Your existing logic for calculating combat results
+		List<Character> allCharacters = combatInstance.getCharacters();
+		List<Character> yourTeam = new ArrayList<>();
+		List<Character> enemyTeam = new ArrayList<>();
+		for (Character character : allCharacters) {
+			if (character.getCharacterType() == CharacterType.HERO) {
+				yourTeam.add(character);
+			} else {
+				enemyTeam.add(character);
+			}
+		}
+		if (yourTeam.isEmpty() || enemyTeam.isEmpty()) {
+			throw new AppException("Not enough chars", HttpStatus.BAD_REQUEST);
+		}
+		CumulatedTeamStats finalResult = beginFight(calculateTeamStats(yourTeam, enemyTeam));
 
-	    // Save the updated CombatInstance
-	    combatInstance.setStatus(CombatStatus.WON_FINAL);
-	    combatInstance.setAfterMathInfo(finalResult);
-	    combatInstanceDao.save(combatInstance);
+		boolean hasWon = finalResult.getYourStats().getHp() > finalResult.getEnemyStats().getHp();
+		
+		// Save the updated CombatInstance
+		combatInstance.setStatus(hasWon ? CombatStatus.WON_AWAIT : CombatStatus.LOST_AWAIT);
+		combatInstance.setAfterMathInfo(finalResult);
+		
+		CombatReward reward = new CombatReward();
+		for (Character c : enemyTeam) {
+			reward.setExperiencePoints(reward.getExperiencePoints() + c.getExperiencePoint());
+			reward.setCoins(reward.getCoins() + (5 + c.getLevel() * 2));
+		}
+		
+		if (hasWon) {
+			combatInstance.setCombatReward(reward);
+		}
+		combatInstanceDao.save(combatInstance);
 
 	}
-
 	
 
-//	  int yourHp = finalResult.getYourStats().getHp(); int enemyHp =
-//	  finalResult.getEnemyStats().getHp();
-//	  
-//	  //Trigger apres boolean hasWon = yourHp > enemyHp; if (yourHp > 0) { for
-//	  (Character c : yourTeam) { c.setHp(yourHp / yourTeam.size() <= 0 ? 1 : yourHp
-//	  / yourTeam.size()); characterDao.save(c); }
-//	  
-//	  // TODO: Adapter pour enemyTeam PvP (if pas HERO type) } else { for
-//	  (Character c : yourTeam) { c.setHp(0); characterDao.save(c); } }
+	// TODO: nouveauté sur CombatSystem
+	// Ajouter notion morale
+	// Xp fin
+	// Spread hp losses
+	public void refreshCombatInstance() {
+
+		List<CombatInstance> wonCombatInstances = combatInstanceDao.findByStatus(CombatStatus.WON_AWAIT);
+		List<CombatInstance> lostCombatInstances = combatInstanceDao.findByStatus(CombatStatus.LOST_AWAIT);
+		
+		for (CombatInstance ci : wonCombatInstances) {
+			ci.setStatus(CombatStatus.WON_FINAL);
+		}
+		for (CombatInstance ci : lostCombatInstances) {
+			ci.setStatus(CombatStatus.LOST_FINAL);
+		}
+
+	}
+	
+	public void seeCombatResult(Long combatInstanceId, Long userId) {
+		
+		CombatInstance ci = combatInstanceDao.findById(combatInstanceId).orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
+		User user = userDao.findById(userId).orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
+
+		CumulatedTeamStats finalResult = ci.getAfterMathInfo();
+		List<Character> chars = ci.getCharacters();
+
+		int yourHp = finalResult.getYourStats().getHp();
+		
+		if (yourHp > 0) {
+			for (Character c : chars) {
+				c.setHp(yourHp / chars.size() <= 0 ? 1 : yourHp / chars.size());
+				c.setExperiencePoint(ci.getCombatReward().getExperiencePoints() / chars.size());
+				characterDao.save(c);
+			}
+			
+			user.setCoin(user.getCoin() + ci.getCombatReward().getCoins());
+		} else {
+			for (Character c : chars) {
+				c.setHp(0);
+				c.setExperiencePoint(ci.getCombatReward().getExperiencePoints() / chars.size() / 2);
+				characterDao.save(c);
+			}
+		}
+		
+		ci.setStatus(CombatStatus.CLOSED);
+		combatInstanceDao.save(ci);
+	}
 
 	private CumulatedTeamStats calculateTeamStats(List<Character> yourTeam, List<Character> enemyTeam) {
 		CumulatedTeamStats allTeamStats = new CumulatedTeamStats();
@@ -285,11 +340,6 @@ public class ExpeditionService {
 		return allTeamStats;
 	}
 
-	// TODO: nouveauté sur CombatSystem
-	// Ajouter notion morale
-	// DeathCount
-	// Xp fin
-	// Spread hp losses
 	private CumulatedTeamStats beginFight(CumulatedTeamStats allTeamStats) {
 		List<WeaponDto> yourWeapon = fetchTeamWeapons(allTeamStats.getYourStats().getDto());
 		List<WeaponDto> enemyWeapon = fetchTeamWeapons(allTeamStats.getEnemyStats().getDto());
@@ -710,4 +760,5 @@ public class ExpeditionService {
 			return w1.getAtkValue().compareTo(w2.getAtkValue()); // compare the actual values
 		}).collect(Collectors.toList());
 	}
+
 }

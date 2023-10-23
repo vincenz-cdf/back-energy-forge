@@ -5,5 +5,6 @@ public enum CombatStatus {
 	LOST_AWAIT,
 	WON_FINAL,
 	WON_AWAIT,
-	AWAIT
+	AWAIT,
+	CLOSED
 }

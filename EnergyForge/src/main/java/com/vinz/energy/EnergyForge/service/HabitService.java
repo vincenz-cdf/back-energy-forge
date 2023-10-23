@@ -69,4 +69,10 @@ public class HabitService {
 		habitDao.flush();
 		
 	}
+	
+	public void refreshHabits() {
+        List<Habit> checkedHabits = habitDao.findByChecked(true);
+        checkedHabits.forEach(habit -> habit.setChecked(false));
+        habitDao.saveAll(checkedHabits);
+	}
 }

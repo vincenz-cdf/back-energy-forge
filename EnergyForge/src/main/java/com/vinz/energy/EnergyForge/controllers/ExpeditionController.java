@@ -116,4 +116,38 @@ public class ExpeditionController {
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to fight", e);
 		}
 	}
+	
+	@GetMapping("/combatinstance/{id}")
+	public ResponseEntity<Map<String, Object>> getCombatIntance(@PathVariable Long id) {
+		try {
+
+			CombatInstanceDto dto = expeditionService.getCombatInstance(id);
+
+			Map<String, Object> response = new HashMap<>();
+			response.put("status", "success");
+			response.put("message", "Chars successfully retrieved.");
+			response.put("data", dto);
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to retrieve chars", e);
+		}
+	}
+	
+	@GetMapping("/combatinstance/{id}/result")
+	public ResponseEntity<Map<String, String>> getCombatIntanceResults(@PathVariable Long id) {
+		try {
+
+			Long userId = global.getCurrentUserId();
+			
+			expeditionService.seeCombatResult(id, userId);
+
+			Map<String, String> response = new HashMap<>();
+			response.put("status", "success");
+			response.put("message", "Chars successfully retrieved.");
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to retrieve chars", e);
+		}
+	}
+	
 }

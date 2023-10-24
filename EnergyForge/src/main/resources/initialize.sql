@@ -99,6 +99,11 @@ INSERT INTO CHARACTER (name, level, hp, armor, max_hp, max_armor, atk, sprite_pa
 VALUES ('Training Partner', 1, 50, 0, 50, 0, 8, 'assets/sprites/enemies/trainer1.png', 'TRAINING1', 4, 4, 15, 1);
 
 INSERT INTO CHARACTER (name, level, hp, armor, max_hp, max_armor, atk, sprite_path, character_type, morale, max_morale, experience_point, user_id)
+VALUES ('Training Partner', 1, 50, 0, 50, 0, 8, 'assets/sprites/enemies/trainer1.png', 'TRAINING2', 4, 4, 15, 1);
+insert into equipped_item (character_id, equipment_id, slot)
+values (2, 22, 'RIGHTHAND')
+
+INSERT INTO CHARACTER (name, level, hp, armor, max_hp, max_armor, atk, sprite_path, character_type, morale, max_morale, experience_point, user_id)
 VALUES ('Bandit Outlaw', 1, 55, 50, 55, 50, 8, '', 'BRIGAND_THUG', 4, 4, 15, 1);
 
 INSERT INTO CHARACTER (name, level, hp, armor, max_hp, max_armor, atk, sprite_path, character_type, morale, max_morale, experience_point, user_id)

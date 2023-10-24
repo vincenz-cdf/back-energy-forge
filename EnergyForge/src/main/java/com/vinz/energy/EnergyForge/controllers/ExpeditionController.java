@@ -69,12 +69,12 @@ public class ExpeditionController {
 		}
 	}
 
-	@GetMapping("/combatinstance/currentCharacters")
-	public ResponseEntity<Map<String, Object>> listCurrentCharacters() {
+	@GetMapping("/combatinstance/currentCharacters/{fromHabit}")
+	public ResponseEntity<Map<String, Object>> listCurrentCharacters(@PathVariable boolean fromHabit) {
 		try {
 			Long userId = global.getCurrentUserId();
 
-			List<CharacterDto> dto = expeditionService.listCurrentCharacters(userId);
+			List<CharacterDto> dto = expeditionService.listCurrentCharacters(userId, fromHabit);
 
 			Map<String, Object> response = new HashMap<>();
 			response.put("status", "success");

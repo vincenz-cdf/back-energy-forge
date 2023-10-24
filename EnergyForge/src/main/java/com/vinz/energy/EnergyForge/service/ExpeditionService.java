@@ -70,9 +70,6 @@ public class ExpeditionService {
 	@Autowired
 	private WeaponDao weaponDao;
 
-	@Autowired
-	private CombatInstanceMapper combatInstanceMapper;
-
 	private Random random = new Random();
 
 	int SHIELDWALLVALUE = 15;
@@ -90,8 +87,10 @@ public class ExpeditionService {
 			Scenario scenario = Scenario.valueOf(scenarioEnum);
 			User user = userDao.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 			boolean isCampaign = scenario.isCampaign();
-			
-			CombatInstance ci = combatInstanceDao.findByUserIdAndScenarioAndStatusIn(userId, scenario, Arrays.asList(CombatStatus.AWAIT, CombatStatus.WON_AWAIT, CombatStatus.LOST_AWAIT, CombatStatus.WON_FINAL, CombatStatus.LOST_FINAL))
+
+			CombatInstance ci = combatInstanceDao.findByUserIdAndScenarioAndStatusIn(userId, scenario,
+					Arrays.asList(CombatStatus.AWAIT, CombatStatus.WON_AWAIT, CombatStatus.LOST_AWAIT,
+							CombatStatus.WON_FINAL, CombatStatus.LOST_FINAL))
 					.orElse(null);
 
 			if (ci == null) {
@@ -136,6 +135,9 @@ public class ExpeditionService {
 		switch (scenario) {
 		case T_L1:
 			characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING1));
+			break;
+		case T_L2:
+			characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING2));
 			break;
 		default:
 			break;
@@ -189,9 +191,13 @@ public class ExpeditionService {
 		return characterMapper.toCharacterDtos(combatInstance.getCharacters());
 	}
 
-	public List<CharacterDto> listCurrentCharacters(Long userId) {
+	public List<CharacterDto> listCurrentCharacters(Long userId, boolean fromHabit) {
 
-		return characterMapper.toCharacterDtos(characterDao.findByUserId(userId));
+		if (fromHabit) {
+			return characterMapper.toCharacterDtos(characterDao.findByUserId(userId));
+		}
+		
+		return characterMapper.toCharacterDtos(characterDao.findCharactersNotInCombatForUser(userId));
 	}
 
 	public void putHeroCharacterInCombat(Long ciId, Long charId) {
@@ -234,24 +240,23 @@ public class ExpeditionService {
 		CumulatedTeamStats finalResult = beginFight(calculateTeamStats(yourTeam, enemyTeam));
 
 		boolean hasWon = finalResult.getYourStats().getHp() > finalResult.getEnemyStats().getHp();
-		
+
 		// Save the updated CombatInstance
 		combatInstance.setStatus(hasWon ? CombatStatus.WON_AWAIT : CombatStatus.LOST_AWAIT);
 		combatInstance.setAfterMathInfo(finalResult);
-		
+
 		CombatReward reward = new CombatReward();
 		for (Character c : enemyTeam) {
 			reward.setExperiencePoints(reward.getExperiencePoints() + c.getExperiencePoint());
 			reward.setCoins(reward.getCoins() + (5 + c.getLevel() * 2));
 		}
-		
+
 		if (hasWon) {
 			combatInstance.setCombatReward(reward);
 		}
 		combatInstanceDao.save(combatInstance);
 
 	}
-	
 
 	// TODO: nouveauté sur CombatSystem
 	// Ajouter notion morale
@@ -261,7 +266,7 @@ public class ExpeditionService {
 
 		List<CombatInstance> wonCombatInstances = combatInstanceDao.findByStatus(CombatStatus.WON_AWAIT);
 		List<CombatInstance> lostCombatInstances = combatInstanceDao.findByStatus(CombatStatus.LOST_AWAIT);
-		
+
 		for (CombatInstance ci : wonCombatInstances) {
 			ci.setStatus(CombatStatus.WON_FINAL);
 		}
@@ -270,36 +275,44 @@ public class ExpeditionService {
 		}
 
 	}
-	
+
 	public void seeCombatResult(Long combatInstanceId, Long userId) {
-		
-		CombatInstance ci = combatInstanceDao.findById(combatInstanceId).orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
-		User user = userDao.findById(userId).orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
 
-		CumulatedTeamStats finalResult = ci.getAfterMathInfo();
-		List<Character> chars = ci.getCharacters();
+	    CombatInstance ci = combatInstanceDao.findById(combatInstanceId)
+	            .orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
+	    User user = userDao.findById(userId).orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
 
-		int yourHp = finalResult.getYourStats().getHp();
-		
-		if (yourHp > 0) {
-			for (Character c : chars) {
-				c.setHp(yourHp / chars.size() <= 0 ? 1 : yourHp / chars.size());
-				c.setExperiencePoint(ci.getCombatReward().getExperiencePoints() / chars.size());
-				characterDao.save(c);
-			}
-			
-			user.setCoin(user.getCoin() + ci.getCombatReward().getCoins());
-		} else {
-			for (Character c : chars) {
-				c.setHp(0);
-				c.setExperiencePoint(ci.getCombatReward().getExperiencePoints() / chars.size() / 2);
-				characterDao.save(c);
-			}
-		}
-		
-		ci.setStatus(CombatStatus.CLOSED);
-		combatInstanceDao.save(ci);
+	    CumulatedTeamStats finalResult = ci.getAfterMathInfo();
+	    List<Character> chars = ci.getCharacters();
+
+	    int yourHp = finalResult.getYourStats().getHp();
+	    int yourMorale = finalResult.getYourStats().getMorale();
+	    int heroCount = (int) chars.stream().filter(c -> c.getCharacterType() == CharacterType.HERO).count();
+	    
+	    int rewardExp = ci.getCombatReward().getExperiencePoints();
+	    int rewardCoins = ci.getCombatReward().getCoins();
+
+	    for (Character c : chars) {
+	        if (c.getCharacterType() == CharacterType.HERO) {
+	            if (yourHp > 0) {
+	                c.setHp(Math.max(1, yourHp / heroCount));
+	                c.setExperiencePoint(rewardExp / heroCount);
+	                user.setCoin(user.getCoin() + rewardCoins);
+	            } else {
+	                c.setHp(0);
+	                c.setExperiencePoint(rewardExp / heroCount / 2);
+	            }
+	            
+	            c.setMorale(yourMorale > 0 ? yourMorale / heroCount : 0);
+	            c.setMorale(c.getMorale() - 1);
+	            characterDao.save(c);
+	        }
+	    }
+
+	    ci.setStatus(CombatStatus.CLOSED);
+	    combatInstanceDao.save(ci);
 	}
+
 
 	private CumulatedTeamStats calculateTeamStats(List<Character> yourTeam, List<Character> enemyTeam) {
 		CumulatedTeamStats allTeamStats = new CumulatedTeamStats();
@@ -313,12 +326,14 @@ public class ExpeditionService {
 			yourStats.setHp(yourStats.getHp() + dto.getHp());
 			yourStats.setArmor(yourStats.getArmor() + dto.getArmor());
 			yourStats.getDto().add(dto);
+			yourStats.setMorale(yourStats.getMorale() + c.getMorale());
 			int totalForCurrentCharacter = dto.getHp() + dto.getArmor();
 			if (i != yourTeam.size() - 1) {
 				yourStats.getDeathThreshold().add(totalForCurrentCharacter);
 			}
 			i++;
 		}
+		yourStats.setPartySize(yourTeam.size());
 
 		i = 0;
 		for (Character c : enemyTeam) {
@@ -326,6 +341,7 @@ public class ExpeditionService {
 			enemyStats.setHp(enemyStats.getHp() + dto.getHp());
 			enemyStats.setArmor(enemyStats.getArmor() + dto.getArmor());
 			enemyStats.getDto().add(dto);
+			enemyStats.setMorale(enemyStats.getMorale() + c.getMorale());
 			int totalForCurrentCharacter = dto.getHp() + dto.getArmor();
 
 			if (i != enemyTeam.size() - 1) {
@@ -333,6 +349,7 @@ public class ExpeditionService {
 			}
 			i++;
 		}
+		enemyStats.setPartySize(enemyTeam.size());
 
 		allTeamStats.setYourStats(yourStats);
 		allTeamStats.setEnemyStats(enemyStats);
@@ -353,6 +370,10 @@ public class ExpeditionService {
 
 		while (allTeamStats.getYourStats().getHp() > 0 && allTeamStats.getEnemyStats().getHp() > 0) {
 
+			if (allTeamStats.getYourStats().getMorale() <= 0 || allTeamStats.getEnemyStats().getMorale() <= 0) {
+				break;
+			}
+			
 			List<TriggeringEffect> yourEffect = buildEffectsList(yourWeapon, enemyWeapon);
 			List<TriggeringEffect> enemyEffect = buildEffectsList(enemyWeapon, yourWeapon);
 
@@ -390,6 +411,8 @@ public class ExpeditionService {
 			for (int i = 0 + enemyDeathCount; i < allTeamStats.getEnemyDeathThreshold().size(); i++) {
 				if (totalDmgByYou > allTeamStats.getEnemyDeathThreshold().get(i)) {
 					enemyDeathCount++;
+					allTeamStats.getEnemyStats().setMorale(allTeamStats.getEnemyStats().getMorale()
+							- allTeamStats.getEnemyStats().getPartySize() - enemyDeathCount);
 					break;
 				}
 			}
@@ -397,6 +420,8 @@ public class ExpeditionService {
 			for (int i = 0 + yourDeathCount; i < allTeamStats.getYourDeathThreshold().size(); i++) {
 				if (totalDmgByEnemy > allTeamStats.getYourDeathThreshold().get(i)) {
 					yourDeathCount++;
+					allTeamStats.getYourStats().setMorale(allTeamStats.getYourStats().getMorale()
+							- allTeamStats.getYourStats().getPartySize() - yourDeathCount);
 					break;
 				}
 			}

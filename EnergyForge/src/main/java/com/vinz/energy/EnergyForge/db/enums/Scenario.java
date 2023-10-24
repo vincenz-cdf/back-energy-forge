@@ -6,7 +6,8 @@ public enum Scenario {
 	
 	
 	//Campaign
-	T_L1;
+	T_L1,
+	T_L2;
 	
 	
 	
@@ -14,6 +15,8 @@ public enum Scenario {
         switch(this) {
             case T_L1:
                 return "Tutorial 1";
+            case T_L2:
+                return "Tutorial 2";
             default:
                 break;
         }
@@ -22,7 +25,7 @@ public enum Scenario {
     
     public boolean isCampaign() {
         switch(this) {
-            case T_L1:
+            case T_L1, T_L2:
                 return true;
             default:
                 break;

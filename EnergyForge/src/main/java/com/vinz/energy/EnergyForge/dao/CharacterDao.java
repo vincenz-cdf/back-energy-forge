@@ -17,4 +17,7 @@ public interface CharacterDao extends JpaRepository<Character, Long> {
     List<Character> findByCharacterType(CharacterType characterType);
     
     List<Character> findByUserId(Long userId);
+    
+    @Query("SELECT c FROM Character c WHERE c.user.id = :userId AND NOT EXISTS (SELECT ci FROM CombatInstance ci JOIN ci.characters ch WHERE ch.id = c.id)")
+    List<Character> findCharactersNotInCombatForUser(@Param("userId") Long userId);
 }

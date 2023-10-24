@@ -15,6 +15,9 @@ public class CumulatedTeamStats implements Serializable {
 	    private Integer armor = 0;
 	    private List<CharacterDto> dto = new ArrayList<CharacterDto>();
 	    private List<Integer> deathThreshold = new ArrayList<Integer>();
+	    private Integer morale = 0;
+	    private Integer partySize = 0;
+	    
 		public Integer getHp() {
 			return hp;
 		}
@@ -42,8 +45,18 @@ public class CumulatedTeamStats implements Serializable {
 		public static long getSerialversionuid() {
 			return serialVersionUID;
 		}
-
-	    
+		public Integer getMorale() {
+			return morale;
+		}
+		public void setMorale(Integer morale) {
+			this.morale = morale;
+		}
+		public Integer getPartySize() {
+			return partySize;
+		}
+		public void setPartySize(Integer partySize) {
+			this.partySize = partySize;
+		}
 
 	    
 	}

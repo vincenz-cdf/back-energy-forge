@@ -99,4 +99,7 @@ INSERT INTO CHARACTER (name, level, hp, armor, max_hp, max_armor, atk, sprite_pa
 VALUES ('Training Partner', 1, 50, 0, 50, 0, 8, 'assets/sprites/enemies/trainer1.png', 'TRAINING1', 4, 4, 15, 1);
 
 INSERT INTO CHARACTER (name, level, hp, armor, max_hp, max_armor, atk, sprite_path, character_type, morale, max_morale, experience_point, user_id)
-VALUES ('Bandit Outlaw', 1, 55, 0, 55, 0, 8, '', 'BRIGAND_THUG', 4, 4, 15, 1);
+VALUES ('Bandit Outlaw', 1, 55, 50, 55, 50, 8, '', 'BRIGAND_THUG', 4, 4, 15, 1);
+
+INSERT INTO CHARACTER (name, level, hp, armor, max_hp, max_armor, atk, sprite_path, character_type, morale, max_morale, experience_point, user_id)
+VALUES ('Bandit Hunter', 2, 55, 25, 55, 25, 8, '', 'BRIGAND_POACHER', 4, 4, 17, 1);

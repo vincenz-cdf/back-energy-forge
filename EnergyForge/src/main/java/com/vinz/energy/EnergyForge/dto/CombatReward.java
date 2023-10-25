@@ -12,7 +12,7 @@ public class CombatReward implements Serializable {
 	
 	private Integer coins = 0;
 	private Integer experiencePoints = 0;
-	private List<Equipment> equipments = new ArrayList<Equipment>();
+	private List<Long> equipmentIds = new ArrayList<Long>();
 	
 	public Integer getCoins() {
 		return coins;
@@ -26,11 +26,11 @@ public class CombatReward implements Serializable {
 	public void setExperiencePoints(Integer experiencePoints) {
 		this.experiencePoints = experiencePoints;
 	}
-	public List<Equipment> getEquipments() {
-		return equipments;
+	public List<Long> getEquipmentIds() {
+		return equipmentIds;
 	}
-	public void setEquipments(List<Equipment> equipments) {
-		this.equipments = equipments;
+	public void setEquipmentIds(List<Long> equipmentIds) {
+		this.equipmentIds = equipmentIds;
 	}
 	public static long getSerialversionuid() {
 		return serialVersionUID;

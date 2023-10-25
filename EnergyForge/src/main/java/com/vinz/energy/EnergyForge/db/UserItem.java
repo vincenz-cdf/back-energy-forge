@@ -1,5 +1,7 @@
 package com.vinz.energy.EnergyForge.db;
 
+import java.io.Serializable;
+
 import com.vinz.energy.EnergyForge.db.equipments.Equipment;
 
 import jakarta.persistence.Entity;
@@ -20,9 +22,11 @@ import lombok.NoArgsConstructor;
 @Data
 @Entity
 @Table(name = "user_item")
-public class UserItem {
+public class UserItem implements Serializable {
 
-    @Id
+    private static final long serialVersionUID = 1L;
+
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	

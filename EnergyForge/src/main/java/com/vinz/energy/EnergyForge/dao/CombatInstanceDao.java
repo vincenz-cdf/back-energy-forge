@@ -14,5 +14,7 @@ public interface CombatInstanceDao extends JpaRepository<CombatInstance, Long> {
 	Optional<CombatInstance> findByUserIdAndScenarioAndStatusIn(Long userId, Scenario scenario, List<CombatStatus> status);
 	
 	List<CombatInstance> findByStatus(CombatStatus status);
+	
+	List<CombatInstance> findByUserIdOrderByIdAsc(Long userId);
 
 }

@@ -6,9 +6,11 @@ import com.vinz.energy.EnergyForge.db.enums.Effect;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class TriggeringEffect implements Serializable {
 	
 	/**

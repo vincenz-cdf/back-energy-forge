@@ -51,6 +51,8 @@ public class ExpeditionController {
 					e);
 		}
 	}
+	
+	
 
 	@GetMapping("/combatinstance/{id}/characters")
 	public ResponseEntity<Map<String, Object>> getCharactersForCombat(@PathVariable Long id) {
@@ -107,6 +109,8 @@ public class ExpeditionController {
 
 			expeditionService.calculateCombatResult(id);
 
+			
+			System.out.println("Apres save");
 			Map<String, String> response = new HashMap<>();
 			response.put("status", "success");
 			response.put("message", "Combat successfully done.");
@@ -150,4 +154,21 @@ public class ExpeditionController {
 		}
 	}
 	
+	@GetMapping("/combatinstance/user")
+	public ResponseEntity<Map<String, Object>> getCombatIntanceForUser() {
+		try {
+			
+			Long userId = global.getCurrentUserId();
+			
+			List<CombatInstanceDto> dto = expeditionService.getCombatInstanceForUser(userId);
+
+			Map<String, Object> response = new HashMap<>();
+			response.put("status", "success");
+			response.put("message", "Chars successfully retrieved.");
+			response.put("data", dto);
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to retrieve chars", e);
+		}
+	}
 }

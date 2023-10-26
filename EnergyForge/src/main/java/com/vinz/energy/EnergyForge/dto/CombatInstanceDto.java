@@ -25,7 +25,7 @@ public class CombatInstanceDto implements Serializable {
 
 	private Scenario scenario;
    
-	private List<Long> characterIds;
+	private List<CharacterDto> characters = new ArrayList<CharacterDto>();
 	
 	private CumulatedTeamStats afterMathInfo;
 	
@@ -42,10 +42,10 @@ public class CombatInstanceDto implements Serializable {
 		this.userId = ci.getUser().getId();
 		this.indexes = ci.getIndexes();
 		this.scenario = ci.getScenario();
-		this.characterIds = new ArrayList<Long>();
+		this.characters = new ArrayList<CharacterDto>();
 		
 		for(com.vinz.energy.EnergyForge.db.Character c : ci.getCharacters()) {
-			this.characterIds.add(c.getId());
+			this.characters.add(new CharacterDto(c));
 		}
 		
 		this.afterMathInfo = ci.getAfterMathInfo();
@@ -92,12 +92,12 @@ public class CombatInstanceDto implements Serializable {
 		this.scenario = scenario;
 	}
 
-	public List<Long> getCharacterIds() {
-		return characterIds;
+	public List<CharacterDto> getCharacters() {
+		return characters;
 	}
 
-	public void setCharacterIds(List<Long> characterIds) {
-		this.characterIds = characterIds;
+	public void setCharacters(List<CharacterDto> characters) {
+		this.characters = characters;
 	}
 
 	public String getLabel() {

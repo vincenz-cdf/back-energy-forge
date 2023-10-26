@@ -4,14 +4,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.vinz.energy.EnergyForge.db.equipments.Equipment;
 import com.vinz.energy.EnergyForge.db.equipments.EquipmentSlot;
 import com.vinz.energy.EnergyForge.dto.UserItemDto;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-
-@AllArgsConstructor
-@NoArgsConstructor
 public class EquipmentDto implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private Long id;
@@ -23,6 +19,17 @@ public class EquipmentDto implements Serializable {
 	
 	private List<EquippedItemDto> equippedItems = new ArrayList<EquippedItemDto>();
 	private List<UserItemDto> userItems = new ArrayList<UserItemDto>();
+	
+	public EquipmentDto() {	
+	}
+	
+	public EquipmentDto(Equipment equipment) {
+		id = equipment.getId();
+		name = equipment.getName();
+		value = equipment.getValue();
+		spritePath = equipment.getSpritePath();
+		slot = equipment.getSlot();
+	}
 
 	public Long getId() {
 		return id;

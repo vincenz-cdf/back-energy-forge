@@ -7,12 +7,8 @@ import java.util.List;
 import com.vinz.energy.EnergyForge.db.enums.CharacterType;
 import com.vinz.energy.EnergyForge.dto.equipments.EquippedItemDto;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-@AllArgsConstructor
-@NoArgsConstructor
 @ToString
 public class CharacterDto implements Serializable {
 
@@ -33,6 +29,26 @@ public class CharacterDto implements Serializable {
 	private Integer experiencePoint;
 	
 	private List<EquippedItemDto> equippedItems = new ArrayList<EquippedItemDto>();
+	
+	public CharacterDto() {
+	}
+	
+	public CharacterDto(com.vinz.energy.EnergyForge.db.Character c) {
+		id = c.getId();
+		name = c.getName();
+		level = c.getLevel();
+		hp = c.getHp();
+		armor = c.getArmor();
+		maxHp = c.getMaxHp();
+		maxArmor = c.getMaxArmor();
+		atk = c.getAtk();
+		spritePath = c.getSpritePath();
+		characterType = c.getCharacterType();
+		userId = c.getUser().getId();
+		maxMorale = c.getMaxMorale();
+		morale = c.getMorale();
+		experiencePoint = c.getExperiencePoint();
+	}
 
 	public Long getId() {
 		return id;

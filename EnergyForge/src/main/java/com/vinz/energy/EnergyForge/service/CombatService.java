@@ -342,7 +342,12 @@ public class CombatService {
 	}
 
 	private List<TriggeringEffect> buildEffectsList(List<WeaponDto> weapons, List<WeaponDto> enemyWeapons) {
+		
 		List<TriggeringEffect> effects = new ArrayList<>();
+		
+		List<WeaponDto> meleeEnemyWeapons = enemyWeapons.stream().filter(w -> w.getIsMelee())
+				.collect(Collectors.toList());
+		
 		for (WeaponDto weapon : weapons) {
 
 			TriggeringEffect effect = new TriggeringEffect();
@@ -376,7 +381,7 @@ public class CombatService {
 				}
 
 				if (wAD.getEquipmentAbilityEffect() == Effect.SPEARWALL) {
-					for (int j = 0; j < enemyWeapons.size(); j++) {
+					for (int j = 0; j < meleeEnemyWeapons.size(); j++) {
 						if (random.nextInt(100) + 1 <= SPEARWALLVALUE) {
 							effect.setEffect(Effect.SPEARWALL);
 							effects.add(effect);

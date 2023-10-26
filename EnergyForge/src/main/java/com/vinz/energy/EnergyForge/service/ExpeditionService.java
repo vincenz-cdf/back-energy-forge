@@ -2,7 +2,6 @@ package com.vinz.energy.EnergyForge.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -10,7 +9,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +32,7 @@ import com.vinz.energy.EnergyForge.dto.CombatIndexes;
 import com.vinz.energy.EnergyForge.dto.CombatInstanceDto;
 import com.vinz.energy.EnergyForge.dto.CombatReward;
 import com.vinz.energy.EnergyForge.dto.CumulatedTeamStats;
+import com.vinz.energy.EnergyForge.dto.equipments.EquipmentDto;
 import com.vinz.energy.EnergyForge.exception.AppException;
 import com.vinz.energy.EnergyForge.mappers.CharacterMapper;
 
@@ -250,12 +249,18 @@ public class ExpeditionService {
 			boolean hasWon) {
 		CombatReward reward = new CombatReward();
 
+		List<EquipmentDto> equipments = new ArrayList<EquipmentDto>();
+
 		if (combatInstance.getScenario().isCampaign()) {
 			switch (combatInstance.getScenario()) {
 			case T_L1:
 				reward.setExperiencePoints(15);
 				reward.setCoins(100);
-				reward.setEquipmentIds(Arrays.asList(7l));
+				equipments.add(new EquipmentDto(equipmentDao.findById(7l)
+						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND))));
+				equipments.add(new EquipmentDto(equipmentDao.findById(4l)
+						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND))));
+				reward.setEquipments(equipments);
 				break;
 			case T_L2:
 				reward.setExperiencePoints(30);
@@ -327,10 +332,10 @@ public class ExpeditionService {
 
 		user.setCoin(user.getCoin() + rewardCoins);
 
-		for (Long e : ci.getCombatReward().getEquipmentIds()) {
+		for (EquipmentDto e : ci.getCombatReward().getEquipments()) {
 			UserItem userItem = new UserItem();
 			userItem.setUser(user);
-			userItem.setEquipment(equipmentDao.findById(e)
+			userItem.setEquipment(equipmentDao.findById(e.getId())
 					.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND)));
 			userItemDao.save(userItem);
 		}

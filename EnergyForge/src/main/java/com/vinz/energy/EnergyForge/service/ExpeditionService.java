@@ -298,7 +298,7 @@ public class ExpeditionService {
 
 	}
 
-	public void seeCombatResult(Long combatInstanceId, Long userId) {
+	public void gatherCombatReward(Long combatInstanceId, Long userId) {
 
 		CombatInstance ci = combatInstanceDao.findById(combatInstanceId)
 				.orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));

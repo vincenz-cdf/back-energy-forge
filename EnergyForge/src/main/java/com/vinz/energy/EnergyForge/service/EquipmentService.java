@@ -25,6 +25,7 @@ import com.vinz.energy.EnergyForge.dto.equipments.ArmorDto;
 import com.vinz.energy.EnergyForge.dto.equipments.WeaponDto;
 import com.vinz.energy.EnergyForge.exception.AppException;
 import com.vinz.energy.EnergyForge.mappers.ArmorMapper;
+import com.vinz.energy.EnergyForge.mappers.CharacterMapper;
 import com.vinz.energy.EnergyForge.mappers.WeaponMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -59,6 +60,9 @@ public class EquipmentService {
 
 	@Autowired
 	private UserItemDao userItemDao;
+	
+	@Autowired
+	private CharacterMapper characterMapper;
 
 	@Transactional
 	public List<ArmorDto> getOwnedArmors(Long userId) {
@@ -142,6 +146,23 @@ public class EquipmentService {
 		equippedItemDao.save(newEquippedItem);
 
 		return characterService.characterStatsUpdateAfterEquip(charId, equipment, newEquippedItem);
+	}
+	
+	public CharacterDto unequipAll(Long charId) {
+
+		List<EquippedItem> equippedItems = equippedItemDao.findByCharacterId(charId);
+		for (EquippedItem e : equippedItems) {
+			equippedItemDao.delete(e);
+		}
+		equippedItemDao.flush();
+		
+		com.vinz.energy.EnergyForge.db.Character character = characterDao.findById(charId)
+				.orElseThrow(() -> new AppException("Unknown character", HttpStatus.NOT_FOUND));
+		character.setArmor(0);
+		character.setMaxArmor(0);
+		character.setAtk(8);
+		characterDao.save(character);
+		return characterMapper.toDto(character);
 	}
 
 }

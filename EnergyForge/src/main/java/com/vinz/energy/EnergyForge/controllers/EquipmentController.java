@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -84,6 +85,26 @@ public class EquipmentController {
 	public ResponseEntity<Map<String, Object>> equipCharacterWithGear(@PathVariable Long charId, @RequestBody Long gearId) {
 	    try {
 	        CharacterDto charDto = equipmentService.equipCharacterWithSpecificGear(charId, gearId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Gear successfully equipped.");
+            response.put("data", charDto);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+	    } catch (Exception e) {
+	    	logger.error(e.getMessage());
+	        throw new ResponseStatusException(
+	            HttpStatus.INTERNAL_SERVER_ERROR, 
+	            "Unable to equip",
+	            e
+	        );
+	    }
+	}
+	
+	@DeleteMapping("/equipments/character/{charId}")
+	public ResponseEntity<Map<String, Object>> unequipAll(@PathVariable Long charId) {
+	    try {
+	        CharacterDto charDto = equipmentService.unequipAll(charId);
 
             Map<String, Object> response = new HashMap<>();
             response.put("status", "success");

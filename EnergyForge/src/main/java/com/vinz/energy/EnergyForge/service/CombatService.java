@@ -504,7 +504,8 @@ public class CombatService {
 			List<EquippedItemDto> equippedWeapons = c.getEquippedItems().stream().filter(e -> e.getSlot().isWeapon())
 					.collect(Collectors.toList());
 
-			if (equippedWeapons.isEmpty()) {
+			if (equippedWeapons.stream().filter(e -> e.getSlot() != EquipmentSlot.RIGHTHAND)
+					.collect(Collectors.toList()).isEmpty()) {
 				teamWeapons.add(
 						new WeaponDto(0l, new EquipmentDto(), 8, true, new ArrayList<>(), c.getId(), c.getUserId()));
 				continue;

@@ -137,13 +137,13 @@ public class ExpeditionController {
 		}
 	}
 	
-	@GetMapping("/combatinstance/{id}/result")
+	@PutMapping("/combatinstance/{id}/reward")
 	public ResponseEntity<Map<String, String>> getCombatIntanceResults(@PathVariable Long id) {
 		try {
 
 			Long userId = global.getCurrentUserId();
 			
-			expeditionService.seeCombatResult(id, userId);
+			expeditionService.gatherCombatReward(id, userId);
 
 			Map<String, String> response = new HashMap<>();
 			response.put("status", "success");

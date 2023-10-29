@@ -126,6 +126,9 @@ public class ExpeditionService {
 			characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING2));
 			characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING2));
 			break;
+		case T_L3:
+			characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING3));
+			characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING3));
 		default:
 			break;
 
@@ -255,7 +258,7 @@ public class ExpeditionService {
 			switch (combatInstance.getScenario()) {
 			case T_L1:
 				reward.setExperiencePoints(15);
-				reward.setCoins(100);
+				reward.setCoins(50);
 				equipments.add(new EquipmentDto(equipmentDao.findById(7l)
 						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND))));
 				equipments.add(new EquipmentDto(equipmentDao.findById(4l)
@@ -264,9 +267,16 @@ public class ExpeditionService {
 				break;
 			case T_L2:
 				reward.setExperiencePoints(30);
-				reward.setCoins(100);
+				reward.setCoins(50);
+				equipments.add(new EquipmentDto(equipmentDao.findById(22l)
+						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND))));
+				equipments.add(new EquipmentDto(equipmentDao.findById(16l)
+						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND))));
+				reward.setEquipments(equipments);
 				break;
 			default:
+				reward.setExperiencePoints(30);
+				reward.setCoins(50);
 				break;
 			}
 		} else {

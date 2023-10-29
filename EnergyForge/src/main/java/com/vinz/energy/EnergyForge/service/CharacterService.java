@@ -7,8 +7,10 @@ import org.springframework.stereotype.Service;
 
 import com.vinz.energy.EnergyForge.dao.ArmorDao;
 import com.vinz.energy.EnergyForge.dao.CharacterDao;
+import com.vinz.energy.EnergyForge.dao.UserDao;
 import com.vinz.energy.EnergyForge.dao.WeaponDao;
 import com.vinz.energy.EnergyForge.db.Character;
+import com.vinz.energy.EnergyForge.db.User;
 import com.vinz.energy.EnergyForge.db.equipments.Armor;
 import com.vinz.energy.EnergyForge.db.equipments.Equipment;
 import com.vinz.energy.EnergyForge.db.equipments.EquipmentSlot;
@@ -29,10 +31,18 @@ public class CharacterService {
 
 	private final ArmorDao armorDao;
 	private final WeaponDao weaponDao;
+	
+	private final UserDao userDao;
 
 	public List<CharacterDto> showCharacters(Long userId) {
 		List<com.vinz.energy.EnergyForge.db.Character> chars = characterDao.findByUserIdOrderByLevelAsc(userId);
 
+		return characterMapper.toCharacterDtos(chars);
+	}
+	 
+	public List<CharacterDto> showWoundedCharacters(Long userId) {
+		List<Character> chars = characterDao.findCharactersNotInSpecifiedCombatAndHpNotMax(userId);
+		
 		return characterMapper.toCharacterDtos(chars);
 	}
 
@@ -49,6 +59,35 @@ public class CharacterService {
 	    characterDao.save(currentChar);
 
 	    return characterMapper.toDto(currentChar);
+	}
+	
+	public void setCharacterForRecovering(Long id, Long userId) {
+		Character character = findCharacterById(id);
+		User user = userDao.findById(userId)
+	            .orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
+		
+		Integer recoveringCost = character.getMaxHp() - character.getHp();
+		
+		if(user.getCoin() < recoveringCost) {
+			throw new AppException("Not enough coins", HttpStatus.FORBIDDEN);
+		} else {
+			user.setCoin(user.getCoin() - recoveringCost);
+			character.setRecovering(true);
+			characterDao.save(character);
+		}
+
+	}
+	
+	public void healCharacter() {
+		List<Character> chars = characterDao.findByRecovering(true);
+		
+		for (Character c : chars) {
+			if (c.getHp() < c.getMaxHp()) {
+				c.setHp(c.getHp() + 1);
+			} else {
+				c.setRecovering(false);
+			}
+		}
 	}
 
 	private Character findCharacterById(Long charId) {

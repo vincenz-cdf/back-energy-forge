@@ -77,6 +77,9 @@ public class Character {
     
     @ManyToMany(mappedBy = "characters")
     private List<CombatInstance> combatInstances = new ArrayList<>();
+    
+    @Column(nullable = false)
+    private Boolean recovering = false;
 
 	public Long getId() {
 		return id;
@@ -205,8 +208,15 @@ public class Character {
 	public void setCombatInstances(List<CombatInstance> combatInstances) {
 		this.combatInstances = combatInstances;
 	}
-    
-    
+
+	public Boolean getRecovering() {
+		return recovering;
+	}
+
+	public void setRecovering(Boolean recovering) {
+		this.recovering = recovering;
+	}
+ 
 }
 
 

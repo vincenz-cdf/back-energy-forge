@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -112,13 +113,34 @@ public class PlayerController {
 	        
 	        Map<String, Object> response = new HashMap<>();
 	        response.put("status", "success");
-	        response.put("message", "Habits successfully retrieved.");
+	        response.put("message", "Chars successfully retrieved.");
 	        response.put("data", chars); 
 	        return new ResponseEntity<>(response, HttpStatus.OK);
 	    } catch (Exception e) {
 	        throw new ResponseStatusException(
 	            HttpStatus.INTERNAL_SERVER_ERROR, 
 	            "Unable to retrieve chars",
+	            e
+	        );
+	    }
+	}
+	
+	@GetMapping("/characters/wounded")
+	public ResponseEntity<Map<String, Object>> showWoundedCharacters() {
+	    try {
+	        Long userId = global.getCurrentUserId();
+	        
+	        List<CharacterDto> chars = characterService.showWoundedCharacters(userId);
+	        
+	        Map<String, Object> response = new HashMap<>();
+	        response.put("status", "success");
+	        response.put("message", "Wounded characters successfully retrieved.");
+	        response.put("data", chars); 
+	        return new ResponseEntity<>(response, HttpStatus.OK);
+	    } catch (Exception e) {
+	        throw new ResponseStatusException(
+	            HttpStatus.INTERNAL_SERVER_ERROR, 
+	            "Unable to retrieve wounded chars",
 	            e
 	        );
 	    }
@@ -136,6 +158,26 @@ public class PlayerController {
             throw new ResponseStatusException(
                 HttpStatus.INTERNAL_SERVER_ERROR, 
                 "Unable to delete habit",
+                e
+            );
+        }
+    }
+    
+    @PutMapping("/characters/{id}/heal")
+    public ResponseEntity<Map<String, String>> healWoundedCharacter(@PathVariable Long id) {
+        try {
+        	Long userId = global.getCurrentUserId();
+        	
+        	characterService.setCharacterForRecovering(id, userId);
+        	
+            Map<String, String> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Char successfully healed.");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Unable to heal char",
                 e
             );
         }

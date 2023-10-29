@@ -27,6 +27,7 @@ public class CharacterDto implements Serializable {
 	private Integer maxMorale;
 	private Integer morale;
 	private Integer experiencePoint;
+	private Boolean recovering;
 	
 	private List<EquippedItemDto> equippedItems = new ArrayList<EquippedItemDto>();
 	
@@ -48,6 +49,7 @@ public class CharacterDto implements Serializable {
 		maxMorale = c.getMaxMorale();
 		morale = c.getMorale();
 		experiencePoint = c.getExperiencePoint();
+		recovering = c.getRecovering();
 	}
 
 	public Long getId() {
@@ -172,6 +174,14 @@ public class CharacterDto implements Serializable {
 
 	public static long getSerialversionuid() {
 		return serialVersionUID;
+	}
+
+	public Boolean getRecovering() {
+		return recovering;
+	}
+
+	public void setRecovering(Boolean recovering) {
+		this.recovering = recovering;
 	}
 	
 	

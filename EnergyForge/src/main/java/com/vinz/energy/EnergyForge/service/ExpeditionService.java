@@ -129,6 +129,10 @@ public class ExpeditionService {
 		case T_L3:
 			characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING3));
 			characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING3));
+			break;
+		case T_L4:
+			characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING4));
+			break;
 		default:
 			break;
 
@@ -219,35 +223,43 @@ public class ExpeditionService {
 
 	}
 
+	@Transactional
 	public void calculateCombatResult(Long combatInstanceId) {
-		CombatInstance combatInstance = combatInstanceDao.findById(combatInstanceId)
-				.orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
+		try {
+			CombatInstance combatInstance = combatInstanceDao.findById(combatInstanceId)
+					.orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
 
-		List<Character> allCharacters = combatInstance.getCharacters();
-		List<Character> yourTeam = allCharacters.stream().filter(c -> c.getCharacterType() == CharacterType.HERO)
-				.collect(Collectors.toList());
-		List<Character> enemyTeam = allCharacters.stream().filter(c -> c.getCharacterType() != CharacterType.HERO)
-				.collect(Collectors.toList());
+			List<Character> allCharacters = combatInstance.getCharacters();
+			List<Character> yourTeam = allCharacters.stream().filter(c -> c.getCharacterType() == CharacterType.HERO)
+					.collect(Collectors.toList());
+			List<Character> enemyTeam = allCharacters.stream().filter(c -> c.getCharacterType() != CharacterType.HERO)
+					.collect(Collectors.toList());
 
-		if (yourTeam.isEmpty() || enemyTeam.isEmpty()) {
-			throw new AppException("Not enough chars", HttpStatus.BAD_REQUEST);
+			if (yourTeam.isEmpty() || enemyTeam.isEmpty()) {
+				throw new AppException("Not enough chars", HttpStatus.BAD_REQUEST);
+			}
+
+			logger.info("pre finalResult");
+			CumulatedTeamStats finalResult = combatService
+					.beginFight(combatService.calculateTeamStats(yourTeam, enemyTeam));
+			boolean hasWon = finalResult.getYourStats().getHp() > finalResult.getEnemyStats().getHp();
+			combatInstance.setStatus(hasWon ? CombatStatus.WON_AWAIT : CombatStatus.LOST_AWAIT);
+			combatInstance.setAfterMathInfo(finalResult);
+
+			CombatReward reward = calculateCombatRewards(combatInstance, enemyTeam, hasWon);
+
+			if (hasWon) {
+				combatInstance.setCombatReward(reward);
+			}
+
+			combatInstanceDao.save(combatInstance);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
 		}
 
-		CumulatedTeamStats finalResult = combatService
-				.beginFight(combatService.calculateTeamStats(yourTeam, enemyTeam));
-		boolean hasWon = finalResult.getYourStats().getHp() > finalResult.getEnemyStats().getHp();
-		combatInstance.setStatus(hasWon ? CombatStatus.WON_AWAIT : CombatStatus.LOST_AWAIT);
-		combatInstance.setAfterMathInfo(finalResult);
-
-		CombatReward reward = calculateCombatRewards(combatInstance, enemyTeam, hasWon);
-
-		if (hasWon) {
-			combatInstance.setCombatReward(reward);
-		}
-
-		combatInstanceDao.save(combatInstance);
 	}
 
+	@Transactional
 	private CombatReward calculateCombatRewards(CombatInstance combatInstance, List<Character> enemyTeam,
 			boolean hasWon) {
 		CombatReward reward = new CombatReward();
@@ -258,7 +270,7 @@ public class ExpeditionService {
 			switch (combatInstance.getScenario()) {
 			case T_L1:
 				reward.setExperiencePoints(15);
-				reward.setCoins(50);
+				reward.setCoins(100);
 				equipments.add(new EquipmentDto(equipmentDao.findById(7l)
 						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND))));
 				equipments.add(new EquipmentDto(equipmentDao.findById(4l)
@@ -267,16 +279,25 @@ public class ExpeditionService {
 				break;
 			case T_L2:
 				reward.setExperiencePoints(30);
-				reward.setCoins(50);
+				reward.setCoins(100);
 				equipments.add(new EquipmentDto(equipmentDao.findById(22l)
 						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND))));
 				equipments.add(new EquipmentDto(equipmentDao.findById(16l)
 						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND))));
 				reward.setEquipments(equipments);
 				break;
+			case T_L3:
+				reward.setExperiencePoints(30);
+				reward.setCoins(100);
+				equipments.add(new EquipmentDto(equipmentDao.findById(14l)
+						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND))));
+				equipments.add(new EquipmentDto(equipmentDao.findById(24l)
+						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND))));
+				reward.setEquipments(equipments);
+				break;
 			default:
 				reward.setExperiencePoints(30);
-				reward.setCoins(50);
+				reward.setCoins(100);
 				break;
 			}
 		} else {

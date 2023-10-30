@@ -3,7 +3,7 @@ package com.vinz.energy.EnergyForge.db.enums;
 public enum CharacterType {
 	HERO, 
 	
-	TRAINING1,TRAINING2,TRAINING3,
+	TRAINING1,TRAINING2,TRAINING3,TRAINING4,
 	
 	BRIGAND_THUG, BRIGAND_POACHER;
 	

@@ -30,10 +30,4 @@ public class ScheduledTasks {
     	
     }
     
-    @Transactional
-    @Scheduled(cron = "0 */5 * * * *")
-    public void healRecoveringCharacter() {
-    	characterService.healCharacter();
-    }
-    
 }

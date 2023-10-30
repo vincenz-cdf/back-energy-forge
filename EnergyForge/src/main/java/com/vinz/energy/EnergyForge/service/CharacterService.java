@@ -72,7 +72,7 @@ public class CharacterService {
 			throw new AppException("Not enough coins", HttpStatus.FORBIDDEN);
 		} else {
 			user.setCoin(user.getCoin() - recoveringCost);
-			character.setRecovering(true);
+			character.setHp(character.getMaxHp());
 			characterDao.save(character);
 		}
 

@@ -90,4 +90,9 @@ INSERT INTO weapon_ability (weapon_id, ability_id) VALUES (22, 13);
 
 INSERT INTO equipment (name, value, sprite_path, slot) VALUES ('Copper Helmet T2', 100, 'assets/sprites/equipments/armor/head/copperhelm2.png', 'HEAD');
 INSERT INTO armor (equipment_id, armor_value) VALUES (23, 50);
+
+INSERT INTO equipment (name, value, sprite_path, slot) VALUES ('Knife', 30, 'assets/sprites/equipments/weapon/melee/onehanded/knife.png', 'LEFTHAND');
+INSERT INTO weapon (equipment_id, atk_value, is_melee) VALUES (24, 18, TRUE);
+INSERT INTO equipment_ability (name, description, value, effect) VALUES ('Puncture', '15% to ignore armor', 15, 'PUNCTURE');
+INSERT INTO weapon_ability (weapon_id, ability_id) VALUES (24, 11);
 INSERT INTO weapon_ability (weapon_id, ability_id) VALUES (5, 5);

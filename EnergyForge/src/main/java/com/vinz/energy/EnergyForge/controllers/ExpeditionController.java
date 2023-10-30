@@ -109,8 +109,6 @@ public class ExpeditionController {
 
 			expeditionService.calculateCombatResult(id);
 
-			
-			System.out.println("Apres save");
 			Map<String, String> response = new HashMap<>();
 			response.put("status", "success");
 			response.put("message", "Combat successfully done.");

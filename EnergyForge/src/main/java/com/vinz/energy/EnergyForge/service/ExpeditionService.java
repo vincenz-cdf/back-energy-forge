@@ -64,6 +64,9 @@ public class ExpeditionService {
 
 	@Autowired
 	private UserItemDao userItemDao;
+	
+	@Autowired
+	private ProfileService profileService;
 
 	private Random random = new Random();
 
@@ -224,7 +227,7 @@ public class ExpeditionService {
 	}
 
 	@Transactional
-	public void calculateCombatResult(Long combatInstanceId) {
+	public void calculateCombatResult(Long combatInstanceId, Long userId) {
 		try {
 			CombatInstance combatInstance = combatInstanceDao.findById(combatInstanceId)
 					.orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
@@ -235,6 +238,8 @@ public class ExpeditionService {
 			List<Character> enemyTeam = allCharacters.stream().filter(c -> c.getCharacterType() != CharacterType.HERO)
 					.collect(Collectors.toList());
 
+			profileService.manageEnergyCost(userId, yourTeam.size() * 2);
+			
 			if (yourTeam.isEmpty() || enemyTeam.isEmpty()) {
 				throw new AppException("Not enough chars", HttpStatus.BAD_REQUEST);
 			}

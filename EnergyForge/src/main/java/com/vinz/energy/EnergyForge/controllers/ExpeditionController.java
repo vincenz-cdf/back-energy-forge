@@ -106,8 +106,10 @@ public class ExpeditionController {
 	@PostMapping("/combatinstance/{id}/launch")
 	public ResponseEntity<Map<String, String>> launchCombatInstance(@PathVariable Long id) {
 		try {
+			
+			Long userId = global.getCurrentUserId();
 
-			expeditionService.calculateCombatResult(id);
+			expeditionService.calculateCombatResult(id, userId);
 
 			Map<String, String> response = new HashMap<>();
 			response.put("status", "success");

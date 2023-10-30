@@ -12,6 +12,7 @@ import com.vinz.energy.EnergyForge.dto.UserDto;
 import com.vinz.energy.EnergyForge.exception.AppException;
 import com.vinz.energy.EnergyForge.mappers.UserMapper;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -35,5 +36,20 @@ public class ProfileService {
         UserDto userPrincipal = (UserDto) authentication.getPrincipal();
         return userPrincipal.getId();
     }
+    
+	@Transactional
+	public void manageEnergyCost(Long userId, int cost) {
+		
+		User user = userDao.findById(userId)
+				.orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
+		
+		if(user.getEnergy() < cost) {
+			throw new AppException("Not enough energy", HttpStatus.FORBIDDEN);
+		} else {
+			user.setEnergy(user.getEnergy() - cost);
+			userDao.save(user);
+		}
+		
+	}
 
 }

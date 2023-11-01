@@ -2,7 +2,6 @@ package com.vinz.energy.EnergyForge.dao;
 
 import com.vinz.energy.EnergyForge.db.Character;
 import com.vinz.energy.EnergyForge.db.enums.CharacterType;
-import com.vinz.energy.EnergyForge.db.enums.CombatStatus;
 
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,8 +20,8 @@ public interface CharacterDao extends JpaRepository<Character, Long> {
     
     List<Character> findByRecovering(Boolean recovering);
     
-    @Query("SELECT c FROM Character c WHERE c.user.id = :userId AND NOT EXISTS (SELECT ci FROM CombatInstance ci JOIN ci.characters ch WHERE ch.id = c.id AND ci.status != :status)")
-    List<Character> findCharactersNotInCombatForUser(@Param("userId") Long userId, @Param("status") CombatStatus status);
+    @Query("SELECT c FROM Character c WHERE c.user.id = :userId AND c.inCombat = false")
+    List<Character> findCharactersNotInCombatForUser(@Param("userId") Long userId);
     
     @Query("SELECT c FROM Character c WHERE c.user.id = :userId AND c.hp != c.maxHp AND NOT EXISTS (SELECT ci FROM CombatInstance ci JOIN ci.characters ch WHERE ch.id = c.id AND (ci.status != 'AWAIT' AND ci.status != 'CLOSED'))")
     List<Character> findCharactersNotInSpecifiedCombatAndHpNotMax(@Param("userId") Long userId);

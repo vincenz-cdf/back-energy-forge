@@ -31,7 +31,7 @@ INSERT INTO weapon_ability (weapon_id, ability_id) VALUES (7, 5);
 
 INSERT INTO equipment (name, value, sprite_path, slot) VALUES ('Militia Spear', 180, 'assets/sprites/equipments/weapon/melee/onehanded/militiaspear.png', 'LEFTHAND');
 INSERT INTO weapon (equipment_id, atk_value, is_melee) VALUES (8, 28, TRUE);
-INSERT INTO equipment_ability (name, description, value, effect) VALUES ('Spearwall', 'Foreach enemy has 20% to cancel their next attack but the spear deal 50% less damage, melee member of your party can''t attack cancelled enemies', 20, 'SPEARWALL');
+INSERT INTO equipment_ability (name, description, value, effect) VALUES ('Spearwall', '20% to cancel the highest attack but your spear deal 50% less damage, if the roll is a success, reroll for the next attack but your melee members can''t attack cancelled enemies', 20, 'SPEARWALL');
 INSERT INTO weapon_ability (weapon_id, ability_id) VALUES (8, 6);
 
 INSERT INTO equipment (name, value, sprite_path, slot) VALUES ('Bludgeon', 90, 'assets/sprites/equipments/weapon/melee/onehanded/bludgeon.png', 'LEFTHAND');

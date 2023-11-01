@@ -215,7 +215,7 @@ public class ExpeditionService {
 		}
 
 		return characterMapper
-				.toCharacterDtos(characterDao.findCharactersNotInCombatForUser(userId, CombatStatus.CLOSED));
+				.toCharacterDtos(characterDao.findCharactersNotInCombatForUser(userId));
 	}
 
 	public void putHeroCharacterInCombat(Long ciId, Long charId) {

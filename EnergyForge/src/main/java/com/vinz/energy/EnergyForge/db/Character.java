@@ -80,6 +80,9 @@ public class Character {
     
     @Column(nullable = false)
     private Boolean recovering = false;
+    
+    @Column(nullable = false)
+    private int healingStack = 0;
 
 	public Long getId() {
 		return id;
@@ -215,6 +218,14 @@ public class Character {
 
 	public void setRecovering(Boolean recovering) {
 		this.recovering = recovering;
+	}
+
+	public int getHealingStack() {
+		return healingStack;
+	}
+
+	public void setHealingStack(int healingStack) {
+		this.healingStack = healingStack;
 	}
  
 }

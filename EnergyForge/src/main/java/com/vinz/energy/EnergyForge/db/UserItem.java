@@ -38,5 +38,8 @@ public class UserItem implements Serializable {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     
+    @ManyToOne
+    @JoinColumn(name = "consumable_id", nullable = false)
+    private Consumable consumable;
     
 }

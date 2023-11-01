@@ -267,6 +267,11 @@ public class ExpeditionService {
 			}
 
 			combatInstanceDao.save(combatInstance);
+			
+			for (Character c : yourTeam) {
+				c.setInCombat(true);
+				characterDao.save(c);
+			}
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
@@ -321,6 +326,7 @@ public class ExpeditionService {
 
 					c.setMorale(yourMorale > 0 ? yourMorale / heroCount : 0);
 					c.setMorale(c.getMorale() - 1);
+					c.setInCombat(false);
 					characterDao.save(c);
 				}
 			}
@@ -347,6 +353,8 @@ public class ExpeditionService {
 
 			ci.setStatus(CombatStatus.CLOSED);
 			combatInstanceDao.save(ci);
+			
+			
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 			logger.error(e.toString());

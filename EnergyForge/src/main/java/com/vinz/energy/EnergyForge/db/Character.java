@@ -83,6 +83,12 @@ public class Character {
     
     @Column(nullable = false)
     private int healingStack = 0;
+    
+    @Column(nullable = false)
+    private int healingPower = 0;
+    
+    @Column(nullable = false)
+    private Boolean inCombat = false;
 
 	public Long getId() {
 		return id;
@@ -227,7 +233,24 @@ public class Character {
 	public void setHealingStack(int healingStack) {
 		this.healingStack = healingStack;
 	}
+
+	public Boolean getInCombat() {
+		return inCombat;
+	}
+
+	public void setInCombat(Boolean inCombat) {
+		this.inCombat = inCombat;
+	}
+
+	public int getHealingPower() {
+		return healingPower;
+	}
+
+	public void setHealingPower(int healingPower) {
+		this.healingPower = healingPower;
+	}
  
+	
 }
 
 

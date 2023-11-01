@@ -15,4 +15,6 @@ public interface UserItemDao extends JpaRepository<UserItem, Long> {
 	List<UserItem> findByUserId(Long userId);
 	
 	List<UserItem> findByUserIdAndItemType(Long userId, ItemType itemType);
+	
+	List<UserItem> findByConsumableIdAndUserId(Integer id, Long userId);
 }

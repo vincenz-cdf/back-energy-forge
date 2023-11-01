@@ -101,6 +101,6 @@ INSERT INTO weapon (equipment_id, atk_value, is_melee) VALUES (25, 0, TRUE);
 INSERT INTO equipment_ability (name, description, value, effect) VALUES ('Shieldwall', '10% to block the highest damage', 10, 'SHIELDWALL');
 INSERT INTO weapon_ability (weapon_id, ability_id) VALUES (25, 14);
 
-insert into consumable (name, description, sprite_path, healing_amount, healing_power) values ('Bread', 'Heal 1hp every 10mins for 100mins (10hp total)', 'assets/sprites/foods/bread.png', 10, 1);
+insert into consumable (name, description, sprite_path, healing_amount, healing_power) values ('Bread', 'Heal 1hp every 5mins for 50mins (10hp total)', 'assets/sprites/foods/bread.png', 10, 1);
 
 INSERT INTO weapon_ability (weapon_id, ability_id) VALUES (5, 5);

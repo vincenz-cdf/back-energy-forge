@@ -29,6 +29,8 @@ public class CharacterDto implements Serializable {
 	private Integer experiencePoint;
 	private Boolean recovering;
 	private int healingStack;
+	private int healingPower;
+	private Boolean inCombat = false;
 	
 	private List<EquippedItemDto> equippedItems = new ArrayList<EquippedItemDto>();
 	
@@ -52,6 +54,8 @@ public class CharacterDto implements Serializable {
 		experiencePoint = c.getExperiencePoint();
 		recovering = c.getRecovering();
 		healingStack = c.getHealingStack();
+		healingPower = c.getHealingPower();
+		inCombat = c.getInCombat();
 	}
 
 	public Long getId() {
@@ -193,6 +197,21 @@ public class CharacterDto implements Serializable {
 	public void setHealingStack(int healingStack) {
 		this.healingStack = healingStack;
 	}
-	
-	
+
+	public Boolean getInCombat() {
+		return inCombat;
+	}
+
+	public void setInCombat(Boolean inCombat) {
+		this.inCombat = inCombat;
+	}
+
+	public int getHealingPower() {
+		return healingPower;
+	}
+
+	public void setHealingPower(int healingPower) {
+		this.healingPower = healingPower;
+	}
+
 }

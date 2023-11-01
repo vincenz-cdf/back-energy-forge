@@ -16,6 +16,7 @@ public interface WeaponAbilityMapper {
     @Mapping(source = "ability.name", target = "equipmentAbilityName")
     @Mapping(source = "ability.description", target = "equipmentAbilityDescription")
     @Mapping(source = "ability.value", target = "equipmentAbilityValue")
+    @Mapping(source = "ability.secondaryValue", target = "equipmentAbilitySecondaryValue")
     @Mapping(source = "ability.effect", target = "equipmentAbilityEffect")
     WeaponAbilityDto toDto(WeaponAbility weaponAbility);
 
@@ -24,6 +25,7 @@ public interface WeaponAbilityMapper {
     @Mapping(target = "ability.name", source = "equipmentAbilityName")
     @Mapping(target = "ability.description", source = "equipmentAbilityDescription")
     @Mapping(target = "ability.value", source = "equipmentAbilityValue")
+    @Mapping(target = "ability.secondaryValue", source = "equipmentAbilitySecondaryValue")
     @Mapping(target = "ability.effect", source = "equipmentAbilityEffect")
     WeaponAbility toEntity(WeaponAbilityDto weaponAbilityDto);
 

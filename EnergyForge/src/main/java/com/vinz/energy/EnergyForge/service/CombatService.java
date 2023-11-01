@@ -108,8 +108,6 @@ public class CombatService {
 		List<WeaponDto> yourWeapon = fetchTeamWeapons(allTeamStats.getYourStats().getDto());
 		List<WeaponDto> enemyWeapon = fetchTeamWeapons(allTeamStats.getEnemyStats().getDto());
 
-		logger.info("post fetchWeapons");
-
 		int yourDeathCount = 0;
 		int enemyDeathCount = 0;
 
@@ -249,18 +247,25 @@ public class CombatService {
 
 					// SHIELD WALL BLOCK 1 ATK
 					if (e.getEffect() == Effect.SHIELDWALL && aa.getAtkCount() > 0) {
-						if (weapon.getWeaponAbilities().get(0).getEquipmentAbilityEffect() == Effect.LASH) {
-							aa.getAtkAmount().set(0, (int) Math.round(weapon.getAtkValue() * 1.6));
-							if (aa.getAtkCount() == 0) {
-								aa.setAtkCount(1);
-							}
+						
+						if (!weapon.getIsMelee() && random.nextInt(100) + 1 <= e.getRangedShieldValue()) {
+							aa.setAtkCount(aa.getAtkCount() - 1);
+							iteratorDefenderEffects.remove();
 						} else {
-							
-							if (random.nextInt(100) + 1 <= SHIELDWALLVALUE) {
-								aa.setAtkCount(aa.getAtkCount() - 1);
-								iteratorDefenderEffects.remove();
+							if (weapon.getWeaponAbilities().get(0).getEquipmentAbilityEffect() == Effect.LASH) {
+								aa.getAtkAmount().set(0, (int) Math.round(weapon.getAtkValue() * 1.6));
+								if (aa.getAtkCount() == 0) {
+									aa.setAtkCount(1);
+								}
+							} else {
+								if (random.nextInt(100) + 1 <= e.getMeleeShieldValue()) {
+									aa.setAtkCount(aa.getAtkCount() - 1);
+									iteratorDefenderEffects.remove();
+								}
 							}
 						}
+						
+
 						triggeredEffects.add(e.getEffect());
 					}
 
@@ -397,6 +402,13 @@ public class CombatService {
 			for (WeaponAbilityDto wAD : weapon.getWeaponAbilities()) {
 				if (wAD.getEquipmentAbilityEffect() == Effect.SHIELDWALL) {
 					effect.setEffect(Effect.SHIELDWALL);
+					effect.setMeleeShieldValue(weapon.getWeaponAbilities().get(0).getEquipmentAbilityValue());
+					if (weapon.getWeaponAbilities().get(0).getEquipmentAbilitySecondaryValue() != null) {
+						effect.setRangedShieldValue(weapon.getWeaponAbilities().get(0).getEquipmentAbilitySecondaryValue());
+					} else {
+						effect.setRangedShieldValue(weapon.getWeaponAbilities().get(0).getEquipmentAbilityValue());
+					}
+					
 					effects.add(effect);
 				}
 

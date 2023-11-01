@@ -11,7 +11,7 @@ public class RewardConfig {
     private int experiencePoints;
     private int coins;
     private List<Long> equipmentIds;
-    private List<Long> consumableIds;
+    private List<Integer> consumableIds;
 	public int getExperiencePoints() {
 		return experiencePoints;
 	}
@@ -30,10 +30,10 @@ public class RewardConfig {
 	public void setEquipmentIds(List<Long> equipmentIds) {
 		this.equipmentIds = equipmentIds;
 	}
-	public List<Long> getConsumableIds() {
+	public List<Integer> getConsumableIds() {
 		return consumableIds;
 	}
-	public void setConsumableIds(List<Long> consumableIds) {
+	public void setConsumableIds(List<Integer> consumableIds) {
 		this.consumableIds = consumableIds;
 	}
 

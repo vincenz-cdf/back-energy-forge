@@ -28,26 +28,25 @@ import jakarta.transaction.Transactional;
 @Service
 @Transactional
 public class RewardService {
-	
+
 	@Autowired
 	private EquipmentDao equipmentDao;
 
 	@Autowired
 	private ConsumableDao consumableDao;
-	
+
 	private Random random = new Random();
 
 	private static final Map<Scenario, RewardConfig> REWARD_CONFIG_MAP;
 
 	static {
 		REWARD_CONFIG_MAP = new HashMap<>();
-		REWARD_CONFIG_MAP.put(Scenario.T_L1, new RewardConfig(15, 100, Arrays.asList(7L, 4L), Arrays.asList(1L, 1L)));
-		REWARD_CONFIG_MAP.put(Scenario.T_L2, new RewardConfig(30, 100, Arrays.asList(22L, 16L), Arrays.asList(1L, 1L)));
-		REWARD_CONFIG_MAP.put(Scenario.T_L3,
-				new RewardConfig(30, 100, Arrays.asList(14L, 24L), Collections.emptyList()));
-		// Add more scenarios as needed
+		REWARD_CONFIG_MAP.put(Scenario.T_L1, new RewardConfig(15, 80, Arrays.asList(7L, 4L), Arrays.asList(1, 1)));
+		REWARD_CONFIG_MAP.put(Scenario.T_L2, new RewardConfig(30, 90, Arrays.asList(22L, 16L), Arrays.asList(1, 1)));
+		REWARD_CONFIG_MAP.put(Scenario.T_L3, new RewardConfig(30, 100, Arrays.asList(14L, 24L), Arrays.asList(1, 1)));
+		REWARD_CONFIG_MAP.put(Scenario.T_L4, new RewardConfig(15, 120, Collections.emptyList(), Arrays.asList(1, 1, 1)));
 	}
-	
+
 	@Transactional
 	public CombatReward calculateCombatRewards(CombatInstance combatInstance, List<Character> enemyTeam,
 			boolean hasWon) {
@@ -74,7 +73,7 @@ public class RewardService {
 				.collect(Collectors.toList());
 
 		List<ConsumableDto> consumables = config.getConsumableIds().stream()
-				.map(id -> new ConsumableDto(consumableDao.findById(id.intValue())
+				.map(id -> new ConsumableDto(consumableDao.findById(id)
 						.orElseThrow(() -> new AppException("Unknown consumable", HttpStatus.NOT_FOUND))))
 				.collect(Collectors.toList());
 

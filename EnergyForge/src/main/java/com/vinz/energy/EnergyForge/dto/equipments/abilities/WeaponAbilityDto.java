@@ -14,6 +14,7 @@ public class WeaponAbilityDto {
 	private String equipmentAbilityName;
 	private String equipmentAbilityDescription;
 	private Integer equipmentAbilityValue;
+	private Integer equipmentAbilitySecondaryValue;
 	private Effect equipmentAbilityEffect;
 	
 	public Integer getId() {
@@ -57,6 +58,12 @@ public class WeaponAbilityDto {
 	}
 	public void setEquipmentAbilityEffect(Effect equipmentAbilityEffect) {
 		this.equipmentAbilityEffect = equipmentAbilityEffect;
+	}
+	public Integer getEquipmentAbilitySecondaryValue() {
+		return equipmentAbilitySecondaryValue;
+	}
+	public void setEquipmentAbilitySecondaryValue(Integer equipmentAbilitySecondaryValue) {
+		this.equipmentAbilitySecondaryValue = equipmentAbilitySecondaryValue;
 	}
 
 	

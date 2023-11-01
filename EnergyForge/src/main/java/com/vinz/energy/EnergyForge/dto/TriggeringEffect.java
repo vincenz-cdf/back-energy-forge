@@ -21,6 +21,10 @@ public class TriggeringEffect implements Serializable {
 	private Long userId;
 	private Long characterId;
 	private Long weaponId;
+	
+	private int meleeShieldValue;
+	private int rangedShieldValue;
+	
 	public Effect getEffect() {
 		return effect;
 	}
@@ -44,6 +48,21 @@ public class TriggeringEffect implements Serializable {
 	}
 	public void setWeaponId(Long weaponId) {
 		this.weaponId = weaponId;
+	}
+	public int getMeleeShieldValue() {
+		return meleeShieldValue;
+	}
+	public void setMeleeShieldValue(int meleeShieldValue) {
+		this.meleeShieldValue = meleeShieldValue;
+	}
+	public int getRangedShieldValue() {
+		return rangedShieldValue;
+	}
+	public void setRangedShieldValue(int rangedShieldValue) {
+		this.rangedShieldValue = rangedShieldValue;
+	}
+	public static long getSerialversionuid() {
+		return serialVersionUID;
 	}
 	
 	

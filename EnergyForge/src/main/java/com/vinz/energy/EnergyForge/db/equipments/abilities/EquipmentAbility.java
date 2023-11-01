@@ -33,6 +33,8 @@ public class EquipmentAbility {
     private String description;
     @Column(nullable = false)
     private Integer value;
+    @Column(nullable = true)
+    private Integer secondaryValue;
     
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

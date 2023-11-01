@@ -85,7 +85,7 @@ INSERT INTO armor (equipment_id, armor_value) VALUES (21, 35);
 
 INSERT INTO equipment (name, value, sprite_path, slot) VALUES ('Wooden Shield', 100, 'assets/sprites/equipments/shield/woodenshield.png', 'RIGHTHAND');
 INSERT INTO weapon (equipment_id, atk_value, is_melee) VALUES (22, 0, TRUE);
-INSERT INTO equipment_ability (name, description, value, effect) VALUES ('Shieldwall', '15% to block the highest damage', 15, 'SHIELDWALL');
+INSERT INTO equipment_ability (name, description, value, effect) VALUES ('Shieldwall', '15% to block the highest melee and ranged damage', 15, 'SHIELDWALL');
 INSERT INTO weapon_ability (weapon_id, ability_id) VALUES (22, 13);
 
 INSERT INTO equipment (name, value, sprite_path, slot) VALUES ('Copper Helmet T2', 100, 'assets/sprites/equipments/armor/head/copperhelm2.png', 'HEAD');
@@ -98,7 +98,7 @@ INSERT INTO weapon_ability (weapon_id, ability_id) VALUES (24, 11);
 
 INSERT INTO equipment (name, value, sprite_path, slot) VALUES ('Buckler', 45, 'assets/sprites/equipments/shield/buckler.png', 'RIGHTHAND');
 INSERT INTO weapon (equipment_id, atk_value, is_melee) VALUES (25, 0, TRUE);
-INSERT INTO equipment_ability (name, description, value, effect) VALUES ('Shieldwall', '10% to block the highest damage', 10, 'SHIELDWALL');
+INSERT INTO equipment_ability (name, description, value, secondary_value, effect) VALUES ('Shieldwall', '10% to block the highest melee damage and 5% ranged', 10, 5, 'SHIELDWALL');
 INSERT INTO weapon_ability (weapon_id, ability_id) VALUES (25, 14);
 
 insert into consumable (name, description, sprite_path, healing_amount, healing_power) values ('Bread', 'Heal 1hp every 5mins for 50mins (10hp total)', 'assets/sprites/foods/bread.png', 10, 1);

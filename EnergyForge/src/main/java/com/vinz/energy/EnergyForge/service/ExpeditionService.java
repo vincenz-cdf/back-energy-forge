@@ -253,7 +253,6 @@ public class ExpeditionService {
 				throw new AppException("Not enough chars", HttpStatus.BAD_REQUEST);
 			}
 
-			logger.info("pre finalResult");
 			CumulatedTeamStats finalResult = combatService
 					.beginFight(combatService.calculateTeamStats(yourTeam, enemyTeam));
 			boolean hasWon = finalResult.getYourStats().getHp() > finalResult.getEnemyStats().getHp();

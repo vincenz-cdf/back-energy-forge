@@ -2,9 +2,13 @@ package com.vinz.energy.EnergyForge.db;
 
 import java.io.Serializable;
 
+import com.vinz.energy.EnergyForge.db.enums.ItemType;
 import com.vinz.energy.EnergyForge.db.equipments.Equipment;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -31,7 +35,7 @@ public class UserItem implements Serializable {
 	private Long id;
 	
     @ManyToOne
-    @JoinColumn(name = "equipment_id", nullable = false)
+    @JoinColumn(name = "equipment_id", nullable = true)
     private Equipment equipment;
     
     @ManyToOne
@@ -39,7 +43,11 @@ public class UserItem implements Serializable {
     private User user;
     
     @ManyToOne
-    @JoinColumn(name = "consumable_id", nullable = false)
+    @JoinColumn(name = "consumable_id", nullable = true)
     private Consumable consumable;
+    
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ItemType itemType;
     
 }

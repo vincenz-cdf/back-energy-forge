@@ -10,17 +10,21 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.vinz.energy.EnergyForge.dao.ArmorDao;
 import com.vinz.energy.EnergyForge.dao.CharacterDao;
+import com.vinz.energy.EnergyForge.dao.ConsumableDao;
 import com.vinz.energy.EnergyForge.dao.EquipmentDao;
 import com.vinz.energy.EnergyForge.dao.EquippedItemDao;
 import com.vinz.energy.EnergyForge.dao.UserItemDao;
 import com.vinz.energy.EnergyForge.dao.WeaponDao;
+import com.vinz.energy.EnergyForge.db.Consumable;
 import com.vinz.energy.EnergyForge.db.UserItem;
+import com.vinz.energy.EnergyForge.db.enums.ItemType;
 import com.vinz.energy.EnergyForge.db.equipments.Armor;
 import com.vinz.energy.EnergyForge.db.equipments.Equipment;
 import com.vinz.energy.EnergyForge.db.equipments.EquipmentSlot;
 import com.vinz.energy.EnergyForge.db.equipments.EquippedItem;
 import com.vinz.energy.EnergyForge.db.equipments.Weapon;
 import com.vinz.energy.EnergyForge.dto.CharacterDto;
+import com.vinz.energy.EnergyForge.dto.ConsumableDto;
 import com.vinz.energy.EnergyForge.dto.equipments.ArmorDto;
 import com.vinz.energy.EnergyForge.dto.equipments.WeaponDto;
 import com.vinz.energy.EnergyForge.exception.AppException;
@@ -63,11 +67,14 @@ public class EquipmentService {
 	
 	@Autowired
 	private CharacterMapper characterMapper;
+	
+	@Autowired
+	private ConsumableDao consumableDao;
 
 	@Transactional
 	public List<ArmorDto> getOwnedArmors(Long userId) {
 
-		List<UserItem> userItems = userItemDao.findByUserId(userId);
+		List<UserItem> userItems = userItemDao.findByUserIdAndItemType(userId, ItemType.EQUIPMENT);
 		List<Armor> armors = new ArrayList<>();
 
 		for (UserItem ui : userItems) {
@@ -84,7 +91,7 @@ public class EquipmentService {
 	@Transactional
 	public List<WeaponDto> getOwnedWeapons(Long userId) {
 
-		List<UserItem> userItems = userItemDao.findByUserId(userId);
+		List<UserItem> userItems = userItemDao.findByUserIdAndItemType(userId, ItemType.EQUIPMENT);
 		List<Weapon> weapons = new ArrayList<Weapon>();
 
 		for (UserItem ui : userItems) {
@@ -96,6 +103,28 @@ public class EquipmentService {
 		}
 
 		return weaponMapper.toDtoList(weapons);
+	}
+	
+	@Transactional
+	public List<ConsumableDto> getOwnedConsumables(Long userId) {
+
+		List<UserItem> userItems = userItemDao.findByUserIdAndItemType(userId, ItemType.CONSUMABLE);
+		List<Consumable> consumables = new ArrayList<Consumable>();
+		
+		List<ConsumableDto> consumableDtos = new ArrayList<ConsumableDto>();
+
+		for (UserItem ui : userItems) {
+			if (ui.getConsumable() != null) {
+				Consumable consumable = consumableDao.findById(ui.getConsumable().getId())
+						.orElseThrow(() -> new AppException("Unknown consumable", HttpStatus.NOT_FOUND));
+				consumables.add(consumable);
+			}
+		}
+
+		for (Consumable c : consumables) {
+			consumableDtos.add(new ConsumableDto(c));
+		}
+		return consumableDtos;
 	}
 
 	@Transactional

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.vinz.energy.EnergyForge.dao.CharacterDao;
 import com.vinz.energy.EnergyForge.dao.CombatInstanceDao;
+import com.vinz.energy.EnergyForge.dao.ConsumableDao;
 import com.vinz.energy.EnergyForge.dao.EquipmentDao;
 import com.vinz.energy.EnergyForge.dao.UserDao;
 import com.vinz.energy.EnergyForge.dao.UserItemDao;
@@ -23,6 +24,7 @@ import com.vinz.energy.EnergyForge.db.User;
 import com.vinz.energy.EnergyForge.db.UserItem;
 import com.vinz.energy.EnergyForge.db.enums.CharacterType;
 import com.vinz.energy.EnergyForge.db.enums.CombatStatus;
+import com.vinz.energy.EnergyForge.db.enums.ItemType;
 import com.vinz.energy.EnergyForge.db.enums.Scenario;
 import com.vinz.energy.EnergyForge.db.equipments.Equipment;
 import com.vinz.energy.EnergyForge.db.equipments.EquipmentSlot;
@@ -31,6 +33,7 @@ import com.vinz.energy.EnergyForge.dto.CharacterDto;
 import com.vinz.energy.EnergyForge.dto.CombatIndexes;
 import com.vinz.energy.EnergyForge.dto.CombatInstanceDto;
 import com.vinz.energy.EnergyForge.dto.CombatReward;
+import com.vinz.energy.EnergyForge.dto.ConsumableDto;
 import com.vinz.energy.EnergyForge.dto.CumulatedTeamStats;
 import com.vinz.energy.EnergyForge.dto.equipments.EquipmentDto;
 import com.vinz.energy.EnergyForge.exception.AppException;
@@ -64,9 +67,15 @@ public class ExpeditionService {
 
 	@Autowired
 	private UserItemDao userItemDao;
-	
+
 	@Autowired
 	private ProfileService profileService;
+
+	@Autowired
+	private RewardService rewardService;
+	
+	@Autowired
+	private ConsumableDao consumableDao;
 
 	private Random random = new Random();
 
@@ -239,7 +248,7 @@ public class ExpeditionService {
 					.collect(Collectors.toList());
 
 			profileService.manageEnergyCost(userId, yourTeam.size() * 2);
-			
+
 			if (yourTeam.isEmpty() || enemyTeam.isEmpty()) {
 				throw new AppException("Not enough chars", HttpStatus.BAD_REQUEST);
 			}
@@ -251,7 +260,7 @@ public class ExpeditionService {
 			combatInstance.setStatus(hasWon ? CombatStatus.WON_AWAIT : CombatStatus.LOST_AWAIT);
 			combatInstance.setAfterMathInfo(finalResult);
 
-			CombatReward reward = calculateCombatRewards(combatInstance, enemyTeam, hasWon);
+			CombatReward reward = rewardService.calculateCombatRewards(combatInstance, enemyTeam, hasWon);
 
 			if (hasWon) {
 				combatInstance.setCombatReward(reward);
@@ -262,58 +271,6 @@ public class ExpeditionService {
 			logger.error(e.getMessage());
 		}
 
-	}
-
-	@Transactional
-	private CombatReward calculateCombatRewards(CombatInstance combatInstance, List<Character> enemyTeam,
-			boolean hasWon) {
-		CombatReward reward = new CombatReward();
-
-		List<EquipmentDto> equipments = new ArrayList<EquipmentDto>();
-
-		if (combatInstance.getScenario().isCampaign()) {
-			switch (combatInstance.getScenario()) {
-			case T_L1:
-				reward.setExperiencePoints(15);
-				reward.setCoins(100);
-				equipments.add(new EquipmentDto(equipmentDao.findById(7l)
-						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND))));
-				equipments.add(new EquipmentDto(equipmentDao.findById(4l)
-						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND))));
-				reward.setEquipments(equipments);
-				break;
-			case T_L2:
-				reward.setExperiencePoints(30);
-				reward.setCoins(100);
-				equipments.add(new EquipmentDto(equipmentDao.findById(22l)
-						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND))));
-				equipments.add(new EquipmentDto(equipmentDao.findById(16l)
-						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND))));
-				reward.setEquipments(equipments);
-				break;
-			case T_L3:
-				reward.setExperiencePoints(30);
-				reward.setCoins(100);
-				equipments.add(new EquipmentDto(equipmentDao.findById(14l)
-						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND))));
-				equipments.add(new EquipmentDto(equipmentDao.findById(24l)
-						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND))));
-				reward.setEquipments(equipments);
-				break;
-			default:
-				reward.setExperiencePoints(30);
-				reward.setCoins(100);
-				break;
-			}
-		} else {
-			for (Character c : enemyTeam) {
-				reward.setExperiencePoints(reward.getExperiencePoints() + c.getExperiencePoint());
-				reward.setCoins(
-						reward.getCoins() + (int) (random.nextInt(10) + c.getLevel() * random.nextDouble(2) + 1));
-			}
-		}
-
-		return reward;
 	}
 
 	// TODO: nouveauté sur CombatSystem
@@ -336,48 +293,64 @@ public class ExpeditionService {
 
 	public void gatherCombatReward(Long combatInstanceId, Long userId) {
 
-		CombatInstance ci = combatInstanceDao.findById(combatInstanceId)
-				.orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
-		User user = userDao.findById(userId).orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
+		try {
+			CombatInstance ci = combatInstanceDao.findById(combatInstanceId)
+					.orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
+			User user = userDao.findById(userId)
+					.orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
 
-		CumulatedTeamStats finalResult = ci.getAfterMathInfo();
-		List<Character> chars = ci.getCharacters();
+			CumulatedTeamStats finalResult = ci.getAfterMathInfo();
+			List<Character> chars = ci.getCharacters();
 
-		int yourHp = finalResult.getYourStats().getHp();
-		int yourMorale = finalResult.getYourStats().getMorale();
-		int heroCount = (int) chars.stream().filter(c -> c.getCharacterType() == CharacterType.HERO).count();
+			int yourHp = finalResult.getYourStats().getHp();
+			int yourMorale = finalResult.getYourStats().getMorale();
+			int heroCount = (int) chars.stream().filter(c -> c.getCharacterType() == CharacterType.HERO).count();
 
-		int rewardExp = ci.getCombatReward().getExperiencePoints();
-		int rewardCoins = ci.getCombatReward().getCoins();
+			int rewardExp = ci.getCombatReward().getExperiencePoints();
+			int rewardCoins = ci.getCombatReward().getCoins();
 
-		for (Character c : chars) {
-			if (c.getCharacterType() == CharacterType.HERO) {
-				if (yourHp > 0) {
-					c.setHp(Math.max(1, yourHp / heroCount));
-					c.setExperiencePoint(rewardExp / heroCount);
-				} else {
-					c.setHp(0);
-					c.setExperiencePoint(rewardExp / heroCount / 2);
+			for (Character c : chars) {
+				if (c.getCharacterType() == CharacterType.HERO) {
+					if (yourHp > 0) {
+						c.setHp(Math.max(1, yourHp / heroCount));
+						c.setExperiencePoint(rewardExp / heroCount);
+					} else {
+						c.setHp(0);
+						c.setExperiencePoint(rewardExp / heroCount / 2);
+					}
+
+					c.setMorale(yourMorale > 0 ? yourMorale / heroCount : 0);
+					c.setMorale(c.getMorale() - 1);
+					characterDao.save(c);
 				}
-
-				c.setMorale(yourMorale > 0 ? yourMorale / heroCount : 0);
-				c.setMorale(c.getMorale() - 1);
-				characterDao.save(c);
 			}
+
+			user.setCoin(user.getCoin() + rewardCoins);
+
+			for (EquipmentDto e : ci.getCombatReward().getEquipments()) {
+				UserItem userItem = new UserItem();
+				userItem.setUser(user);
+				userItem.setEquipment(equipmentDao.findById(e.getId())
+						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND)));
+				userItem.setItemType(ItemType.EQUIPMENT);
+				userItemDao.save(userItem);
+			}
+			
+			for (ConsumableDto c : ci.getCombatReward().getConsumables()) {
+				UserItem userItem = new UserItem();
+				userItem.setUser(user);
+				userItem.setConsumable(consumableDao.findById(c.getId())
+						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND)));
+				userItem.setItemType(ItemType.CONSUMABLE);
+				userItemDao.save(userItem);
+			}
+
+			ci.setStatus(CombatStatus.CLOSED);
+			combatInstanceDao.save(ci);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			logger.error(e.toString());
 		}
-
-		user.setCoin(user.getCoin() + rewardCoins);
-
-		for (EquipmentDto e : ci.getCombatReward().getEquipments()) {
-			UserItem userItem = new UserItem();
-			userItem.setUser(user);
-			userItem.setEquipment(equipmentDao.findById(e.getId())
-					.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND)));
-			userItemDao.save(userItem);
-		}
-
-		ci.setStatus(CombatStatus.CLOSED);
-		combatInstanceDao.save(ci);
 	}
 
 }

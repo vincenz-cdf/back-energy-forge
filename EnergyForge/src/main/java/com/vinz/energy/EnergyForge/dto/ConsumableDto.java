@@ -33,8 +33,10 @@ public class ConsumableDto implements Serializable {
     public ConsumableDto(Consumable c) {
     	id = c.getId();
     	name = c.getName();
+    	spritePath = c.getSpritePath();
     	description = c.getDescription();
     	healingAmount = c.getHealingAmount();
+    	healingPower = c.getHealingPower();
     	
     	userItems = new ArrayList<UserItemDto>();
     	

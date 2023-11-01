@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.vinz.energy.EnergyForge.dto.CharacterDto;
+import com.vinz.energy.EnergyForge.dto.ConsumableDto;
 import com.vinz.energy.EnergyForge.dto.equipments.ArmorDto;
 import com.vinz.energy.EnergyForge.dto.equipments.WeaponDto;
 import com.vinz.energy.EnergyForge.service.EquipmentService;
@@ -45,7 +46,7 @@ public class EquipmentController {
 	        
 	        Map<String, Object> response = new HashMap<>();
 	        response.put("status", "success");
-	        response.put("message", "Habits successfully retrieved.");
+	        response.put("message", "Armors successfully retrieved.");
 	        response.put("data", armors); 
 	        return new ResponseEntity<>(response, HttpStatus.OK);
 	    } catch (Exception e) {
@@ -68,7 +69,7 @@ public class EquipmentController {
 	        
 	        Map<String, Object> response = new HashMap<>();
 	        response.put("status", "success");
-	        response.put("message", "Habits successfully retrieved.");
+	        response.put("message", "Weapons successfully retrieved.");
 	        response.put("data", weapons); 
 	        return new ResponseEntity<>(response, HttpStatus.OK);
 	    } catch (Exception e) {
@@ -80,6 +81,31 @@ public class EquipmentController {
 	        );
 	    }
 	}
+	
+	@GetMapping("/consumables")
+	public ResponseEntity<Map<String, Object>> showAllConsumables() {
+	    try {
+	        Long userId = global.getCurrentUserId();
+	        
+	        //D'un user
+	        List<ConsumableDto> consumables = equipmentService.getOwnedConsumables(userId);
+	        
+	        Map<String, Object> response = new HashMap<>();
+	        response.put("status", "success");
+	        response.put("message", "Consumables successfully retrieved.");
+	        response.put("data", consumables); 
+	        return new ResponseEntity<>(response, HttpStatus.OK);
+	    } catch (Exception e) {
+	    	logger.error(e.getMessage());
+	        throw new ResponseStatusException(
+	            HttpStatus.INTERNAL_SERVER_ERROR, 
+	            "Unable to retrieve consumables",
+	            e
+	        );
+	    }
+	}
+	
+	
 	
 	@PostMapping("/equipments/{charId}")
 	public ResponseEntity<Map<String, Object>> equipCharacterWithGear(@PathVariable Long charId, @RequestBody Long gearId) {

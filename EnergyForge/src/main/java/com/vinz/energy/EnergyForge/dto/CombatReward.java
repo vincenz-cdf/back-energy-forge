@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.vinz.energy.EnergyForge.dto.equipments.EquipmentDto;
 
+
 public class CombatReward implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -13,6 +14,7 @@ public class CombatReward implements Serializable {
 	private Integer coins = 0;
 	private Integer experiencePoints = 0;
 	private List<EquipmentDto> equipments = new ArrayList<EquipmentDto>();
+	private List<ConsumableDto> consumables = new ArrayList<ConsumableDto>();
 	
 	public Integer getCoins() {
 		return coins;
@@ -36,4 +38,11 @@ public class CombatReward implements Serializable {
 	public static long getSerialversionuid() {
 		return serialVersionUID;
 	}
+	public List<ConsumableDto> getConsumables() {
+		return consumables;
+	}
+	public void setConsumables(List<ConsumableDto> consumables) {
+		this.consumables = consumables;
+	}
+	
 }

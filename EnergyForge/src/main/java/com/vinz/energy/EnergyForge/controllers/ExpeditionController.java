@@ -147,10 +147,10 @@ public class ExpeditionController {
 
 			Map<String, String> response = new HashMap<>();
 			response.put("status", "success");
-			response.put("message", "Chars successfully retrieved.");
+			response.put("message", "Reward retrieved.");
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		} catch (Exception e) {
-			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to retrieve chars", e);
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to retrieve rewards", e);
 		}
 	}
 	

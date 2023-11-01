@@ -3,6 +3,7 @@ package com.vinz.energy.EnergyForge.dto;
 import java.io.Serializable;
 
 import com.vinz.energy.EnergyForge.db.UserItem;
+import com.vinz.energy.EnergyForge.db.enums.ItemType;
 
 public class UserItemDto implements Serializable {
 
@@ -11,14 +12,23 @@ public class UserItemDto implements Serializable {
 	private Long equipmentId;
 	private Long userId;
 	private Integer consumableId;
+	private ItemType itemType;
 	
 	public UserItemDto() {};
 	
 	public UserItemDto(UserItem ui) {
 		id = ui.getId();
-		equipmentId = ui.getEquipment().getId();
 		userId = ui.getUser().getId();
-		consumableId = ui.getConsumable().getId();
+		
+		if(ui.getEquipment() != null) {
+			equipmentId = ui.getEquipment().getId();
+		}
+		
+		if(ui.getEquipment() != null) {
+			consumableId = ui.getConsumable().getId();
+		}
+		
+		itemType = ui.getItemType();
 	}
 	
 	public Long getId() {
@@ -50,6 +60,14 @@ public class UserItemDto implements Serializable {
 
 	public static long getSerialversionuid() {
 		return serialVersionUID;
+	}
+
+	public ItemType getItemType() {
+		return itemType;
+	}
+
+	public void setItemType(ItemType itemType) {
+		this.itemType = itemType;
 	}
 	
 	

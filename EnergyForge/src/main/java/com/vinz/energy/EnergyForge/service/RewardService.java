@@ -84,7 +84,7 @@ public class RewardService {
 	private void setEnemyTeamRewards(List<Character> enemyTeam, CombatReward reward) {
 		for (Character c : enemyTeam) {
 			reward.setExperiencePoints(reward.getExperiencePoints() + c.getExperiencePoint());
-			reward.setCoins(reward.getCoins() + (int) (random.nextInt(10) + c.getLevel() * random.nextDouble(2) + 1));
+			reward.setCoins(reward.getCoins() + (int) (random.nextInt(9) + 10 + c.getLevel() * random.nextDouble(2) + 1));
 		}
 	}
 

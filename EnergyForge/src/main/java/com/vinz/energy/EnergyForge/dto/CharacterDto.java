@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.vinz.energy.EnergyForge.db.enums.CharacterType;
+import com.vinz.energy.EnergyForge.db.equipments.EquippedItem;
 import com.vinz.energy.EnergyForge.dto.equipments.EquippedItemDto;
 
 import lombok.ToString;
@@ -31,6 +32,7 @@ public class CharacterDto implements Serializable {
 	private int healingStack;
 	private int healingPower;
 	private Boolean inCombat = false;
+	private Boolean awaiting = false;
 	
 	private List<EquippedItemDto> equippedItems = new ArrayList<EquippedItemDto>();
 	
@@ -56,6 +58,14 @@ public class CharacterDto implements Serializable {
 		healingStack = c.getHealingStack();
 		healingPower = c.getHealingPower();
 		inCombat = c.getInCombat();
+		awaiting = c.getAwaiting();
+		equippedItems = new ArrayList<EquippedItemDto>();
+		
+		for (EquippedItem ei : c.getEquippedItems()) {
+			equippedItems.add(new EquippedItemDto(ei));
+		}
+			
+		
 	}
 
 	public Long getId() {
@@ -212,6 +222,14 @@ public class CharacterDto implements Serializable {
 
 	public void setHealingPower(int healingPower) {
 		this.healingPower = healingPower;
+	}
+
+	public Boolean getAwaiting() {
+		return awaiting;
+	}
+
+	public void setAwaiting(Boolean awaiting) {
+		this.awaiting = awaiting;
 	}
 
 }

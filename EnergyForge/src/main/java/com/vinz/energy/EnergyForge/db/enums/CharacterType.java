@@ -7,4 +7,33 @@ public enum CharacterType {
 	
 	BRIGAND_THUG, BRIGAND_POACHER;
 	
+    public boolean isNpc() {
+        switch(this) {
+            case BRIGAND_THUG, BRIGAND_POACHER:
+                return true;
+            default:
+                break;
+        }
+        return false;
+    }
+	
+    public int shieldPercent() {
+        switch(this) {
+            case BRIGAND_THUG:
+                return 33;
+            default:
+                break;
+        }
+        return 150;
+    }
+    
+    public int headPercent() {
+        switch(this) {
+            case BRIGAND_THUG, BRIGAND_POACHER:
+                return 50;
+            default:
+                break;
+        }
+        return 0;
+    }
 }

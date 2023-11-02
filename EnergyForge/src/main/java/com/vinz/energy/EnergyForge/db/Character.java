@@ -89,6 +89,9 @@ public class Character {
     
     @Column(nullable = false)
     private Boolean inCombat = false;
+    
+    @Column(nullable = false)
+    private Boolean awaiting = false;
 
 	public Long getId() {
 		return id;
@@ -248,6 +251,14 @@ public class Character {
 
 	public void setHealingPower(int healingPower) {
 		this.healingPower = healingPower;
+	}
+
+	public Boolean getAwaiting() {
+		return awaiting;
+	}
+
+	public void setAwaiting(Boolean awaiting) {
+		this.awaiting = awaiting;
 	}
  
 	

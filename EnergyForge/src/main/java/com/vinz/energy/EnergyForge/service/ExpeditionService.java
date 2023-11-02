@@ -2,6 +2,7 @@ package com.vinz.energy.EnergyForge.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -12,12 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import com.vinz.energy.EnergyForge.dao.ArmorDao;
 import com.vinz.energy.EnergyForge.dao.CharacterDao;
 import com.vinz.energy.EnergyForge.dao.CombatInstanceDao;
 import com.vinz.energy.EnergyForge.dao.ConsumableDao;
 import com.vinz.energy.EnergyForge.dao.EquipmentDao;
 import com.vinz.energy.EnergyForge.dao.UserDao;
 import com.vinz.energy.EnergyForge.dao.UserItemDao;
+import com.vinz.energy.EnergyForge.dao.WeaponDao;
 import com.vinz.energy.EnergyForge.db.Character;
 import com.vinz.energy.EnergyForge.db.CombatInstance;
 import com.vinz.energy.EnergyForge.db.User;
@@ -26,15 +29,19 @@ import com.vinz.energy.EnergyForge.db.enums.CharacterType;
 import com.vinz.energy.EnergyForge.db.enums.CombatStatus;
 import com.vinz.energy.EnergyForge.db.enums.ItemType;
 import com.vinz.energy.EnergyForge.db.enums.Scenario;
+import com.vinz.energy.EnergyForge.db.equipments.Armor;
 import com.vinz.energy.EnergyForge.db.equipments.Equipment;
 import com.vinz.energy.EnergyForge.db.equipments.EquipmentSlot;
 import com.vinz.energy.EnergyForge.db.equipments.EquippedItem;
+import com.vinz.energy.EnergyForge.db.equipments.Weapon;
+import com.vinz.energy.EnergyForge.dto.ArmorLightDto;
 import com.vinz.energy.EnergyForge.dto.CharacterDto;
 import com.vinz.energy.EnergyForge.dto.CombatIndexes;
 import com.vinz.energy.EnergyForge.dto.CombatInstanceDto;
 import com.vinz.energy.EnergyForge.dto.CombatReward;
 import com.vinz.energy.EnergyForge.dto.ConsumableDto;
 import com.vinz.energy.EnergyForge.dto.CumulatedTeamStats;
+import com.vinz.energy.EnergyForge.dto.WeaponLightDto;
 import com.vinz.energy.EnergyForge.dto.equipments.EquipmentDto;
 import com.vinz.energy.EnergyForge.exception.AppException;
 import com.vinz.energy.EnergyForge.mappers.CharacterMapper;
@@ -73,9 +80,15 @@ public class ExpeditionService {
 
 	@Autowired
 	private RewardService rewardService;
-	
+
 	@Autowired
 	private ConsumableDao consumableDao;
+
+	@Autowired
+	private WeaponDao weaponDao;
+
+	@Autowired
+	private ArmorDao armorDao;
 
 	private Random random = new Random();
 
@@ -99,7 +112,7 @@ public class ExpeditionService {
 					combatInstance.setStatus(CombatStatus.AWAIT);
 					combatInstance.setUser(user);
 
-					List<Character> chars = pregenerateNpcsForCampaign(scenario);
+					List<Character> chars = pregenerateNpcsForCampaign(scenario, user);
 
 					combatInstance.setCharacters(chars);
 					combatInstance.setIndexes(new ArrayList<CombatIndexes>());
@@ -107,9 +120,6 @@ public class ExpeditionService {
 					combatInstanceDao.save(combatInstance);
 
 					return new CombatInstanceDto(combatInstance);
-				} else {
-					// ...opencontracts
-					// combatInstance.setIndexes(calculateNpcIndexes(chars));
 				}
 			}
 
@@ -121,72 +131,181 @@ public class ExpeditionService {
 		return null;
 	}
 
-	public CombatInstanceDto getCombatInstance(Long combatInstanceId) {
-		CombatInstance combatInstance = combatInstanceDao.findById(combatInstanceId)
-				.orElseThrow(() -> new RuntimeException("Combat Instance not found"));
+	public void createContractCombatInstance(Long userId) {
 
-		return new CombatInstanceDto(combatInstance);
+		User user = userDao.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+		CombatInstance combatInstance = new CombatInstance();
+		combatInstance.setScenario(Scenario.CONTRACT);
+		combatInstance.setLabel("Open Contract");
+		combatInstance.setStatus(CombatStatus.AWAIT);
+		combatInstance.setUser(user);
+
+		List<Character> chars = pregenerateNpcsForCampaign(Scenario.CONTRACT, user);
+
+		combatInstance.setCharacters(chars);
+		combatInstance.setIndexes(calculateNpcIndexes(chars));
+
+		combatInstanceDao.save(combatInstance);
 	}
 
-	private List<Character> pregenerateNpcsForCampaign(Scenario scenario) {
+	private List<Character> pregenerateNpcsForCampaign(Scenario scenario, User user) {
 		List<Character> characters = new ArrayList<Character>();
-		switch (scenario) {
-		case T_L1:
-			characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING1));
-			break;
-		case T_L2:
-			characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING2));
-			characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING2));
-			break;
-		case T_L3:
-			characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING3));
-			characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING3));
-			break;
-		case T_L4:
-			characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING4));
-			break;
-		default:
-			break;
 
+		if (scenario.isCampaign()) {
+			switch (scenario) {
+			case T_L1:
+				characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING1));
+				break;
+			case T_L2:
+				characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING2));
+				characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING2));
+				break;
+			case T_L3:
+				characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING3));
+				characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING3));
+				break;
+			case T_L4:
+				characters.addAll(characterDao.findByCharacterType(CharacterType.TRAINING4));
+				break;
+			default:
+				break;
+
+			}
+		} else {
+			int targetLevel = calculateTotalLevel(characterDao.findByUserId(user.getId()));
+
+			List<Character> npcsAtTargetLevel = characterDao.findAll().stream() // Convert the list to a Stream
+					.filter(character -> character.getCharacterType().isNpc() && character.getLevel() <= targetLevel)
+					.collect(Collectors.toList());
+
+			boolean isLevelConvenable = false;
+			int totalEnemyLevel = 0;
+			while (!isLevelConvenable) {
+
+				characters.add(npcsAtTargetLevel.get(random.nextInt(npcsAtTargetLevel.size())));
+				totalEnemyLevel = calculateTotalLevel(characters);
+				if (totalEnemyLevel > targetLevel) {
+					characters = new ArrayList<Character>();
+					totalEnemyLevel = 0;
+				} else {
+					if (totalEnemyLevel == targetLevel) {
+						isLevelConvenable = true;
+					}
+				}
+			}
 		}
 
 		return characters;
 	}
 
-	private List<CombatIndexes> calculateNpcIndexes(List<Character> chars) {
+	private int calculateTotalLevel(List<Character> characters) {
+		int totalLevel = 0;
+		for (Character c : characters) {
+			totalLevel += c.getLevel();
+		}
+		return totalLevel;
+	}
 
-		List<CombatIndexes> indexes = new ArrayList<CombatIndexes>();
-		List<Equipment> leftHandEquipment = new ArrayList<>();
-		List<Equipment> rightHandEquipment = new ArrayList<>();
+	private List<CombatIndexes> calculateNpcIndexes(List<Character> chars) {
+		if (chars == null) {
+			return Collections.emptyList(); // Handle null chars list
+		}
+
+		List<CombatIndexes> indexes = new ArrayList<>();
 
 		for (int i = 0; i < chars.size(); i++) {
+			Character currentChar = chars.get(i);
+			if (currentChar == null) {
+				continue; // Skip if currentChar is null
+			}
 
 			CombatIndexes ci = new CombatIndexes();
+			ci.setCharacterId(currentChar.getId()); // Moved down after null check
 			ci.setCharacterIndex(i);
 
-			for (EquippedItem ei : chars.get(i).getEquippedItems()) {
-				if (ei.getEquipment().getSlot() == EquipmentSlot.LEFTHAND
-						|| ei.getEquipment().getSlot() == EquipmentSlot.ZWEIHAND) {
-					leftHandEquipment.add(ei.getEquipment());
-				}
-				if (ei.getEquipment().getSlot() == EquipmentSlot.RIGHTHAND) {
-					rightHandEquipment.add(ei.getEquipment());
+			if (currentChar.getEquippedItems() == null) {
+				continue; // Skip if getEquippedItems() is null
+			}
+
+			// Initialize equipment lists
+			List<Equipment> leftHandEquipment = new ArrayList<>();
+			List<Equipment> rightHandEquipment = new ArrayList<>();
+			List<Equipment> bodyArmors = new ArrayList<>();
+			List<Equipment> headArmors = new ArrayList<>();
+
+			// Iterate over equipped items and categorize them
+			for (EquippedItem ei : currentChar.getEquippedItems()) {
+				if (ei != null && ei.getEquipment() != null && ei.getEquipment().getSlot() != null) {
+					switch (ei.getEquipment().getSlot()) {
+					case LEFTHAND:
+					case ZWEIHAND:
+						leftHandEquipment.add(ei.getEquipment());
+						break;
+					case RIGHTHAND:
+						rightHandEquipment.add(ei.getEquipment());
+						break;
+					case BODY:
+						bodyArmors.add(ei.getEquipment());
+						break;
+					case HEAD:
+						headArmors.add(ei.getEquipment());
+						break;
+					}
 				}
 			}
 
-			int weaponIndex = random.nextInt(leftHandEquipment.size());
-			ci.setWeaponIndex(weaponIndex);
+			if (!leftHandEquipment.isEmpty()) {
+				int weaponIndex = random.nextInt(leftHandEquipment.size());
+				Weapon weapon = weaponDao.findByEquipmentId(leftHandEquipment.get(weaponIndex).getId())
+						.orElseThrow(() -> new AppException("Unknown weapon", HttpStatus.NOT_FOUND));
+				ci.setWeapon(new WeaponLightDto(weapon));
 
-			if (leftHandEquipment.get(weaponIndex).getSlot() != EquipmentSlot.ZWEIHAND) {
-				ci.setShieldIndex(random.nextInt(leftHandEquipment.size()));
-			} else {
-				ci.setShieldIndex(null);
+				if (!rightHandEquipment.isEmpty()) {
+					int shieldIndex = random.nextInt(rightHandEquipment.size());
+					Weapon shield = weaponDao.findByEquipmentId(rightHandEquipment.get(shieldIndex).getId())
+							.orElseThrow(() -> new AppException("Unknown shield", HttpStatus.NOT_FOUND));
+
+					Equipment equipment = leftHandEquipment.get(weaponIndex);
+					if (equipment != null && equipment.getSlot() != EquipmentSlot.ZWEIHAND) {
+						if (currentChar.getCharacterType() != null
+								&& random.nextInt(100) + 1 <= currentChar.getCharacterType().shieldPercent()) {
+							ci.setShield(new WeaponLightDto(shield));
+						}
+					}
+				}
+
+			}
+
+			if (!bodyArmors.isEmpty()) {
+				int bodyIndex = random.nextInt(bodyArmors.size());
+				Armor bodyArmor = armorDao.findByEquipmentId(bodyArmors.get(bodyIndex).getId())
+						.orElseThrow(() -> new AppException("Unknown body", HttpStatus.NOT_FOUND));
+				ci.setBodyArmor(new ArmorLightDto(bodyArmor));
+			}
+
+			if (!headArmors.isEmpty()) {
+				int headArmorIndex = random.nextInt(headArmors.size());
+				Armor headArmor = armorDao.findByEquipmentId(headArmors.get(headArmorIndex).getId())
+						.orElseThrow(() -> new AppException("Unknown head", HttpStatus.NOT_FOUND));
+
+				if (currentChar.getCharacterType() != null
+						&& random.nextInt(100) + 1 <= currentChar.getCharacterType().headPercent()) {
+					ci.setHeadArmor(new ArmorLightDto(headArmor));
+				}
 			}
 
 			indexes.add(ci);
 		}
 
 		return indexes;
+	}
+
+	public CombatInstanceDto getCombatInstance(Long combatInstanceId) {
+		CombatInstance combatInstance = combatInstanceDao.findById(combatInstanceId)
+				.orElseThrow(() -> new RuntimeException("Combat Instance not found"));
+
+		return new CombatInstanceDto(combatInstance);
 	}
 
 	public List<CharacterDto> getCharactersForCombat(Long id) {
@@ -197,10 +316,16 @@ public class ExpeditionService {
 		return characterMapper.toCharacterDtos(combatInstance.getCharacters());
 	}
 
-	public List<CombatInstanceDto> getCombatInstanceForUser(Long userId) {
-		List<CombatInstance> combatInstances = combatInstanceDao.findByUserIdOrderByIdAsc(userId);
-		List<CombatInstanceDto> dtos = new ArrayList<CombatInstanceDto>();
+	public List<CombatInstanceDto> getCombatInstanceForUser(Long userId, String content) {
+		List<CombatInstance> combatInstances = new ArrayList<CombatInstance>();
 
+		if (content.equals("campaign")) {
+			combatInstances = combatInstanceDao.findByUserIdAndScenarioNotOrderByIdAsc(userId, Scenario.CONTRACT);
+		} else {
+			combatInstances = combatInstanceDao.findByUserIdAndScenarioOrderByIdAsc(userId, Scenario.CONTRACT);
+		}
+
+		List<CombatInstanceDto> dtos = new ArrayList<CombatInstanceDto>();
 		for (CombatInstance c : combatInstances) {
 			dtos.add(new CombatInstanceDto(c));
 		}
@@ -214,8 +339,7 @@ public class ExpeditionService {
 			return characterMapper.toCharacterDtos(characterDao.findByUserId(userId));
 		}
 
-		return characterMapper
-				.toCharacterDtos(characterDao.findCharactersNotInCombatForUser(userId));
+		return characterMapper.toCharacterDtos(characterDao.findCharactersNotInCombatForUser(userId));
 	}
 
 	public void putHeroCharacterInCombat(Long ciId, Long charId) {
@@ -226,11 +350,14 @@ public class ExpeditionService {
 				.orElseThrow(() -> new AppException("Unknown character", HttpStatus.NOT_FOUND));
 
 		if (combatInstance.getCharacters().contains(character)) {
+			character.setAwaiting(false);
 			combatInstance.getCharacters().remove(character);
 		} else {
+			character.setAwaiting(true);
 			combatInstance.getCharacters().add(character);
 		}
 
+		characterDao.save(character);
 		combatInstanceDao.save(combatInstance);
 
 	}
@@ -254,7 +381,7 @@ public class ExpeditionService {
 			}
 
 			CumulatedTeamStats finalResult = combatService
-					.beginFight(combatService.calculateTeamStats(yourTeam, enemyTeam));
+					.beginFight(combatService.calculateTeamStats(yourTeam, enemyTeam, combatInstance), combatInstance);
 			boolean hasWon = finalResult.getYourStats().getHp() > finalResult.getEnemyStats().getHp();
 			combatInstance.setStatus(hasWon ? CombatStatus.WON_AWAIT : CombatStatus.LOST_AWAIT);
 			combatInstance.setAfterMathInfo(finalResult);
@@ -266,8 +393,9 @@ public class ExpeditionService {
 			}
 
 			combatInstanceDao.save(combatInstance);
-			
+
 			for (Character c : yourTeam) {
+				c.setAwaiting(false);
 				c.setInCombat(true);
 				characterDao.save(c);
 			}
@@ -288,10 +416,14 @@ public class ExpeditionService {
 
 		for (CombatInstance ci : wonCombatInstances) {
 			ci.setStatus(CombatStatus.WON_FINAL);
+			combatInstanceDao.save(ci);
 		}
 		for (CombatInstance ci : lostCombatInstances) {
 			ci.setStatus(CombatStatus.LOST_FINAL);
+			combatInstanceDao.save(ci);
 		}
+
+		combatInstanceDao.deleteAll(combatInstanceDao.findByStatusAndScenario(CombatStatus.AWAIT, Scenario.CONTRACT));
 
 	}
 
@@ -326,6 +458,14 @@ public class ExpeditionService {
 					c.setMorale(yourMorale > 0 ? yourMorale / heroCount : 0);
 					c.setMorale(c.getMorale() - 1);
 					c.setInCombat(false);
+
+					int toLevelUp = c.getLevel() * 1000;
+
+					if (c.getExperiencePoint() >= toLevelUp) {
+						c.setLevel(c.getLevel() + 1);
+						c.setExperiencePoint(c.getExperiencePoint() - toLevelUp);
+					}
+
 					characterDao.save(c);
 				}
 			}
@@ -340,7 +480,7 @@ public class ExpeditionService {
 				userItem.setItemType(ItemType.EQUIPMENT);
 				userItemDao.save(userItem);
 			}
-			
+
 			for (ConsumableDto c : ci.getCombatReward().getConsumables()) {
 				UserItem userItem = new UserItem();
 				userItem.setUser(user);
@@ -352,8 +492,7 @@ public class ExpeditionService {
 
 			ci.setStatus(CombatStatus.CLOSED);
 			combatInstanceDao.save(ci);
-			
-			
+
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 			logger.error(e.toString());

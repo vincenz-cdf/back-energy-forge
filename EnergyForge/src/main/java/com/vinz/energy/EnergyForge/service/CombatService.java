@@ -18,10 +18,12 @@ import org.springframework.stereotype.Service;
 
 import com.vinz.energy.EnergyForge.dao.WeaponDao;
 import com.vinz.energy.EnergyForge.db.Character;
+import com.vinz.energy.EnergyForge.db.CombatInstance;
 import com.vinz.energy.EnergyForge.db.enums.Effect;
 import com.vinz.energy.EnergyForge.db.equipments.EquipmentSlot;
 import com.vinz.energy.EnergyForge.dto.AttackActions;
 import com.vinz.energy.EnergyForge.dto.CharacterDto;
+import com.vinz.energy.EnergyForge.dto.CombatIndexes;
 import com.vinz.energy.EnergyForge.dto.CumulatedTeamStats;
 import com.vinz.energy.EnergyForge.dto.TriggeringEffect;
 import com.vinz.energy.EnergyForge.dto.equipments.EquipmentDto;
@@ -48,8 +50,6 @@ public class CombatService {
 	private WeaponDao weaponDao;
 
 	private Random random = new Random();
-
-	int SHIELDWALLVALUE = 15;
 	int STAGGERVALUE = 33;
 	int KOVALUE = 75;
 	int SPEARWALLVALUE = 20;
@@ -60,7 +60,8 @@ public class CombatService {
 
 	private static final Logger logger = LoggerFactory.getLogger(CombatService.class);
 
-	public CumulatedTeamStats calculateTeamStats(List<Character> yourTeam, List<Character> enemyTeam) {
+	public CumulatedTeamStats calculateTeamStats(List<Character> yourTeam, List<Character> enemyTeam,
+			CombatInstance ci) {
 		CumulatedTeamStats allTeamStats = new CumulatedTeamStats();
 		CumulatedTeamStats.TeamStats yourStats = new CumulatedTeamStats.TeamStats();
 		CumulatedTeamStats.TeamStats enemyStats = new CumulatedTeamStats.TeamStats();
@@ -85,9 +86,10 @@ public class CombatService {
 		for (Character c : enemyTeam) {
 			CharacterDto dto = characterMapper.toDto(c);
 			enemyStats.setHp(enemyStats.getHp() + dto.getHp());
-			enemyStats.setArmor(enemyStats.getArmor() + dto.getArmor());
 			enemyStats.getDto().add(dto);
 			enemyStats.setMorale(enemyStats.getMorale() + c.getMorale());
+			enemyStats.setArmor(enemyStats.getArmor() + dto.getArmor());
+
 			int totalForCurrentCharacter = dto.getHp() + dto.getArmor();
 
 			if (i != enemyTeam.size() - 1) {
@@ -97,6 +99,17 @@ public class CombatService {
 		}
 		enemyStats.setPartySize(enemyTeam.size());
 
+		if (!ci.getIndexes().isEmpty()) {
+
+			for (CombatIndexes cix : ci.getIndexes()) {
+
+				int body = cix.getBodyArmor().getArmorValue();
+				int head = cix.getHeadArmor() != null ? cix.getHeadArmor().getArmorValue() : 0;
+
+				enemyStats.setArmor(enemyStats.getArmor() + head + body);
+			}
+		}
+
 		allTeamStats.setYourStats(yourStats);
 		allTeamStats.setEnemyStats(enemyStats);
 
@@ -104,9 +117,9 @@ public class CombatService {
 	}
 
 	@Transactional
-	public CumulatedTeamStats beginFight(CumulatedTeamStats allTeamStats) {
-		List<WeaponDto> yourWeapon = fetchTeamWeapons(allTeamStats.getYourStats().getDto());
-		List<WeaponDto> enemyWeapon = fetchTeamWeapons(allTeamStats.getEnemyStats().getDto());
+	public CumulatedTeamStats beginFight(CumulatedTeamStats allTeamStats, CombatInstance ci) {
+		List<WeaponDto> yourWeapon = fetchTeamWeapons(allTeamStats.getYourStats().getDto(), ci);
+		List<WeaponDto> enemyWeapon = fetchTeamWeapons(allTeamStats.getEnemyStats().getDto(), ci);
 
 		int yourDeathCount = 0;
 		int enemyDeathCount = 0;
@@ -247,7 +260,7 @@ public class CombatService {
 
 					// SHIELD WALL BLOCK 1 ATK
 					if (e.getEffect() == Effect.SHIELDWALL && aa.getAtkCount() > 0) {
-						
+
 						if (!weapon.getIsMelee() && random.nextInt(100) + 1 <= e.getRangedShieldValue()) {
 							aa.setAtkCount(aa.getAtkCount() - 1);
 							iteratorDefenderEffects.remove();
@@ -264,7 +277,6 @@ public class CombatService {
 								}
 							}
 						}
-						
 
 						triggeredEffects.add(e.getEffect());
 					}
@@ -404,11 +416,12 @@ public class CombatService {
 					effect.setEffect(Effect.SHIELDWALL);
 					effect.setMeleeShieldValue(weapon.getWeaponAbilities().get(0).getEquipmentAbilityValue());
 					if (weapon.getWeaponAbilities().get(0).getEquipmentAbilitySecondaryValue() != null) {
-						effect.setRangedShieldValue(weapon.getWeaponAbilities().get(0).getEquipmentAbilitySecondaryValue());
+						effect.setRangedShieldValue(
+								weapon.getWeaponAbilities().get(0).getEquipmentAbilitySecondaryValue());
 					} else {
 						effect.setRangedShieldValue(weapon.getWeaponAbilities().get(0).getEquipmentAbilityValue());
 					}
-					
+
 					effects.add(effect);
 				}
 
@@ -541,34 +554,71 @@ public class CombatService {
 
 	}
 
-	private List<WeaponDto> fetchTeamWeapons(List<CharacterDto> teamDto) {
+	private List<WeaponDto> fetchTeamWeapons(List<CharacterDto> teamDto, CombatInstance ci) {
 		List<WeaponDto> teamWeapons = new ArrayList<>();
 
+		int i = 0;
+
 		for (CharacterDto c : teamDto) {
+
 			List<EquippedItemDto> equippedWeapons = c.getEquippedItems().stream().filter(e -> e.getSlot().isWeapon())
 					.collect(Collectors.toList());
 
-			if (equippedWeapons.stream().filter(e -> e.getSlot() != EquipmentSlot.RIGHTHAND)
-					.collect(Collectors.toList()).isEmpty()) {
-				teamWeapons.add(
-						new WeaponDto(0l, new EquipmentDto(), 8, true, new ArrayList<>(), c.getId(), c.getUserId()));
-				continue;
-			}
+			if (c.getCharacterType().isNpc() && !ci.getIndexes().isEmpty()) {
 
-			for (EquippedItemDto weaponItem : equippedWeapons) {
-				WeaponDto weapon = weaponMapper.toDto(weaponDao.findByEquipmentId(weaponItem.getEquipmentId())
-						.orElseThrow(() -> new AppException("Unknown char", HttpStatus.NOT_FOUND)));
+				CombatIndexes combatIndex = ci.getIndexes().get(i);
 
-				if (equippedWeapons.size() == 2 && weapon.getEquipment().getSlot() == EquipmentSlot.LEFTHAND) {
-					weapon.setAtkValue((int) weapon.getAtkValue() * 3 / 4);
+				WeaponDto weapon = null;
+
+				if (combatIndex.getWeapon() != null) {
+					weapon = weaponMapper.toDto(weaponDao.findById(combatIndex.getWeapon().getId())
+							.orElseThrow(() -> new AppException("Unknown weapon", HttpStatus.NOT_FOUND)));
+				}
+
+				if (combatIndex.getShield() != null) {
+					WeaponDto shield = weaponMapper.toDto(weaponDao.findById(combatIndex.getShield().getId())
+							.orElseThrow(() -> new AppException("Unknown shield", HttpStatus.NOT_FOUND)));
+
+					shield.setCharacterId(c.getId());
+					shield.setUserId(c.getUserId());
+					teamWeapons.add(shield);
+					if (weapon.getEquipment().getSlot() == EquipmentSlot.LEFTHAND) {
+						weapon.setAtkValue((int) weapon.getAtkValue() * 3 / 4);
+					}
 				}
 
 				weapon.setCharacterId(c.getId());
 				weapon.setUserId(c.getUserId());
-
 				teamWeapons.add(weapon);
+
+				i++;
+
+			} else {
+
+				if (equippedWeapons.stream().filter(e -> e.getSlot() != EquipmentSlot.RIGHTHAND)
+						.collect(Collectors.toList()).isEmpty()) {
+					teamWeapons.add(new WeaponDto(0l, new EquipmentDto(), 8, true, new ArrayList<>(), c.getId(),
+							c.getUserId()));
+					continue;
+				}
+
+				for (EquippedItemDto weaponItem : equippedWeapons) {
+					WeaponDto weapon = weaponMapper.toDto(weaponDao.findByEquipmentId(weaponItem.getEquipmentId())
+							.orElseThrow(() -> new AppException("Unknown weapon", HttpStatus.NOT_FOUND)));
+
+					if (equippedWeapons.size() == 2 && weapon.getEquipment().getSlot() == EquipmentSlot.LEFTHAND) {
+						weapon.setAtkValue((int) weapon.getAtkValue() * 3 / 4);
+					}
+
+					weapon.setCharacterId(c.getId());
+					weapon.setUserId(c.getUserId());
+
+					teamWeapons.add(weapon);
+				}
 			}
+
 		}
+
 		return teamWeapons.stream().sorted((w1, w2) -> {
 			if (w1.getAtkValue() == null && w2.getAtkValue() == null) {
 				return 0; // both are null, so they are considered equal

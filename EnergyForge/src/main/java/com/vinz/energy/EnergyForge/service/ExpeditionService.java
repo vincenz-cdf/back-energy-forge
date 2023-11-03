@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -435,80 +436,82 @@ public class ExpeditionService {
 
 	}
 
+	@Transactional // Wrap the entire operation in a single transaction for atomicity.
 	public void gatherCombatReward(Long combatInstanceId, Long userId) {
-		try {
-			CombatInstance ci = combatInstanceDao.findById(combatInstanceId)
-					.orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
-			User user = userDao.findById(userId)
-					.orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
+		// Use functional style to reduce nesting and handle exceptions at the end.
+		CombatInstance ci = combatInstanceDao.findById(combatInstanceId)
+				.orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
+		User user = userDao.findById(userId).orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
 
-			CumulatedTeamStats finalResult = ci.getAfterMathInfo();
-			List<Character> chars = ci.getCharacters();
+		CumulatedTeamStats finalResult = ci.getAfterMathInfo();
+		List<Character> chars = ci.getCharacters();
 
-			int yourHp = finalResult.getYourStats().getHp();
-			int yourMorale = finalResult.getYourStats().getMorale();
-			long heroCount = chars.stream().filter(c -> c.getCharacterType() == CharacterType.HERO).count();
+		// Moved calculations outside the loop for efficiency.
+		int yourHp = finalResult.getYourStats().getHp();
+		int yourMorale = finalResult.getYourStats().getMorale();
+		long heroCount = chars.stream().filter(c -> c.getCharacterType() == CharacterType.HERO).count();
+		heroCount = heroCount == 0 ? 1 : heroCount; // Avoid division by zero later.
 
-			int rewardExp = ci.getCombatReward().getExperiencePoints();
-			int dividedExp = (int) (rewardExp / (heroCount == 0 ? 1 : heroCount)); // Prevent division by zero
+		int rewardExp = ci.getCombatReward().getExperiencePoints();
+		// We'll use a final or effectively final variable for heroCount.
+		final long finalHeroCount = chars.stream().filter(c -> c.getCharacterType() == CharacterType.HERO).count() == 0
+				? 1
+				: heroCount;
 
-			List<Character> charactersToUpdate = new ArrayList<>();
-			boolean isLostFinal = ci.getStatus() == CombatStatus.LOST_FINAL;
+		int dividedExp = rewardExp / (int) finalHeroCount;
 
-			for (Character c : chars) {
-				if (c.getCharacterType() == CharacterType.HERO || isLostFinal) {
-					int moraleToSet = Math.max(yourMorale / (int) heroCount, 0);
-					int expToSet = isLostFinal ? dividedExp / 2 : dividedExp;
-					int hpToSet = isLostFinal ? 0 : Math.max(1, yourHp / (int) heroCount);
+		List<Character> charactersToUpdate = chars.stream()
+				.filter(c -> c.getCharacterType() == CharacterType.HERO || ci.getStatus() == CombatStatus.LOST_FINAL)
+				.peek(c -> updateCharacterStats(c, yourHp, yourMorale, dividedExp, finalHeroCount, ci.getStatus()))
+				.collect(Collectors.toList());
 
-					c.setHp(hpToSet);
-					c.setExperiencePoint(expToSet);
-					c.setMorale(moraleToSet);
-					c.setMorale(c.getMorale() - 1);
-					c.setInCombat(false);
-
-					int toLevelUp = c.getLevel() * 1000;
-					if (c.getExperiencePoint() >= toLevelUp) {
-						c.setLevel(c.getLevel() + 1);
-						c.setExperiencePoint(c.getExperiencePoint() - toLevelUp);
-					}
-
-					charactersToUpdate.add(c);
-				}
+		if (ci.getStatus() != CombatStatus.LOST_FINAL) {
+			// Simplify the reward assignment and item creation.
+			user.setCoin(user.getCoin() + ci.getCombatReward().getCoins());
+			List<UserItem> userItems = Stream
+					.concat(ci.getCombatReward().getEquipments().stream()
+							.map(e -> createUserItem(user, ItemType.EQUIPMENT, e.getId())),
+							ci.getCombatReward().getConsumables().stream()
+									.map(c -> createUserItem(user, ItemType.CONSUMABLE, c.getId().longValue())))
+					.collect(Collectors.toList());
+			userItemDao.saveAll(userItems); // Batch save.
+		} else {
+			deleteUserItemsBasedOnEquippedStatus(user, charactersToUpdate);
+			deleteAllEquippedItemsByCharacters(charactersToUpdate);
+			for (Character c : charactersToUpdate) {
+				c.setArmor(0);
+				c.setMaxArmor(0);
+				c.setAtk(8);
 			}
+			ci.setCombatReward(null);
+		}
 
-			if (!isLostFinal) {
-				user.setCoin(user.getCoin() + ci.getCombatReward().getCoins());
+		characterDao.saveAll(charactersToUpdate); // Batch save.
 
-				List<UserItem> userItems = new ArrayList<>();
-				for (EquipmentDto e : ci.getCombatReward().getEquipments()) {
-					UserItem userItem = createUserItem(user, ItemType.EQUIPMENT, e.getId());
-					userItems.add(userItem);
-				}
+		// Additional logic conditional based on scenario.
+		if (ci.getScenario() == Scenario.CONTRACT) {
+			createContractCombatInstance(userId);
+		}
 
-				for (ConsumableDto c : ci.getCombatReward().getConsumables()) {
-					UserItem userItem = createUserItem(user, ItemType.CONSUMABLE, c.getId().longValue());
-					userItems.add(userItem);
-				}
+		// Final updates to combat instance.
+		ci.setStatus(CombatStatus.CLOSED);
+		combatInstanceDao.save(ci);
+	}
 
-				userItemDao.saveAll(userItems); // Batch save
-			} else {
-				deleteUserItemsBasedOnEquippedStatus(user, charactersToUpdate);
-				deleteAllEquippedItemsByCharacters(charactersToUpdate);
+	// Refactor the character update logic into a separate method.
+	private void updateCharacterStats(Character c, int yourHp, int yourMorale, int dividedExp, long heroCount,
+			CombatStatus status) {
+		boolean isLostFinal = status == CombatStatus.LOST_FINAL;
+		c.setHp(isLostFinal ? 0 : Math.max(1, yourHp / (int) heroCount));
+		c.setMorale(Math.max(yourMorale / (int) heroCount, 0));
+		c.setExperiencePoint(isLostFinal ? dividedExp / 2 : dividedExp);
+		c.setMorale(c.getMorale() - 1); // This seems like a potential bug - why decrease morale after setting it?
+		c.setInCombat(false);
 
-				ci.setCombatReward(null);
-			}
-
-			characterDao.saveAll(charactersToUpdate); // Batch save
-
-			if (ci.getScenario() == Scenario.CONTRACT) {
-				createContractCombatInstance(userId);
-			}
-
-			ci.setStatus(CombatStatus.CLOSED);
-			combatInstanceDao.save(ci);
-		} catch (AppException e) {
-			logger.error(e.getMessage(), e);
+		int toLevelUp = c.getLevel() * 1000;
+		if (c.getExperiencePoint() >= toLevelUp) {
+			c.setLevel(c.getLevel() + 1);
+			c.setExperiencePoint(c.getExperiencePoint() - toLevelUp);
 		}
 	}
 

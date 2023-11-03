@@ -12,7 +12,6 @@ insert into equipped_item (character_id, equipment_id, slot) values (5, 14, 'LEF
 insert into equipped_item (character_id, equipment_id, slot) values (5, 15, 'LEFTHAND');
 insert into equipped_item (character_id, equipment_id, slot) values (5, 22, 'RIGHTHAND');
 insert into equipped_item (character_id, equipment_id, slot) values (5, 25, 'RIGHTHAND');
-insert into equipped_item (character_id, equipment_id, slot) values (5, 3, 'ZWEIHAND');
 insert into equipped_item (character_id, equipment_id, slot) values (5, 5, 'ZWEIHAND');
 insert into equipped_item (character_id, equipment_id, slot) values (5, 6, 'ZWEIHAND');
 

@@ -322,7 +322,7 @@ public class ExpeditionService {
 		if (content.equals("campaign")) {
 			combatInstances = combatInstanceDao.findByUserIdAndScenarioNotOrderByIdAsc(userId, Scenario.CONTRACT);
 		} else {
-			combatInstances = combatInstanceDao.findByUserIdAndScenarioOrderByIdAsc(userId, Scenario.CONTRACT);
+			combatInstances = combatInstanceDao.findByUserIdAndScenarioAndStatusNotOrderByIdAsc(userId, Scenario.CONTRACT, CombatStatus.CLOSED);
 		}
 
 		List<CombatInstanceDto> dtos = new ArrayList<CombatInstanceDto>();
@@ -388,9 +388,7 @@ public class ExpeditionService {
 
 			CombatReward reward = rewardService.calculateCombatRewards(combatInstance, enemyTeam, hasWon);
 
-			if (hasWon) {
-				combatInstance.setCombatReward(reward);
-			}
+			combatInstance.setCombatReward(reward);
 
 			combatInstanceDao.save(combatInstance);
 
@@ -428,75 +426,90 @@ public class ExpeditionService {
 	}
 
 	public void gatherCombatReward(Long combatInstanceId, Long userId) {
+	    try {
+	        CombatInstance ci = combatInstanceDao.findById(combatInstanceId)
+	                .orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
+	        User user = userDao.findById(userId)
+	                .orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
 
-		try {
-			CombatInstance ci = combatInstanceDao.findById(combatInstanceId)
-					.orElseThrow(() -> new AppException("Unknown combat instance", HttpStatus.NOT_FOUND));
-			User user = userDao.findById(userId)
-					.orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
+	        CumulatedTeamStats finalResult = ci.getAfterMathInfo();
+	        List<Character> chars = ci.getCharacters();
 
-			CumulatedTeamStats finalResult = ci.getAfterMathInfo();
-			List<Character> chars = ci.getCharacters();
+	        int yourHp = finalResult.getYourStats().getHp();
+	        int yourMorale = finalResult.getYourStats().getMorale();
+	        long heroCount = chars.stream().filter(c -> c.getCharacterType() == CharacterType.HERO).count();
 
-			int yourHp = finalResult.getYourStats().getHp();
-			int yourMorale = finalResult.getYourStats().getMorale();
-			int heroCount = (int) chars.stream().filter(c -> c.getCharacterType() == CharacterType.HERO).count();
+	        int rewardExp = ci.getCombatReward().getExperiencePoints();
+	        int dividedExp = (int) (rewardExp / (heroCount == 0 ? 1 : heroCount)); // Prevent division by zero
 
-			int rewardExp = ci.getCombatReward().getExperiencePoints();
-			int rewardCoins = ci.getCombatReward().getCoins();
+	        List<Character> charactersToUpdate = new ArrayList<>();
+	        boolean isLostFinal = ci.getStatus() == CombatStatus.LOST_FINAL;
 
-			for (Character c : chars) {
-				if (c.getCharacterType() == CharacterType.HERO) {
-					if (yourHp > 0) {
-						c.setHp(Math.max(1, yourHp / heroCount));
-						c.setExperiencePoint(rewardExp / heroCount);
-					} else {
-						c.setHp(0);
-						c.setExperiencePoint(rewardExp / heroCount / 2);
-					}
+	        for (Character c : chars) {
+	            if (c.getCharacterType() == CharacterType.HERO || isLostFinal) {
+	                int moraleToSet = Math.max(yourMorale / (int) heroCount, 0);
+	                int expToSet = isLostFinal ? dividedExp / 2 : dividedExp;
+	                int hpToSet = isLostFinal ? 0 : Math.max(1, yourHp / (int) heroCount);
 
-					c.setMorale(yourMorale > 0 ? yourMorale / heroCount : 0);
-					c.setMorale(c.getMorale() - 1);
-					c.setInCombat(false);
+	                c.setHp(hpToSet);
+	                c.setExperiencePoint(expToSet);
+	                c.setMorale(moraleToSet);
+	                c.setMorale(c.getMorale() - 1);
+	                c.setInCombat(false);
 
-					int toLevelUp = c.getLevel() * 1000;
+	                int toLevelUp = c.getLevel() * 1000;
+	                if (c.getExperiencePoint() >= toLevelUp) {
+	                    c.setLevel(c.getLevel() + 1);
+	                    c.setExperiencePoint(c.getExperiencePoint() - toLevelUp);
+	                }
 
-					if (c.getExperiencePoint() >= toLevelUp) {
-						c.setLevel(c.getLevel() + 1);
-						c.setExperiencePoint(c.getExperiencePoint() - toLevelUp);
-					}
+	                charactersToUpdate.add(c);
+	            }
+	        }
 
-					characterDao.save(c);
-				}
-			}
+	        characterDao.saveAll(charactersToUpdate); // Batch save
 
-			user.setCoin(user.getCoin() + rewardCoins);
+	        if (!isLostFinal) {
+	            user.setCoin(user.getCoin() + ci.getCombatReward().getCoins());
 
-			for (EquipmentDto e : ci.getCombatReward().getEquipments()) {
-				UserItem userItem = new UserItem();
-				userItem.setUser(user);
-				userItem.setEquipment(equipmentDao.findById(e.getId())
-						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND)));
-				userItem.setItemType(ItemType.EQUIPMENT);
-				userItemDao.save(userItem);
-			}
+	            List<UserItem> userItems = new ArrayList<>();
+	            for (EquipmentDto e : ci.getCombatReward().getEquipments()) {
+	                UserItem userItem = createUserItem(user, ItemType.EQUIPMENT, e.getId());
+	                userItems.add(userItem);
+	            }
 
-			for (ConsumableDto c : ci.getCombatReward().getConsumables()) {
-				UserItem userItem = new UserItem();
-				userItem.setUser(user);
-				userItem.setConsumable(consumableDao.findById(c.getId())
-						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND)));
-				userItem.setItemType(ItemType.CONSUMABLE);
-				userItemDao.save(userItem);
-			}
+	            for (ConsumableDto c : ci.getCombatReward().getConsumables()) {
+	                UserItem userItem = createUserItem(user, ItemType.CONSUMABLE, c.getId().longValue());
+	                userItems.add(userItem);
+	            }
 
-			ci.setStatus(CombatStatus.CLOSED);
-			combatInstanceDao.save(ci);
+	            userItemDao.saveAll(userItems); // Batch save
+	        } else {
+	            ci.setCombatReward(null);
+	        }
 
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-			logger.error(e.toString());
-		}
+	        ci.setStatus(CombatStatus.CLOSED);
+	        combatInstanceDao.save(ci);
+	    } catch (AppException e) {
+	        logger.error(e.getMessage(), e);
+	    }
 	}
+
+	private UserItem createUserItem(User user, ItemType itemType, Long itemId) throws AppException {
+	    UserItem userItem = new UserItem();
+	    userItem.setUser(user);
+	    
+	    if (itemType == ItemType.EQUIPMENT) {
+	        userItem.setEquipment(equipmentDao.findById(itemId)
+	                .orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND)));
+	    } else if (itemType == ItemType.CONSUMABLE) {
+	        userItem.setConsumable(consumableDao.findById(itemId.intValue())
+	                .orElseThrow(() -> new AppException("Unknown consumable", HttpStatus.NOT_FOUND)));
+	    }
+
+	    userItem.setItemType(itemType);
+	    return userItem;
+	}
+
 
 }

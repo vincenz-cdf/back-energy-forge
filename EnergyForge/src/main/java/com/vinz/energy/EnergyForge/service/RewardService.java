@@ -44,7 +44,7 @@ public class RewardService {
 		REWARD_CONFIG_MAP.put(Scenario.T_L1, new RewardConfig(15, 80, Arrays.asList(7L, 4L), Arrays.asList(1, 1)));
 		REWARD_CONFIG_MAP.put(Scenario.T_L2, new RewardConfig(30, 90, Arrays.asList(22L, 16L), Arrays.asList(1, 1)));
 		REWARD_CONFIG_MAP.put(Scenario.T_L3, new RewardConfig(30, 100, Arrays.asList(14L, 24L), Arrays.asList(1, 1)));
-		REWARD_CONFIG_MAP.put(Scenario.T_L4, new RewardConfig(15, 120, Collections.emptyList(), Arrays.asList(1, 1, 1)));
+		REWARD_CONFIG_MAP.put(Scenario.T_L4, new RewardConfig(15, 150, Collections.emptyList(), Arrays.asList(1, 1, 1)));
 	}
 
 	@Transactional
@@ -84,7 +84,7 @@ public class RewardService {
 	private void setEnemyTeamRewards(List<Character> enemyTeam, CombatReward reward) {
 		for (Character c : enemyTeam) {
 			reward.setExperiencePoints(reward.getExperiencePoints() + c.getExperiencePoint());
-			reward.setCoins(reward.getCoins() + (int) (random.nextInt(9) + 10 + c.getLevel() * random.nextDouble(2) + 1));
+			reward.setCoins(reward.getCoins() + (int) (random.nextInt(15) + 40 + c.getLevel() * random.nextDouble(2) + 1));
 		}
 	}
 

@@ -118,7 +118,7 @@ public class BuildingService {
 		// Loop until the combined size of selected equipment and consumables is equal
 		// to marketLevel + 3
 		while (selectedWeapons.size() + selectedArmors.size() + selectedConsumables.size() < marketLevel + 3) {
-			if (random.nextInt(100) < 60) {
+			if (random.nextInt(100) < 73) {
 				if (random.nextInt(100) < 50) {
 					selectedWeapons.add(weaponMapper.toDto(weapons.get(random.nextInt(weapons.size()))));
 				} else {

@@ -148,7 +148,7 @@ public class PlayerController {
 		try {
 			Long userId = global.getCurrentUserId();
 
-			characterService.dringCharacterFromTavern(id, userId);
+			characterService.drinkCharacterFromTavern(id, userId);
 
 			Map<String, String> response = new HashMap<>();
 			response.put("status", "success");

@@ -28,7 +28,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "user_item")
 public class UserItem implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,4 +50,11 @@ public class UserItem implements Serializable {
     @Enumerated(EnumType.STRING)
     private ItemType itemType;
     
+
+    public UserItem(User user, ItemType type, Equipment equipment, Consumable consumable) {
+    	this.user = user;
+    	this.itemType = type;
+    	this.equipment = equipment;
+    	this.consumable = consumable;
+	}
 }

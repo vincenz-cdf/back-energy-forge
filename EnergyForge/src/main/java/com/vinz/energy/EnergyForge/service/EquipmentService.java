@@ -211,66 +211,58 @@ public class EquipmentService {
 	@Transactional
 	public void buyItem(Long itemId, String type, Long userId) {
 
-		try {
-			User user = userDao.findById(userId)
-					.orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
+	    User user = userDao.findById(userId)
+	            .orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
+	    
+	    // Deduct coins and remove items from the market item pool based on type.
+	    if ("weapon".equals(type) || "armor".equals(type)) {
+	        Equipment equipment = equipmentDao.findById(itemId)
+	                .orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND));
+	        checkFundsAndDeduct(user, equipment.getValue());
 
-			UserBuilding ub = userBuildingDao.findByUser_IdAndBuilding_Id(userId, 3);
+	        UserItem userItem = new UserItem(user, ItemType.EQUIPMENT, equipment, null);
+	        userItemDao.save(userItem);
 
-			Equipment equipment = null;
-			Consumable consumable = null;
+	        removeEquipmentFromMarketItemPool(user, itemId, type);
+	    } else if ("consumable".equals(type)) {
+	        Consumable consumable = consumableDao.findById(itemId.intValue())
+	                .orElseThrow(() -> new AppException("Unknown consumable", HttpStatus.NOT_FOUND));
+	        checkFundsAndDeduct(user, consumable.getValue());
 
-			if (type.equals("weapon") || type.equals("armor")) {
-				equipment = equipmentDao.findById(itemId)
-						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND));
+	        UserItem userItem = new UserItem(user, ItemType.CONSUMABLE, null, consumable);
+	        userItemDao.save(userItem);
 
-				if (equipment.getValue() > user.getCoin()) {
-					throw new AppException("Not enough coins", HttpStatus.FORBIDDEN);
-				} else {
-					user.setCoin(user.getCoin() - equipment.getValue());
-				}
-			} else {
-				consumable = consumableDao.findById(itemId.intValue())
-						.orElseThrow(() -> new AppException("Unknown consumable", HttpStatus.NOT_FOUND));
+	        removeConsumableFromMarketItemPool(user, itemId);
+	    } else {
+	        throw new AppException("Invalid item type", HttpStatus.BAD_REQUEST);
+	    }
 
-				if (consumable.getValue() > user.getCoin()) {
-					throw new AppException("Not enough coins", HttpStatus.FORBIDDEN);
-				} else {
-					user.setCoin(user.getCoin() - consumable.getValue());
-				}
-			}
-
-			UserItem userItem = new UserItem();
-			userItem.setUser(user);
-			if (type.equals("weapon") || type.equals("armor")) {
-				userItem.setItemType(ItemType.EQUIPMENT);
-				userItem.setEquipment(equipment);
-
-				if (type.equals("weapon")) {
-					ub.getMarketItemPool().getWeapons().removeIf(w -> w.getEquipment().getId() == itemId.intValue());
-				}
-
-				if (type.equals("armor")) {
-					ub.getMarketItemPool().getArmors().removeIf(a -> a.getEquipment().getId() == itemId.intValue());
-				}
-
-			} else {
-				userItem.setItemType(ItemType.CONSUMABLE);
-				userItem.setConsumable(consumable);
-
-				ub.getMarketItemPool().getConsumables().removeIf(c -> c.getId() == itemId.intValue());
-
-			}
-
-			userItemDao.save(userItem);
-			userDao.save(user);
-			userBuildingDao.save(ub);
-			userBuildingDao.flush();
-		} catch (Exception e) {
-			logger.error(e.toString());
-			logger.error(e.getMessage());
-		}
-
+	    // Persist the user with the updated coin count.
+	    userDao.save(user);
 	}
+
+	private void checkFundsAndDeduct(User user, int itemValue) {
+	    if (itemValue > user.getCoin()) {
+	        throw new AppException("Not enough coins", HttpStatus.FORBIDDEN);
+	    }
+	    user.setCoin(user.getCoin() - itemValue);
+	}
+
+	private void removeEquipmentFromMarketItemPool(User user, Long itemId, String type) {
+	    UserBuilding ub = userBuildingDao.findByUser_IdAndBuilding_Id(user.getId(), 3);
+	    if ("weapon".equals(type)) {
+	        ub.getMarketItemPool().getWeapons().removeIf(w -> w.getEquipment().getId().equals(itemId));
+	    } else { // type is "armor"
+	        ub.getMarketItemPool().getArmors().removeIf(a -> a.getEquipment().getId().equals(itemId));
+	    }
+	    userBuildingDao.save(ub);
+	}
+
+	private void removeConsumableFromMarketItemPool(User user, Long itemId) {
+	    UserBuilding ub = userBuildingDao.findByUser_IdAndBuilding_Id(user.getId(), 3);
+	    ub.getMarketItemPool().getConsumables().removeIf(c -> c.getId().equals(itemId.intValue()));
+	    userBuildingDao.save(ub);
+	}
+
 
 }

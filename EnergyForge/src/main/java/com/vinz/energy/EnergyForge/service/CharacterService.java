@@ -71,19 +71,32 @@ public class CharacterService {
 		Character character = findCharacterById(id);
 		User user = userDao.findById(userId).orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
 
-		Integer recoveringCost = (character.getMaxHp() - character.getHp()) * 2;
-
-		if (user.getCoin() < recoveringCost) {
-			throw new AppException("Not enough coins", HttpStatus.FORBIDDEN);
+		if (character.getHp() == 0) {
+			if (user.getEnergy() < 8) {
+				throw new AppException("Not enough energy", HttpStatus.FORBIDDEN);
+			} else {
+				user.setEnergy(user.getEnergy() - 8);
+				character.setRecovering(true);
+				character.setHealingPower(1);
+				character.setHealingStack(1000);
+				character.setHp(1);
+				characterDao.save(character);
+			}
 		} else {
-			user.setCoin(user.getCoin() - recoveringCost);
-			character.setHp(character.getMaxHp());
-			characterDao.save(character);
+			Integer recoveringCost = (character.getMaxHp() - character.getHp()) * 2;
+
+			if (user.getCoin() < recoveringCost) {
+				throw new AppException("Not enough coins", HttpStatus.FORBIDDEN);
+			} else {
+				user.setCoin(user.getCoin() - recoveringCost);
+				character.setHp(character.getMaxHp());
+				characterDao.save(character);
+			}
 		}
 
 	}
 
-	public void dringCharacterFromTavern(Long id, Long userId) {
+	public void drinkCharacterFromTavern(Long id, Long userId) {
 		Character character = findCharacterById(id);
 		User user = userDao.findById(userId).orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
 

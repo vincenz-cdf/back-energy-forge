@@ -10,6 +10,8 @@ public interface UserBuildingDao extends JpaRepository<UserBuilding, Long> {
 
 	List<UserBuilding> findByUser_Id(Long userId);
 	
+	List<UserBuilding> findByBuilding_Id(int buildingId);
+	
 	UserBuilding findByUser_IdAndBuilding_Id(Long userId, Integer buildingId);
 
 }

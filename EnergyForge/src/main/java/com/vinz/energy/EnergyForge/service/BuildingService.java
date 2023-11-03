@@ -89,6 +89,15 @@ public class BuildingService {
 		List<UserBuilding> userBuildings = userBuildingDao.findByUser_Id(userId);
 		return userBuildings.stream().map(BuildingDto::new).collect(Collectors.toList());
 	}
+	
+	public void refreshMarketItemPool() {
+		List<UserBuilding> ubs = userBuildingDao.findByBuilding_Id(3);
+		
+		for (UserBuilding ub : ubs) {
+			ub.setMarketItemPool(generateMarketPool(ub.getLevel()));
+			userBuildingDao.save(ub);
+		}
+	}
 
 	private MarketItemPool generateMarketPool(int marketLevel) {
 		MarketItemPool marketItemPool = new MarketItemPool();

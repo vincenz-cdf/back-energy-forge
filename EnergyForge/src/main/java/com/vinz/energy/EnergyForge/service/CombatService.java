@@ -68,6 +68,9 @@ public class CombatService {
 
 		int i = 0;
 
+		sortCharactersByHpAndArmor(yourTeam);
+		sortCharactersByHpAndArmor(enemyTeam);
+		
 		for (Character c : yourTeam) {
 			CharacterDto dto = characterMapper.toDto(c);
 			yourStats.setHp(yourStats.getHp() + dto.getHp());
@@ -631,6 +634,11 @@ public class CombatService {
 			}
 			return w1.getAtkValue().compareTo(w2.getAtkValue()); // compare the actual values
 		}).collect(Collectors.toList());
+	}
+	
+	private void sortCharactersByHpAndArmor(List<Character> characters) {
+	    Collections.sort(characters, 
+	                     (c1, c2) -> Integer.compare(c1.getHp() + c1.getArmor(), c2.getHp() + c2.getArmor()));
 	}
 
 }

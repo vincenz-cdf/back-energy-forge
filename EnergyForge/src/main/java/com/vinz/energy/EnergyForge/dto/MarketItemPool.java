@@ -3,19 +3,30 @@ package com.vinz.energy.EnergyForge.dto;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vinz.energy.EnergyForge.dto.equipments.EquipmentDto;
+import com.vinz.energy.EnergyForge.dto.equipments.ArmorDto;
+import com.vinz.energy.EnergyForge.dto.equipments.WeaponDto;
 
 public class MarketItemPool {
 	
-	private List<EquipmentDto> equipments = new ArrayList<EquipmentDto>();
 	private List<ConsumableDto> consumables = new ArrayList<ConsumableDto>();
+	private List<WeaponDto> weapons = new ArrayList<>();
+	private List<ArmorDto> armors = new ArrayList<>();
 
-	public List<EquipmentDto> getEquipments() {
-		return equipments;
+
+	public List<WeaponDto> getWeapons() {
+		return weapons;
 	}
 
-	public void setEquipments(List<EquipmentDto> equipments) {
-		this.equipments = equipments;
+	public void setWeapons(List<WeaponDto> weapons) {
+		this.weapons = weapons;
+	}
+
+	public List<ArmorDto> getArmors() {
+		return armors;
+	}
+
+	public void setArmors(List<ArmorDto> armors) {
+		this.armors = armors;
 	}
 
 	public List<ConsumableDto> getConsumables() {

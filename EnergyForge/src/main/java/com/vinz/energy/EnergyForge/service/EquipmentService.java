@@ -3,6 +3,8 @@ package com.vinz.energy.EnergyForge.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -13,9 +15,13 @@ import com.vinz.energy.EnergyForge.dao.CharacterDao;
 import com.vinz.energy.EnergyForge.dao.ConsumableDao;
 import com.vinz.energy.EnergyForge.dao.EquipmentDao;
 import com.vinz.energy.EnergyForge.dao.EquippedItemDao;
+import com.vinz.energy.EnergyForge.dao.UserBuildingDao;
+import com.vinz.energy.EnergyForge.dao.UserDao;
 import com.vinz.energy.EnergyForge.dao.UserItemDao;
 import com.vinz.energy.EnergyForge.dao.WeaponDao;
 import com.vinz.energy.EnergyForge.db.Consumable;
+import com.vinz.energy.EnergyForge.db.User;
+import com.vinz.energy.EnergyForge.db.UserBuilding;
 import com.vinz.energy.EnergyForge.db.UserItem;
 import com.vinz.energy.EnergyForge.db.enums.ItemType;
 import com.vinz.energy.EnergyForge.db.equipments.Armor;
@@ -37,6 +43,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Service
 public class EquipmentService {
+
+	private static final Logger logger = LoggerFactory.getLogger(CharacterService.class);
 
 	@Autowired
 	private ArmorDao armorDao;
@@ -64,12 +72,18 @@ public class EquipmentService {
 
 	@Autowired
 	private UserItemDao userItemDao;
-	
+
 	@Autowired
 	private CharacterMapper characterMapper;
-	
+
 	@Autowired
 	private ConsumableDao consumableDao;
+
+	@Autowired
+	private UserDao userDao;
+
+	@Autowired
+	private UserBuildingDao userBuildingDao;
 
 	@Transactional
 	public List<ArmorDto> getOwnedArmors(Long userId) {
@@ -104,13 +118,13 @@ public class EquipmentService {
 
 		return weaponMapper.toDtoList(weapons);
 	}
-	
+
 	@Transactional
 	public List<ConsumableDto> getOwnedConsumables(Long userId) {
 
 		List<UserItem> userItems = userItemDao.findByUserIdAndItemType(userId, ItemType.CONSUMABLE);
 		List<Consumable> consumables = new ArrayList<Consumable>();
-		
+
 		List<ConsumableDto> consumableDtos = new ArrayList<ConsumableDto>();
 
 		for (UserItem ui : userItems) {
@@ -176,7 +190,7 @@ public class EquipmentService {
 
 		return characterService.characterStatsUpdateAfterEquip(charId, equipment, newEquippedItem);
 	}
-	
+
 	public CharacterDto unequipAll(Long charId) {
 
 		List<EquippedItem> equippedItems = equippedItemDao.findByCharacterId(charId);
@@ -184,7 +198,7 @@ public class EquipmentService {
 			equippedItemDao.delete(e);
 		}
 		equippedItemDao.flush();
-		
+
 		com.vinz.energy.EnergyForge.db.Character character = characterDao.findById(charId)
 				.orElseThrow(() -> new AppException("Unknown character", HttpStatus.NOT_FOUND));
 		character.setArmor(0);
@@ -192,6 +206,71 @@ public class EquipmentService {
 		character.setAtk(8);
 		characterDao.save(character);
 		return characterMapper.toDto(character);
+	}
+
+	@Transactional
+	public void buyItem(Long itemId, String type, Long userId) {
+
+		try {
+			User user = userDao.findById(userId)
+					.orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
+
+			UserBuilding ub = userBuildingDao.findByUser_IdAndBuilding_Id(userId, 3);
+
+			Equipment equipment = null;
+			Consumable consumable = null;
+
+			if (type.equals("weapon") || type.equals("armor")) {
+				equipment = equipmentDao.findById(itemId)
+						.orElseThrow(() -> new AppException("Unknown equipment", HttpStatus.NOT_FOUND));
+
+				if (equipment.getValue() > user.getCoin()) {
+					throw new AppException("Not enough coins", HttpStatus.FORBIDDEN);
+				} else {
+					user.setCoin(user.getCoin() - equipment.getValue());
+				}
+			} else {
+				consumable = consumableDao.findById(itemId.intValue())
+						.orElseThrow(() -> new AppException("Unknown consumable", HttpStatus.NOT_FOUND));
+
+				if (consumable.getValue() > user.getCoin()) {
+					throw new AppException("Not enough coins", HttpStatus.FORBIDDEN);
+				} else {
+					user.setCoin(user.getCoin() - consumable.getValue());
+				}
+			}
+
+			UserItem userItem = new UserItem();
+			userItem.setUser(user);
+			if (type.equals("weapon") || type.equals("armor")) {
+				userItem.setItemType(ItemType.EQUIPMENT);
+				userItem.setEquipment(equipment);
+
+				if (type.equals("weapon")) {
+					ub.getMarketItemPool().getWeapons().removeIf(w -> w.getEquipment().getId() == itemId.intValue());
+				}
+
+				if (type.equals("armor")) {
+					ub.getMarketItemPool().getArmors().removeIf(a -> a.getEquipment().getId() == itemId.intValue());
+				}
+
+			} else {
+				userItem.setItemType(ItemType.CONSUMABLE);
+				userItem.setConsumable(consumable);
+
+				ub.getMarketItemPool().getConsumables().removeIf(c -> c.getId() == itemId.intValue());
+
+			}
+
+			userItemDao.save(userItem);
+			userDao.save(user);
+			userBuildingDao.save(ub);
+			userBuildingDao.flush();
+		} catch (Exception e) {
+			logger.error(e.toString());
+			logger.error(e.getMessage());
+		}
+
 	}
 
 }

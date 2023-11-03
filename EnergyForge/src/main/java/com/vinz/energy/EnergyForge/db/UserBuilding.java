@@ -1,11 +1,11 @@
 package com.vinz.energy.EnergyForge.db;
 
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
+import com.vinz.energy.EnergyForge.config.MarketItemPoolConverter;
 import com.vinz.energy.EnergyForge.dto.MarketItemPool;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -43,8 +43,8 @@ public class UserBuilding {
     private Integer level;
     
     
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(nullable = true)
+    @Column(nullable = true, columnDefinition = "TEXT")
+    @Convert(converter = MarketItemPoolConverter.class)
     private MarketItemPool marketItemPool;
     
 }

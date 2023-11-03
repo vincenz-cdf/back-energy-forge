@@ -12,15 +12,19 @@ public class ArmorLightDto implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	private Long id;
+	private String name;
 	private Integer armorValue;
 	private String spritePath;
 	private EquipmentSlot slot;
+	private int value;
 	
 	public ArmorLightDto(Armor a) {
 		id = a.getId();
 		armorValue = a.getArmorValue();
 		spritePath = a.getEquipment().getSpritePath();
 		slot = a.getEquipment().getSlot();
+		value = a.getEquipment().getValue();
+		name = a.getEquipment().getName();
 	}
 
 	public Long getId() {
@@ -55,5 +59,24 @@ public class ArmorLightDto implements Serializable {
 		this.slot = slot;
 	}
 
+	public int getValue() {
+		return value;
+	}
+
+	public void setValue(int value) {
+		this.value = value;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 	
 }

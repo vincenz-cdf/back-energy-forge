@@ -9,5 +9,7 @@ import com.vinz.energy.EnergyForge.db.UserBuilding;
 public interface UserBuildingDao extends JpaRepository<UserBuilding, Long> {
 
 	List<UserBuilding> findByUser_Id(Long userId);
+	
+	UserBuilding findByUser_IdAndBuilding_Id(Long userId, Integer buildingId);
 
 }

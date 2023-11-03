@@ -21,6 +21,7 @@ import com.vinz.energy.EnergyForge.dto.CharacterDto;
 import com.vinz.energy.EnergyForge.dto.HabitDto;
 import com.vinz.energy.EnergyForge.service.BuildingService;
 import com.vinz.energy.EnergyForge.service.CharacterService;
+import com.vinz.energy.EnergyForge.service.EquipmentService;
 import com.vinz.energy.EnergyForge.service.Global;
 import com.vinz.energy.EnergyForge.service.HabitService;
 import com.vinz.energy.EnergyForge.service.ProfileService;
@@ -39,6 +40,9 @@ public class PlayerController {
 	
 	@Autowired
 	private BuildingService buildingService;
+	
+	@Autowired
+	private EquipmentService equipmentService;
 
 	@Autowired
 	private Global global;
@@ -186,6 +190,23 @@ public class PlayerController {
 			return new ResponseEntity<>(response, HttpStatus.OK);
 		} catch (Exception e) {
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to retrieve buildings", e);
+		}
+	}
+	
+	@PostMapping("/buy/{id}/{type}")
+	public ResponseEntity<Map<String, String>> buyItem(@PathVariable Long id, @PathVariable String type) {
+		try {
+			
+			Long userId = global.getCurrentUserId();
+			
+			equipmentService.buyItem(id, type, userId);
+			
+			Map<String, String> response = new HashMap<>();
+			response.put("status", "success");
+			response.put("message", "Habit successfully update.");
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to buy item", e);
 		}
 	}
 

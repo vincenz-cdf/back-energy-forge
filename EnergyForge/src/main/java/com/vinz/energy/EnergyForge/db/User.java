@@ -2,7 +2,6 @@ package com.vinz.energy.EnergyForge.db;
 
 import java.io.Serializable;
 import java.util.List;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -53,6 +52,7 @@ public class User implements Serializable {
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private List<CombatInstance> combatInstances;
     
-    
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    private List<UserBuilding> userBuildings;
 
 }

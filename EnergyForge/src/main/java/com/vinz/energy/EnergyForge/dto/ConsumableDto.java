@@ -20,6 +20,8 @@ public class ConsumableDto implements Serializable {
     
     private String description;
     
+    private Integer value;
+    
     private String spritePath;
     
     private int healingAmount;
@@ -37,6 +39,7 @@ public class ConsumableDto implements Serializable {
     	description = c.getDescription();
     	healingAmount = c.getHealingAmount();
     	healingPower = c.getHealingPower();
+    	value = c.getValue();
     	
     	userItems = new ArrayList<UserItemDto>();
     	
@@ -105,5 +108,14 @@ public class ConsumableDto implements Serializable {
 	public void setHealingPower(int healingPower) {
 		this.healingPower = healingPower;
 	}
+
+	public Integer getValue() {
+		return value;
+	}
+
+	public void setValue(Integer value) {
+		this.value = value;
+	}
     
+	
 }

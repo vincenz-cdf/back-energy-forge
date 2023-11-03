@@ -22,6 +22,9 @@ public class Consumable {
     private String name;
     
     @Column(nullable = false)
+    private Integer value;
+    
+    @Column(nullable = false)
     private String description;
     
     @Column(nullable = false)
@@ -90,6 +93,14 @@ public class Consumable {
 
 	public void setHealingPower(int healingPower) {
 		this.healingPower = healingPower;
+	}
+
+	public Integer getValue() {
+		return value;
+	}
+
+	public void setValue(Integer value) {
+		this.value = value;
 	} 
     
     

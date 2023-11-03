@@ -14,7 +14,6 @@ import com.vinz.energy.EnergyForge.dao.UserDao;
 import com.vinz.energy.EnergyForge.db.Character;
 import com.vinz.energy.EnergyForge.db.User;
 import com.vinz.energy.EnergyForge.db.enums.CharacterType;
-import com.vinz.energy.EnergyForge.db.enums.Scenario;
 import com.vinz.energy.EnergyForge.dto.UserDto;
 import com.vinz.energy.EnergyForge.dto.auth.CredentialsDto;
 import com.vinz.energy.EnergyForge.dto.auth.SignUpDto;
@@ -42,6 +41,9 @@ public class UserService {
 	
 	@Autowired
 	private ExpeditionService expeditionService;
+	
+	@Autowired
+	private BuildingService buildingService;
 	
 	Random random = new Random();
 
@@ -74,6 +76,8 @@ public class UserService {
         
         expeditionService.createContractCombatInstance(savedUser.getId());
         expeditionService.createContractCombatInstance(savedUser.getId());
+        
+        buildingService.initializeFirstBuildingForUser(savedUser.getId());
 
         return userMapper.toDto(savedUser);
     }

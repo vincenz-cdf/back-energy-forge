@@ -16,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.vinz.energy.EnergyForge.dto.BuildingDto;
 import com.vinz.energy.EnergyForge.dto.CharacterDto;
 import com.vinz.energy.EnergyForge.dto.HabitDto;
+import com.vinz.energy.EnergyForge.service.BuildingService;
 import com.vinz.energy.EnergyForge.service.CharacterService;
 import com.vinz.energy.EnergyForge.service.Global;
 import com.vinz.energy.EnergyForge.service.HabitService;
@@ -34,6 +36,9 @@ public class PlayerController {
 
 	@Autowired
 	private CharacterService characterService;
+	
+	@Autowired
+	private BuildingService buildingService;
 
 	@Autowired
 	private Global global;
@@ -105,23 +110,6 @@ public class PlayerController {
 		}
 	}
 
-	@GetMapping("/characters/wounded")
-	public ResponseEntity<Map<String, Object>> showWoundedCharacters() {
-		try {
-			Long userId = global.getCurrentUserId();
-
-			List<CharacterDto> chars = characterService.showWoundedCharacters(userId);
-
-			Map<String, Object> response = new HashMap<>();
-			response.put("status", "success");
-			response.put("message", "Wounded characters successfully retrieved.");
-			response.put("data", chars);
-			return new ResponseEntity<>(response, HttpStatus.OK);
-		} catch (Exception e) {
-			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to retrieve wounded chars", e);
-		}
-	}
-
 	@DeleteMapping("/habits/{id}")
 	public ResponseEntity<Map<String, String>> deleteHabit(@PathVariable Long id) {
 		try {
@@ -150,6 +138,22 @@ public class PlayerController {
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to heal char", e);
 		}
 	}
+	
+	@PutMapping("/characters/{id}/drink")
+	public ResponseEntity<Map<String, String>> drinkDemoralizedCharacter(@PathVariable Long id) {
+		try {
+			Long userId = global.getCurrentUserId();
+
+			characterService.dringCharacterFromTavern(id, userId);
+
+			Map<String, String> response = new HashMap<>();
+			response.put("status", "success");
+			response.put("message", "Char successfully healed.");
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to heal char", e);
+		}
+	}
 
 	@PutMapping("/characters/{charId}/consume/{id}")
 	public ResponseEntity<Map<String, Object>> consumeRecoverChar(@PathVariable Integer id, @PathVariable Long charId) {
@@ -167,4 +171,22 @@ public class PlayerController {
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to set recover char", e);
 		}
 	}
+	
+	@GetMapping("/buildings")
+	public ResponseEntity<Map<String, Object>> showBuildings() {
+		try {
+			Long userId = global.getCurrentUserId();
+
+			List<BuildingDto> buildings = buildingService.retrieveBuildingsForUser(userId);
+
+			Map<String, Object> response = new HashMap<>();
+			response.put("status", "success");
+			response.put("message", "Buildings successfully retrieved.");
+			response.put("data", buildings);
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to retrieve buildings", e);
+		}
+	}
+
 }

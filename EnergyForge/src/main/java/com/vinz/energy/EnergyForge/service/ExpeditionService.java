@@ -411,6 +411,7 @@ public class ExpeditionService {
 
 		List<CombatInstance> wonCombatInstances = combatInstanceDao.findByStatus(CombatStatus.WON_AWAIT);
 		List<CombatInstance> lostCombatInstances = combatInstanceDao.findByStatus(CombatStatus.LOST_AWAIT);
+		List<CombatInstance> trashContracts = combatInstanceDao.findByStatusAndScenario(CombatStatus.AWAIT, Scenario.CONTRACT);
 
 		for (CombatInstance ci : wonCombatInstances) {
 			ci.setStatus(CombatStatus.WON_FINAL);
@@ -420,8 +421,11 @@ public class ExpeditionService {
 			ci.setStatus(CombatStatus.LOST_FINAL);
 			combatInstanceDao.save(ci);
 		}
+		for (CombatInstance ci : trashContracts) {
+			createContractCombatInstance(ci.getUser().getId());
+			combatInstanceDao.delete(ci);
+		}
 
-		combatInstanceDao.deleteAll(combatInstanceDao.findByStatusAndScenario(CombatStatus.AWAIT, Scenario.CONTRACT));
 
 	}
 
@@ -486,6 +490,10 @@ public class ExpeditionService {
 	            userItemDao.saveAll(userItems); // Batch save
 	        } else {
 	            ci.setCombatReward(null);
+	        }
+	        
+	        if (ci.getScenario() == Scenario.CONTRACT) {
+	        	createContractCombatInstance(userId);
 	        }
 
 	        ci.setStatus(CombatStatus.CLOSED);

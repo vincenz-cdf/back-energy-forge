@@ -52,12 +52,6 @@ public class CharacterService {
 		return characterMapper.toCharacterDtos(chars);
 	}
 
-	public List<CharacterDto> showWoundedCharacters(Long userId) {
-		List<Character> chars = characterDao.findCharactersNotInSpecifiedCombatAndHpNotMax(userId);
-
-		return characterMapper.toCharacterDtos(chars);
-	}
-
 	public CharacterDto characterStatsUpdateAfterEquip(Long charId, Equipment equipment, EquippedItem equippedItem) {
 		Character currentChar = findCharacterById(charId);
 
@@ -89,6 +83,25 @@ public class CharacterService {
 
 	}
 
+	public void dringCharacterFromTavern(Long id, Long userId) {
+		Character character = findCharacterById(id);
+		User user = userDao.findById(userId).orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
+
+		Integer recoveringCost = character.getLevel() + 3 * 2;
+
+		if (user.getCoin() < recoveringCost) {
+			throw new AppException("Not enough coins", HttpStatus.FORBIDDEN);
+		} else {
+			user.setCoin(user.getCoin() - recoveringCost);
+			character.setMorale(character.getMorale() + 2);
+			if (character.getMorale() > character.getMaxMorale()) {
+				character.setMorale(character.getMaxMorale());
+			}
+			characterDao.save(character);
+		}
+
+	}
+
 	public CharacterDto setCharacterRecoverHeal(Integer id, Long charId, Long userId) {
 
 		Character character = findCharacterById(charId);
@@ -109,7 +122,7 @@ public class CharacterService {
 				userItemDao.flush();
 			}
 		}
-		
+
 		return new CharacterDto(character);
 	}
 

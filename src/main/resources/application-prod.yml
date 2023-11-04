@@ -1,15 +1,8 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url:
-    username:
-    password:
+    url: jdbc:postgresql://${PROD_DB_HOST}:${PROD_DB_PORT}/${PROD_DB_NAME}?stringtype=unspecified
+    username: ${PROD_DB_USERNAME}
+    password: ${PROD_DB_PASSWORD}
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-    properties:
-      hibernate:
-        jdbc:
-          lob:
-            non_contextual_creation: true
-  app:
-    url:

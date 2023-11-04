@@ -50,6 +50,16 @@ testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	
 }
 
+bootJar {
+  manifest {
+    attributes 'Start-Class': 'com.vinz.energy.EnergyForge.EnergyForgeApplication'
+  }
+}
+
+jar {
+  enabled = false
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 }

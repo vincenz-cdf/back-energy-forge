@@ -70,7 +70,7 @@ public class CombatService {
 
 		sortCharactersByHpAndArmor(yourTeam);
 		sortCharactersByHpAndArmor(enemyTeam);
-		
+
 		for (Character c : yourTeam) {
 			CharacterDto dto = characterMapper.toDto(c);
 			yourStats.setHp(yourStats.getHp() + dto.getHp());
@@ -193,20 +193,20 @@ public class CombatService {
 				}
 			}
 
-			System.out.println("Your deaths: " + yourDeathCount);
-			System.out.println("Enemy deaths: " + enemyDeathCount);
+			logger.info("Your deaths: " + yourDeathCount);
+			logger.info("Enemy deaths: " + enemyDeathCount);
 
-			System.out.println("=========");
-			System.out.println("enemy hp");
-			System.out.println(allTeamStats.getEnemyStats().getHp());
-			System.out.println("enemy ar");
-			System.out.println(allTeamStats.getEnemyStats().getArmor());
-			System.out.println("=========");
-			System.out.println("your hp");
-			System.out.println(allTeamStats.getYourStats().getHp());
-			System.out.println("your ar");
-			System.out.println(allTeamStats.getYourStats().getArmor());
-			System.out.println("=========");
+			logger.info("=========");
+			logger.info("enemy hp");
+			logger.info(allTeamStats.getEnemyStats().getHp().toString());
+			logger.info("enemy ar");
+			logger.info(allTeamStats.getEnemyStats().getArmor().toString());
+			logger.info("=========");
+			logger.info("your hp");
+			logger.info(allTeamStats.getYourStats().getHp().toString());
+			logger.info("your ar");
+			logger.info(allTeamStats.getYourStats().getArmor().toString());
+			logger.info("=========");
 		}
 
 		// TODO: adapt to PvP
@@ -236,7 +236,7 @@ public class CombatService {
 			AttackActions aa = (weapon.getId() != null) ? weaponSpecialization(weapon, yourEffects)
 					: new AttackActions(Arrays.asList(8), 1);
 
-			int totalDamageDealtByWeapon = 0;
+			Integer totalDamageDealtByWeapon = 0;
 
 			Set<Effect> triggeredEffects = new HashSet<>();
 
@@ -322,13 +322,12 @@ public class CombatService {
 				}
 			}
 
-			logger.info("pre ComputeDamage");
 			totalDamageDealtByWeapon = computeWeaponDamage(aa, defenderStats, weapon, defenderEffects, rangedBrosCount,
 					deathCount, attackingWeapons, yourEffects);
 
-			System.out.println(aa);
-			System.out.println(weapon);
-			System.out.println(totalDamageDealtByWeapon);
+			logger.info(aa.toString());
+			logger.info(weapon.toString());
+			logger.info(totalDamageDealtByWeapon.toString());
 
 			// If there is a backlash (ROUNDSWING)
 			defenderStats.setHp(defenderStats.getHp() - aa.getBacklash());
@@ -635,10 +634,10 @@ public class CombatService {
 			return w1.getAtkValue().compareTo(w2.getAtkValue()); // compare the actual values
 		}).collect(Collectors.toList());
 	}
-	
+
 	private void sortCharactersByHpAndArmor(List<Character> characters) {
-	    Collections.sort(characters, 
-	                     (c1, c2) -> Integer.compare(c1.getHp() + c1.getArmor(), c2.getHp() + c2.getArmor()));
+		Collections.sort(characters,
+				(c1, c2) -> Integer.compare(c1.getHp() + c1.getArmor(), c2.getHp() + c2.getArmor()));
 	}
 
 }

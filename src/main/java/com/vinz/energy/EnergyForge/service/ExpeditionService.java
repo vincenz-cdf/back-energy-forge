@@ -42,10 +42,8 @@ import com.vinz.energy.EnergyForge.dto.CharacterDto;
 import com.vinz.energy.EnergyForge.dto.CombatIndexes;
 import com.vinz.energy.EnergyForge.dto.CombatInstanceDto;
 import com.vinz.energy.EnergyForge.dto.CombatReward;
-import com.vinz.energy.EnergyForge.dto.ConsumableDto;
 import com.vinz.energy.EnergyForge.dto.CumulatedTeamStats;
 import com.vinz.energy.EnergyForge.dto.WeaponLightDto;
-import com.vinz.energy.EnergyForge.dto.equipments.EquipmentDto;
 import com.vinz.energy.EnergyForge.exception.AppException;
 import com.vinz.energy.EnergyForge.mappers.CharacterMapper;
 

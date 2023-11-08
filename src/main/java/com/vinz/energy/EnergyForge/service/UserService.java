@@ -50,12 +50,12 @@ public class UserService {
 	@Transactional
     public UserDto login(CredentialsDto credentialsDto) {
         User user = userDao.findByLogin(credentialsDto.login())
-                .orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new AppException("Invalid user or password", HttpStatus.NOT_FOUND));
 
         if (passwordEncoder.matches(CharBuffer.wrap(credentialsDto.password()), user.getPassword())) {
             return userMapper.toDto(user);
         }
-        throw new AppException("Invalid password", HttpStatus.BAD_REQUEST);
+        throw new AppException("Invalid user or password", HttpStatus.BAD_REQUEST);
     }
     
 	@Transactional

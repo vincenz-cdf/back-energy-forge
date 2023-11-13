@@ -209,5 +209,21 @@ public class PlayerController {
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to buy item", e);
 		}
 	}
+	
+	@PutMapping("/characters/{id}/rename/{name}")
+	public ResponseEntity<Map<String, String>> renameCharacter(@PathVariable Long id, @PathVariable String name) {
+		try {
+			Long userId = global.getCurrentUserId();
+			
+			characterService.renameCharacter(id, name, userId);
+			
+			Map<String, String> response = new HashMap<>();
+			response.put("status", "success");
+			response.put("message", "Habit successfully update.");
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to buy item", e);
+		}
+	}
 
 }

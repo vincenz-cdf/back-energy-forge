@@ -23,6 +23,7 @@ public class UserDto implements Serializable {
 
     private Integer energy;
     private Integer coin;
+    private Integer diamond;
     
     private List<UserItemDto> userItems;
     

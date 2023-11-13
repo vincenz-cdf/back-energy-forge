@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.crypto.CipherInputStream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,7 +100,6 @@ public class ExpeditionService {
 
 	public CombatInstanceDto createOrRetrieveCombatI(String scenarioEnum, Long userId) {
 
-		try {
 			Scenario scenario = Scenario.valueOf(scenarioEnum);
 			User user = userDao.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 			boolean isCampaign = scenario.isCampaign();
@@ -128,11 +129,6 @@ public class ExpeditionService {
 			}
 
 			return new CombatInstanceDto(ci);
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-		}
-
-		return null;
 	}
 
 	public void createContractCombatInstance(Long userId) {
@@ -466,6 +462,7 @@ public class ExpeditionService {
 		if (ci.getStatus() != CombatStatus.LOST_FINAL) {
 			// Simplify the reward assignment and item creation.
 			user.setCoin(user.getCoin() + ci.getCombatReward().getCoins());
+			user.setDiamond(user.getDiamond() + ci.getCombatReward().getDiamonds());
 			List<UserItem> userItems = Stream
 					.concat(ci.getCombatReward().getEquipments().stream()
 							.map(e -> createUserItem(user, ItemType.EQUIPMENT, e.getId())),

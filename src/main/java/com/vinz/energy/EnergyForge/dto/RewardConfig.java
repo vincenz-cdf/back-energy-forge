@@ -12,6 +12,8 @@ public class RewardConfig {
     private int coins;
     private List<Long> equipmentIds;
     private List<Integer> consumableIds;
+    private int diamonds = 0;
+    
 	public int getExperiencePoints() {
 		return experiencePoints;
 	}
@@ -36,6 +38,13 @@ public class RewardConfig {
 	public void setConsumableIds(List<Integer> consumableIds) {
 		this.consumableIds = consumableIds;
 	}
+	public int getDiamonds() {
+		return diamonds;
+	}
+	public void setDiamonds(int diamonds) {
+		this.diamonds = diamonds;
+	}
+	
 
     // Constructors, getters, setters, etc.
     

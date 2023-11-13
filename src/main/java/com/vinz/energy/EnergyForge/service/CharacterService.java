@@ -119,7 +119,7 @@ public class CharacterService {
 
 		Character character = findCharacterById(charId);
 		Consumable consumable = consumableDao.findById(id)
-				.orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
+				.orElseThrow(() -> new AppException("Unknown consumable", HttpStatus.NOT_FOUND));
 
 		if (character.getRecovering()) {
 			throw new AppException("Character already recovering", HttpStatus.FORBIDDEN);
@@ -160,6 +160,33 @@ public class CharacterService {
 			c.setHealingStack(c.getHealingStack() - 1);
 			c.setHp(c.getHp() + c.getHealingPower());
 		}
+	}
+	
+	public void renameCharacter(Long id, String name, Long userId) {
+		
+		if (name == null || name.trim().isEmpty()) {
+			throw new AppException("The field is empty", HttpStatus.FORBIDDEN);
+		}
+		
+		if (name.length() > 12) {
+			throw new AppException("The name cannot contain more than 12 letters", HttpStatus.FORBIDDEN);
+		}
+		
+		User user = userDao.findById(userId)
+				.orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
+		
+		if (user.getDiamond() >= 50) {
+			Character character = characterDao.findById(id)
+					.orElseThrow(() -> new AppException("Unknown character", HttpStatus.NOT_FOUND));
+			character.setName(name);
+			characterDao.save(character);
+			
+			user.setDiamond(user.getDiamond() - 50);
+			userDao.save(user);
+		} else {
+			throw new AppException("Not enough diamonds !", HttpStatus.FORBIDDEN);
+		}
+
 	}
 
 	private Character findCharacterById(Long charId) {

@@ -15,6 +15,7 @@ public class CombatReward implements Serializable {
 	private Integer experiencePoints = 0;
 	private List<EquipmentDto> equipments = new ArrayList<EquipmentDto>();
 	private List<ConsumableDto> consumables = new ArrayList<ConsumableDto>();
+	private Integer diamonds = 0;
 	
 	public Integer getCoins() {
 		return coins;
@@ -43,6 +44,12 @@ public class CombatReward implements Serializable {
 	}
 	public void setConsumables(List<ConsumableDto> consumables) {
 		this.consumables = consumables;
+	}
+	public Integer getDiamonds() {
+		return diamonds;
+	}
+	public void setDiamonds(Integer diamonds) {
+		this.diamonds = diamonds;
 	}
 	
 }

@@ -41,10 +41,10 @@ public class RewardService {
 
 	static {
 		REWARD_CONFIG_MAP = new HashMap<>();
-		REWARD_CONFIG_MAP.put(Scenario.T_L1, new RewardConfig(15, 80, Arrays.asList(7L, 4L), Arrays.asList(1, 1)));
-		REWARD_CONFIG_MAP.put(Scenario.T_L2, new RewardConfig(30, 90, Arrays.asList(22L, 16L), Arrays.asList(1, 1)));
-		REWARD_CONFIG_MAP.put(Scenario.T_L3, new RewardConfig(30, 100, Arrays.asList(14L, 24L), Arrays.asList(1, 1)));
-		REWARD_CONFIG_MAP.put(Scenario.T_L4, new RewardConfig(30, 150, Collections.emptyList(), Arrays.asList(2, 2, 2)));
+		REWARD_CONFIG_MAP.put(Scenario.T_L1, new RewardConfig(15, 80, Arrays.asList(7L, 4L), Arrays.asList(1, 1), 5));
+		REWARD_CONFIG_MAP.put(Scenario.T_L2, new RewardConfig(30, 90, Arrays.asList(22L, 16L), Arrays.asList(1, 1), 5));
+		REWARD_CONFIG_MAP.put(Scenario.T_L3, new RewardConfig(30, 100, Arrays.asList(14L, 24L), Arrays.asList(1, 1), 5));
+		REWARD_CONFIG_MAP.put(Scenario.T_L4, new RewardConfig(30, 150, Collections.emptyList(), Arrays.asList(2, 2, 2), 5));
 	}
 
 	@Transactional
@@ -66,6 +66,7 @@ public class RewardService {
 
 		reward.setExperiencePoints(config.getExperiencePoints());
 		reward.setCoins(config.getCoins());
+		reward.setDiamonds(config.getDiamonds());
 
 		List<EquipmentDto> equipments = config.getEquipmentIds().stream()
 				.map(id -> new EquipmentDto(equipmentDao.findById(id)
@@ -85,11 +86,16 @@ public class RewardService {
 		for (Character c : enemyTeam) {
 			reward.setExperiencePoints(reward.getExperiencePoints() + c.getExperiencePoint());
 			reward.setCoins(reward.getCoins() + (int) (random.nextInt(15) + 40 + c.getLevel() * random.nextDouble(2) + 1));
+			
+			if(random.nextInt(100) + 1 < 50) {
+				reward.setDiamonds(reward.getDiamonds() + random.nextInt(3) + 1);
+			}
+			
 		}
 	}
 
 	private RewardConfig getRewardConfigForScenario(Scenario scenario) {
 		return REWARD_CONFIG_MAP.getOrDefault(scenario,
-				new RewardConfig(30, 100, Collections.emptyList(), Collections.emptyList()));
+				new RewardConfig(30, 100, Collections.emptyList(), Collections.emptyList(), 0));
 	}
 }

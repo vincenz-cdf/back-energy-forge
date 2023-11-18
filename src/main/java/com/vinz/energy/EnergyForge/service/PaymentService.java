@@ -33,10 +33,10 @@ public class PaymentService {
 							.build())
 					.build());
 
-			String successUrl = "http://localhost:4200/?paymentSuccess=true&qty=" + stripeParams.getQty();
+			String successUrl = "https://habiti-quest-d0bc061322cb.herokuapp.com/?paymentSuccess=true&qty=" + stripeParams.getQty();
 
 			SessionCreateParams params = SessionCreateParams.builder().setSuccessUrl(successUrl)
-					.setCancelUrl("http://localhost:4200/#")
+					.setCancelUrl("https://habiti-quest-d0bc061322cb.herokuapp.com/")
 					.addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
 					.setMode(SessionCreateParams.Mode.PAYMENT).addAllLineItem(lineItems)
 					.putMetadata("userId", userId.toString()).putMetadata("diamonds", stripeParams.getQty().toString())

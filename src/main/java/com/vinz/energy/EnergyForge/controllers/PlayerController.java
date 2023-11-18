@@ -225,5 +225,21 @@ public class PlayerController {
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to buy item", e);
 		}
 	}
+	
+	@PutMapping("/market/refresh")
+	public ResponseEntity<Map<String, String>> refreshMarket() {
+		try {
+			Long userId = global.getCurrentUserId();
+			
+			buildingService.refreshSingleMarketItemPool(userId);
+			
+			Map<String, String> response = new HashMap<>();
+			response.put("status", "success");
+			response.put("message", "Market successfully update.");
+			return new ResponseEntity<>(response, HttpStatus.OK);
+		} catch (Exception e) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to refresh items", e);
+		}
+	}
 
 }

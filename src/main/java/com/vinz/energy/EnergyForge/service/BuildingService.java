@@ -89,13 +89,30 @@ public class BuildingService {
 		List<UserBuilding> userBuildings = userBuildingDao.findByUser_Id(userId);
 		return userBuildings.stream().map(BuildingDto::new).collect(Collectors.toList());
 	}
-	
-	public void refreshMarketItemPool() {
+
+	public void refreshMarketsItemPool() {
 		List<UserBuilding> ubs = userBuildingDao.findByBuilding_Id(3);
-		
+
 		for (UserBuilding ub : ubs) {
 			ub.setMarketItemPool(generateMarketPool(ub.getLevel()));
 			userBuildingDao.save(ub);
+		}
+	}
+
+	public void refreshSingleMarketItemPool(Long userId) {
+		
+		User user = userDao.findById(userId)
+				.orElseThrow(() -> new AppException("Unknown user", HttpStatus.NOT_FOUND));
+		
+		if (user.getDiamond() >= 10) {
+			user.setDiamond(user.getDiamond() - 10);
+			userDao.save(user);
+			
+			UserBuilding ub = userBuildingDao.findByUser_IdAndBuilding_Id(userId, 3);
+			ub.setMarketItemPool(generateMarketPool(ub.getLevel()));
+			userBuildingDao.save(ub);
+		} else {
+			throw new AppException("Not enough diamonds !", HttpStatus.FORBIDDEN);
 		}
 	}
 

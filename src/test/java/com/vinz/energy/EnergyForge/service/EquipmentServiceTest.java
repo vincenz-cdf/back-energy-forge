@@ -25,8 +25,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 
-@ExtendWith(SpringExtension.class)
-@SpringBootTest
 public class EquipmentServiceTest {
 
 	private static final Logger logger = LoggerFactory.getLogger(EquipmentServiceTest.class);

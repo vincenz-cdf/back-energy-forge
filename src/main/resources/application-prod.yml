@@ -8,3 +8,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
+  stripe:
+    api:
+      webhook: ${STRIPE_WEBHOOK}
+      key: ${STRIPE_KEY}

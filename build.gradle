@@ -43,10 +43,9 @@ testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	
 	// https://mvnrepository.com/artifact/com.h2database/h2
 	testImplementation 'com.h2database:h2:2.2.224'
-	
-	
-
-	
+		
+	// https://mvnrepository.com/artifact/com.stripe/stripe-java
+	implementation 'com.stripe:stripe-java:24.2.0'
 	
 }
 

@@ -9,8 +9,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.crypto.CipherInputStream;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -420,7 +418,11 @@ public class ExpeditionService {
 			combatInstanceDao.save(ci);
 		}
 		for (CombatInstance ci : lostCombatInstances) {
-			ci.setStatus(CombatStatus.LOST_FINAL);
+			if (ci.getScenario().isCampaign()) {
+				ci.setStatus(CombatStatus.AWAIT);
+			} else {
+				ci.setStatus(CombatStatus.LOST_FINAL);
+			}
 			combatInstanceDao.save(ci);
 		}
 		for (CombatInstance ci : trashContracts) {

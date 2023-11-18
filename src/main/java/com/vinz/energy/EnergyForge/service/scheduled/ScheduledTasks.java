@@ -31,7 +31,7 @@ public class ScheduledTasks {
 
 		habitService.refreshHabits();
 		expeditionService.refreshCombatInstance();
-		buildingService.refreshMarketItemPool();
+		buildingService.refreshMarketsItemPool();
 
 	}
 
